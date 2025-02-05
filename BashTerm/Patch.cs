@@ -18,7 +18,7 @@ internal class Patch {
 		string param1 = "";
 		string param2 = "";
 
-		Logger.Info("Pre-Evaluate Command Received = \"" + inputString + "\"");
+		if(ConfigMaster.DEBUG) Logger.Info("Pre-Evaluate Command Received = \"" + inputString + "\"");
 
 		if (args.Length == 0)
 			return;
@@ -68,7 +68,8 @@ internal class Patch {
 				break;
 			case "p":
 			case "ping":
-				// TODO: This logic is pretty limited, but works for now
+				cmd = "ping";
+				// TODO: This logic is limited, but works for now
 				if (args.Length > 3 || 
 					// below is considering the case they didn't executed a command with -T (e.g. ping ??? -t)
 					(args.Length == 3 && !param1.StartsWith("-") && Util.IsInt(param2))) {
@@ -78,6 +79,7 @@ internal class Patch {
 				break;
 			case "q":
 			case "query":
+				cmd = "query";
 				if (args.Length > 2) { 
                     param1 = Util.InterpretObjectType(args[1]) + "_" + Util.Concat('_', args, 2, args.Length);
                     param2 = "";
@@ -94,6 +96,6 @@ internal class Patch {
             inputString = Util.Concat(cmd, param1, param2).ToUpper().Trim();
 		}
 
-		Logger.Info("Command Evaluated as \"" + inputString + "\"");
+		if(ConfigMaster.DEBUG) Logger.Info("Command Evaluated as \"" + inputString + "\"");
 	}
 }
