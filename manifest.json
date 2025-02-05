@@ -1,0 +1,7 @@
+{
+	"name": "BashTerm",
+	"version_number": "0.1.0",
+	"website_url": "https://git.takina.io/gtfo/BashTerm",
+	"description": "Improving the GTFO Terminal",
+	"dependencies": ["BepInEx-BepInExPack_GTFO-3.2.1"]
+}

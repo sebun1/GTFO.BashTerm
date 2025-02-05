@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<!--
+		<Profile>Default</Profile>
+		-->
+		<Profile>food</Profile>
+
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<DebugType>None</DebugType>
+		<AssemblyName>$(SolutionName)</AssemblyName>
+		<RootNamespace>$(SolutionName)</RootNamespace>
+		<BepInEx>$(AppData)\r2modmanPlus-local\GTFO\profiles\$(Profile)\BepInEx</BepInEx>
+		<BuildDirectory>$(BepInEx)\plugins\$(SolutionName)\</BuildDirectory>
+		<OutputPath>$(BuildDirectory)</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+	</PropertyGroup>
+	<Target Name="PostBuild" BeforeTargets="PostBuildEvent">
+		<Delete Files="$(OutputPath)$(AssemblyName).deps.json" />
+	</Target>
+	<Target Name="Package" AfterTargets="Build">
+		<PropertyGroup>
+			<PkgFolder>$(MSBuildProjectDirectory)\pkg\</PkgFolder>
+			<ZipFile>$(SolutionDir)BashTerm.zip</ZipFile>
+		</PropertyGroup>
+		<MakeDir Directories="$(PkgFolder)" />
+		<Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(PkgFolder)" />
+		<Copy SourceFiles="$(SolutionDir).assets/icon.png" DestinationFolder="$(PkgFolder)" />
+		<Copy SourceFiles="$(SolutionDir)README.md" DestinationFolder="$(PkgFolder)" />
+		<Copy SourceFiles="$(SolutionDir)CHANGELOG.md" DestinationFolder="$(PkgFolder)" />
+		<Copy SourceFiles="$(SolutionDir)manifest.json" DestinationFolder="$(PkgFolder)" />
+		<Exec Command="powershell -NoProfile -Command &quot;Compress-Archive -Path '$(PkgFolder)*' -DestinationPath '$(ZipFile)' -Force&quot;" />
+	</Target>
+	<ItemGroup>
+		<Reference Include="$(BepInEx)\core\0Harmony.dll" Private="false" />
+		<Reference Include="$(BepInEx)\core\BepInEx.Core.dll" Private="false" />
+		<Reference Include="$(BepInEx)\core\BepInEx.Unity.IL2CPP.dll" Private="false" />
+		<Reference Include="$(BepInEx)\core\Il2CppInterop.Common.dll" Private="false" />
+		<Reference Include="$(BepInEx)\core\Il2CppInterop.Runtime.dll" Private="false" />
+		<Reference Include="$(BepInEx)\interop\*.dll" Private="false" />
+		<Reference Include="C:\Users\marti\Downloads\R6MonoDlls\*.dll" Private="false" />
+		<Reference Remove="$(BepInEx)\interop\netstandard.dll" />
+	</ItemGroup>
+</Project>
