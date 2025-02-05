@@ -39,13 +39,13 @@ internal static class Util {
 			return "medipack";
 		if (input.StartsWith("to") || input.StartsWith("tool"))
 			return "tool_refill";
-		if (input.StartsWith("am") || input.StartsWith("ammo"))
+		if (input.StartsWith("am"))
 			return "ammopack";
 		if (input.StartsWith("dis"))
 			return "disinfection_pack";
 
 		// Objective Item 
-		if (input.StartsWith("turb") || input == "")
+		if (input.StartsWith("turb"))
 			return "fog_turbine";
 		if (input == "nhsu")
 			return "neonate_hsu";

@@ -1,6 +1,5 @@
 using HarmonyLib;
 using LevelGeneration;
-using System.Reflection.Metadata.Ecma335;
 
 namespace BashTerm;
 
@@ -34,6 +33,7 @@ internal class Patch {
 			case "ls":
 				cmd = "list";
 				break;
+			case "lu":
 			case "lsu":
 				if (param2 == "") {
 					cmd = "list";
@@ -55,6 +55,7 @@ internal class Patch {
 				break;
 			case "rsd":
 			case "shut":
+			case "shutdown":
 				cmd = "reactor_shutdown";
 				break;
 			case "uv":
@@ -95,21 +96,4 @@ internal class Patch {
 
 		Logger.Info("Command Evaluated as \"" + inputString + "\"");
 	}
-
-	// Patch TODO: Better autocomplete -- list out candidates
-
-	// Patch TODO: Better prompt -- shows zone, etc, zsh style
-
-	// Patch TODO: Add more advanced filter options (e.g. zone 115|116|118 -> zone 115 or 116 or 118)
-
-	// Patch TODO: Preserves the command typed?
-
-	// Patch TODO: Ctrl + <BS> clears until the next whitespace instead of the
-	// whitespace as well (e.g. "cmd arg1" -> "cmd ")
-
-	// Patch TODO: Shows some current objective information needed in terminal (e.g. uplink address 192.168.1.1)
-
-	// Patch TODO: More detailed help for specific commands
-
-	// Possible TODO: Terminal effect in multiplayer lobby? Does it sync?
 }
