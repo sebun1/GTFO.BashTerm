@@ -1,4 +1,5 @@
 bin/
 obj/
 pkg/
+Test.cs
 Session.vim
