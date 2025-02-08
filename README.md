@@ -1,4 +1,5 @@
-<div align="center"><img src="https://git.takina.io/gtfo/BashTerm/-/raw/main/.assets/icon.png?ref_type=heads" width="200" alt="BashTerm Icon"></div>
+<div align="center">
+<img src="https://git.takina.io/gtfo/BashTerm/-/raw/main/.assets/icon.png?ref_type=heads" width="200" alt="BashTerm Icon">
 
 <h1 align="center">BashTerm</h1>
 
@@ -12,14 +13,17 @@
 
 <h3 align="center">Issues / Suggestions</h3>
 <p align="center"><b>Please</b> open issues (for suggestions, bugs, etc.) <b>on the <a href="https://github.com/sebun1/GTFO.BashTerm">GitHub repo</a></b> as the GitLab repository is not open for public contributions, thank you!!</p>
+</div>
 
 ---
+
+# Table of Contents
 
 [TOC]
 
 # Aliases
 
-Several shorthand aliases of commands are added to make common operations easier. Some unix-equivalent commands are also mapped.
+Several shorthand aliases of commands are added to make common operations faster. Some UNIX-equivalent commands are also mapped.
 
 | Alias                       | GTFO Command       |
 | --------------------------- | ------------------ |
