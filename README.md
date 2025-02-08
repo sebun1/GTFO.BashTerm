@@ -19,7 +19,9 @@
 
 [TOC]
 
-# Aliases
+# Aliases / Expansions
+
+## Command Aliases
 
 Several shorthand aliases of commands are added to make common operations faster. Some UNIX-equivalent commands are also mapped.
 
@@ -37,11 +39,21 @@ Several shorthand aliases of commands are added to make common operations faster
 | `Q`                         | `QUERY`            |
 | `CLEAR`                     | `CLS`              |
 
-## `LSU` / `LU`
+## Zone Identifier Expansion
 
-`LSU` specifically converts number-only filter to zone identifiers if applicable.
+Specifically, the `LSU` alias expands the number argument to a zone identifier if applicable (it should only take one argument).
+
+```
+# Expansion on 49
+LSU 49 ==> LSU E_49 ==> LIST U E_49
+
+# No expansion
+LSU AM ==> LIST U AM
+```
 
 i.e. `LSU 49` would be interpreted as `LSU E_49` = `LIST U E_49` (`LIST RESOURCE ZONE_49`)
+
+This function can also be turned on for `LIST` itself in the config, expanding the first number argument encountered.
 
 ## Item Name Expansion / Concatenation
 
@@ -49,7 +61,7 @@ Let's be honest, typing `_` is not the most convenient thing in the world, so le
 
 Instead of entering something like `PING AMMOPACK_594`, BashTerm allows you to type `PING AMMO 594` instead.
 
-This is achieve through two mechanism:
+This is achieved through two mechanism:
 
 1. Concatenation
 2. Name Expansion
@@ -79,24 +91,75 @@ GTFO only allows these two commands to be accompanied with one argument: the ite
 
 ----
 
-*The following table lists all default expansion identifiers* (note that "`WORD`+" means **any** word starting with `WORD`, aka prefix matching):
+*The following table lists all default expansion identifiers* (note that "`WORD+`" means **any** word starting with `WORD`, aka prefix matching):
 
 | Identifier      | Expansion              |
 | --------------- | ---------------------- |
-| `MED`+          | `MEDIPACK`             |
-| `TO`+           | `TOOL_REFILL`          |
-| `AM`+           | `AMMOPACK`             |
-| `DIS`+          | `DISINFECTION_PACK`    |
-| `TURB`+         | `FOG_TURBINE`          |
+| `MED+`          | `MEDIPACK`             |
+| `TO+`           | `TOOL_REFILL`          |
+| `AM+`           | `AMMOPACK`             |
+| `DIS+`          | `DISINFECTION_PACK`    |
+| `TURB+`         | `FOG_TURBINE`          |
 | `NHSU`          | `NEONATE_HSU`          |
-| `BK`+ / `BULK`+ | `BULKHEAD_KEY`         |
-| `BD`+           | `BULKHEAD_DC`          |
-| `HIS`+          | `HISEC_CARGO`          |
-| `LOCK`+         | `LOCKER`               |
-| `SEC`+ / `SD`+  | `SEC_DOOR`             |
-| `NFR`+          | `NFRAME`               |
-| `GEN`+          | `GENERATOR`            |
+| `BK+` / `BULK+` | `BULKHEAD_KEY`         |
+| `BD+`           | `BULKHEAD_DC`          |
+| `HIS+`          | `HISEC_CARGO`          |
+| `LOCK+`         | `LOCKER`               |
+| `SEC+` / `SD+`  | `SEC_DOOR`             |
+| `NFR+`          | `NFRAME`               |
+| `GEN+`          | `GENERATOR`            |
 | `DISS`          | `DISINFECTION_STATION` |
+
+## Customizing Aliases / Expansions
+
+### General Syntax
+
+Command aliases and object expansions can be customized by editing their respective fields in the configuration. The config follows a specific format:
+
+*It is worth noting that aliases and expansions are essentially the same thing because they work the same way. The only difference between them in BashTerm is the argument(s) they apply to. "Aliases" only apply to commands, while "Object Expansions" apply to the arguments of commands*
+
+```
+# Custom Command Aliases
+COMMAND, ALIAS1, ALIAS2: COMMAND2, CMD2_ALIAS1, CMD2_ALIAS2
+
+# Custom Object Name Expansions
+EXPANSION, SHORTHAND1, SHORTHAND2
+```
+
+*Alias* and *expansion* customization follow the same format, as shown above. Different **groups** are separated by a colon `:`, and **terms** within a **group** are separated by commas `,`. All definitions are case-insensitive (i.e. it doesn't matter if you capitalize), and extra spaces around **terms** are all trimmed automatically.
+
+You can specify multiple aliases/expansions for a single command or object within a single **group**. The first term is the command/expansion for which you are defining aliases/shorthands for, while the rest of the terms in the **group** are all aliases/shorthands.
+
+In the first group shown in the code block above (`COMMAND, ALIAS1, ALIAS2`), `ALIAS1` and `ALIAS2` are mapped to `COMMAND` and will be expanded to it.
+
+```
+# Example
+ALIAS1 AMMO ==> COMMAND AMMO
+```
+
+### Escaping Characters
+
+There might be cases where you want to include colons `:` or commas `,` in your definition. This can be easily achieve with an escape using the backslash `\`. When a backslash appears, the character right after it will be interpreted literally (including backslash `\` itself).
+
+```
+# Example Config
+"\:_FORM/AT_", format3
+
+# Interpreted Definition
+FORMAT3 ==> ":_FORM/AT_"
+```
+
+The above example shows how the colon appears in the interpreted definition since it was escaped in the config file.
+
+### Overriding Defaults
+
+Any default mappings can be overridden; all that is needed is to provide the same alias in your configuration. If you want to override the default mapping of `AM+` to `AMMOPACK` to something like `AM+` to `NOT_AMMOPACK`, you would add the following **group** in the configuration.
+
+```
+not_ammopack, am+
+```
+
+
 
 # Raw Input `RAW` / `R`
 
