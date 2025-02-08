@@ -30,8 +30,6 @@ internal class Patch {
 		string cmdExpansion = ParseUtil.GetCmdExpansion(cmd);
 		TermCmd cmdType = ParseUtil.GetCmdType(cmdExpansion);
 
-		Util.printMaps();
-
 		Logger.Debug("PreEval: cmdExpression = " + cmdExpansion);
 		Logger.Debug("PreEval: cmdType = " + cmdType.ToString("G"));
 
@@ -39,27 +37,27 @@ internal class Patch {
 
 		switch (cmdType) {
 			case TermCmd.ShowList:
-				// TODO: Consider the LSU expansion v.s. LIST case
 				if (ParseUtil.GetCmdExpansion("lsu") == cmdExpansion) {
 					if (Util.IsInt(param1)) param1 = "e_" + param1;
-				} else {
-					bool firstIsInt = Util.IsInt(param1);
-					bool secondIsInt = Util.IsInt(param2);
+					break;
+				}
 
-					if (ConfigMaster.LsConvertsNum2ZoneId) {
-						if (firstIsInt) {
-							param1 = "e_" + param1;
-						} else if (secondIsInt) {
-							param2 = "e_" + param2;
-						}
+				bool firstIsInt = Util.IsInt(param1);
+				bool secondIsInt = Util.IsInt(param2);
+
+				if (ConfigMaster.LsConvertsNum2ZoneId) {
+					if (firstIsInt) {
+						param1 = "e_" + param1;
+					} else if (secondIsInt) {
+						param2 = "e_" + param2;
 					}
+				}
 
-					if (ConfigMaster.LsObjExpansions) {
-						if (!string.IsNullOrWhiteSpace(param1) && !firstIsInt) {
-							param1 = ParseUtil.GetObjExpansion(param1);
-						} else if (!string.IsNullOrWhiteSpace(param2) && !secondIsInt) {
-							param2 = ParseUtil.GetObjExpansion(param2);
-						}
+				if (ConfigMaster.LsObjExpansions) {
+					if (!string.IsNullOrWhiteSpace(param1) && !firstIsInt) {
+						param1 = ParseUtil.GetObjExpansion(param1);
+					} else if (!string.IsNullOrWhiteSpace(param2) && !secondIsInt) {
+						param2 = ParseUtil.GetObjExpansion(param2);
 					}
 				}
 				break;
@@ -72,8 +70,7 @@ internal class Patch {
 			case TermCmd.Ping:
 				if (
 					args.Length > 3
-					// TODO: Double check logic on this one, does this make sense? It doesn't transform if two args and none of them are numbers
-					|| (args.Length == 3 && !Util.ContainsFlag(args) && Util.IsInt(param2))
+					|| (args.Length == 3 && !Util.ContainsFlag(args))
 				) {
 					param1 =
 						ParseUtil.GetObjExpansion(args[1])
