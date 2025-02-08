@@ -98,7 +98,7 @@ GTFO only allows these two commands to be accompanied with one argument: the ite
 | `MED+`          | `MEDIPACK`             |
 | `TO+`           | `TOOL_REFILL`          |
 | `AM+`           | `AMMOPACK`             |
-| `DIS+`          | `DISINFECTION_PACK`    |
+| `DIS+`          | `DISINFECT_PACK`       |
 | `TURB+`         | `FOG_TURBINE`          |
 | `NHSU`          | `NEONATE_HSU`          |
 | `BK+` / `BULK+` | `BULKHEAD_KEY`         |

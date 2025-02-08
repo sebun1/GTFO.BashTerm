@@ -55,7 +55,7 @@ internal static class ConfigMaster {
 		( "med", "medipack" ),
 		( "to", "tool_refill" ),
 		( "am", "ammopack" ),
-		( "dis", "disinfection_pack" ),
+		( "dis", "disinfect_pack" ),
 		( "turb", "fog_turbine" ),
 		( "bk", "bulkhead_key" ),
 		( "bulk", "bulkhead_key" ),
