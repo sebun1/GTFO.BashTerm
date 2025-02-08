@@ -172,7 +172,6 @@ internal static class ConfigMaster {
 
 				if (term.EndsWith("+")) {
 					term = term.Substring(0, term.Length - 1);
-					Logger.Debug($"Index of {term}: {targetPrefix.FindIndex(x => x.Prefix == term)}"); // TODO: Remove
 					int existentIndex = targetPrefix.FindIndex(x => x.Prefix == term);
 					if (existentIndex != -1) {
 						targetPrefix[existentIndex] = (term, expansion);

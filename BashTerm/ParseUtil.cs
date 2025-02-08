@@ -113,14 +113,7 @@ internal static class ParseUtil {
 		group.Add(sb.ToString().Trim());
 		groups.Add(group);
 
-		printGroups(groups);
 		return groups;
-	}
-
-	private static void printGroups(List<List<string>> groups) {
-		foreach (List<string> group in groups) {
-			Logger.Debug("\t| " + Util.Concat(group.ToArray()));
-		}
 	}
 
 	public static string[] CleanSplit(string input) {
