@@ -44,6 +44,5 @@ public enum TermCmd : byte {
 	Info,
 
 	// Custom Cmds
-	ShowListU,
 	Raw,
 }

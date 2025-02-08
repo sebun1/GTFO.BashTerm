@@ -1,3 +1,4 @@
+using Dissonance;
 using HarmonyLib;
 using LevelGeneration;
 
@@ -10,10 +11,9 @@ internal class Patch {
 		nameof(LG_ComputerTerminalCommandInterpreter.EvaluateInput)
 	)]
 	[HarmonyPrefix]
-	// TODO: Custom aliases defined via config
 	public static void PreEvaluateCmd(ref string inputString) {
-		string[] args = inputString.ToLower().Split(' ');
-		string cmd = "";
+		string[] args = ParseUtil.CleanSplit(inputString.ToLower());
+		string cmd;
 		string param1 = "";
 		string param2 = "";
 
@@ -27,96 +27,88 @@ internal class Patch {
 		if (args.Length > 2)
 			param2 = args[2];
 
-		TermCmd cmdInternal = Util.InterpretCmd(cmd);
-		bool doTranslate = true;
+		string cmdExpansion = ParseUtil.GetCmdExpansion(cmd);
+		TermCmd cmdType = ParseUtil.GetCmdType(cmdExpansion);
 
-		switch (cmdInternal) {
+		Util.printMaps();
+
+		Logger.Debug("PreEval: cmdExpression = " + cmdExpansion);
+		Logger.Debug("PreEval: cmdType = " + cmdType.ToString("G"));
+
+		bool doExpansion = true;
+
+		switch (cmdType) {
 			case TermCmd.ShowList:
-				if (ConfigMaster.LsConvertsNum2ZoneId) {
+				// TODO: Consider the LSU expansion v.s. LIST case
+				if (ParseUtil.GetCmdExpansion("lsu") == cmdExpansion) {
+					if (Util.IsInt(param1)) param1 = "e_" + param1;
+				} else {
 					bool firstIsInt = Util.IsInt(param1);
 					bool secondIsInt = Util.IsInt(param2);
 
-					if (firstIsInt) {
-						param1 = "e_" + param1;
-						if (!secondIsInt && ConfigMaster.LsObjExpansions) {
-							param2 = Util.InterpretObject(param2);
-						}
-					} else {
-						if (secondIsInt)
+					if (ConfigMaster.LsConvertsNum2ZoneId) {
+						if (firstIsInt) {
+							param1 = "e_" + param1;
+						} else if (secondIsInt) {
 							param2 = "e_" + param2;
-						if (ConfigMaster.LsObjExpansions)
-							param1 = Util.InterpretObject(param1);
+						}
 					}
-				}
-				break;
-			case TermCmd.ShowListU:
-				param2 = "";
-				if (param2 == "") {
-					cmd = "list";
-					if (param1 != "" && int.TryParse(param1, out int n)) {
-						param2 = "e_" + param1;
-					} else {
-						param2 = param1;
+
+					if (ConfigMaster.LsObjExpansions) {
+						if (!string.IsNullOrWhiteSpace(param1) && !firstIsInt) {
+							param1 = ParseUtil.GetObjExpansion(param1);
+						} else if (!string.IsNullOrWhiteSpace(param2) && !secondIsInt) {
+							param2 = ParseUtil.GetObjExpansion(param2);
+						}
 					}
-					param1 = "u";
 				}
 				break;
 			case TermCmd.TerminalUplinkVerify:
-				doTranslate = ConfigMaster.EnableUVAlias;
+				doExpansion = ConfigMaster.EnableUVAlias;
 				break;
 			case TermCmd.ReactorVerify:
-				doTranslate = ConfigMaster.EnableRVAlias;
+				doExpansion = ConfigMaster.EnableRVAlias;
 				break;
 			case TermCmd.Ping:
-				cmd = "ping";
 				if (
 					args.Length > 3
+					// TODO: Double check logic on this one, does this make sense? It doesn't transform if two args and none of them are numbers
 					|| (args.Length == 3 && !Util.ContainsFlag(args) && Util.IsInt(param2))
 				) {
 					param1 =
-						Util.InterpretObject(args[1])
+						ParseUtil.GetObjExpansion(args[1])
 						+ "_"
-						+ Util.Concat("_", args, 2, args.Length);
+						+ Util.Concat('_', args, 2, args.Length);
 					param2 = "";
 				}
 				break;
 			case TermCmd.Query:
-				cmd = "query";
 				if (args.Length > 2) {
 					param1 =
-						Util.InterpretObject(args[1])
+						ParseUtil.GetObjExpansion(args[1])
 						+ "_"
-						+ Util.Concat("_", args, 2, args.Length);
+						+ Util.Concat('_', args, 2, args.Length);
 					param2 = "";
 				}
 				break;
 			case TermCmd.Raw:
 				inputString = Util.Concat(args, 1, args.Length);
+				inputString = inputString.ToUpper().Trim(); // Always uppercase and trim before releasing
 				return;
-				/*
-				case TermCmd.TerminalUplinkConnect:
-					break;
-				case TermCmd.ReactorStartup:
-					break;
-				case TermCmd.ReactorShutdown:
-					break;
-				case TermCmd.ReadLog:
-					break;
-				case TermCmd.Cls:
-					break;
-				*/
 		}
 
-		Logger.Debug("We interpreted cmdInternal = " + cmdInternal.ToString("G"));
-
-		if (cmdInternal != TermCmd.None && doTranslate) {
-			cmd = Util.Cmd2Txt(cmdInternal);
-			Logger.Debug("Command is not None and we are translating, yay! to: " + cmd);
+		if (doExpansion) {
+			Logger.Debug("Doing Expansion");
+			cmd = cmdExpansion;
 		}
+
+		Logger.Debug("cmd = " + cmd);
+		Logger.Debug("param1 = " + param1);
+		Logger.Debug("param2 = " + param2);
 
 		inputString = Util.Concat(cmd, param1, param2);
 
-		inputString = inputString.ToUpper().Trim();
+		inputString = inputString.ToUpper().Trim(); // Always uppercase and trim before releasing
 
 		Logger.Debug("Command Evaluated as \"" + inputString + "\"");
 	}

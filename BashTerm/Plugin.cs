@@ -16,7 +16,6 @@ public class Plugin : BasePlugin {
 		Logger.Info("Patching...");
 		Harmony.CreateAndPatchAll(typeof(Patch), GUID);
 		ConfigMaster.Init();
-		ConfigMaster.ConfigInfo();
 		Logger.Info("Finished Patching");
 	}
 }

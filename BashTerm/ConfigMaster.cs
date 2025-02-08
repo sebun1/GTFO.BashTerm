@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using BepInEx;
 using BepInEx.Configuration;
+using Dissonance;
 using Il2CppSystem.Linq;
 
 namespace BashTerm;
@@ -10,7 +12,7 @@ namespace BashTerm;
 internal static class ConfigMaster {
 	public static ConfigFile conf;
 
-	public static ConfigEntry<bool> _DEBUG;
+	//public static ConfigEntry<int> CONFIG_NOTICE;
 
 	public static ConfigEntry<bool> _EnableRVAlias;
 	public static ConfigEntry<bool> _EnableUVAlias;
@@ -20,48 +22,52 @@ internal static class ConfigMaster {
 	public static ConfigEntry<string> CustomCmdAliases;
 	public static ConfigEntry<string> CustomObjExpansions;
 
-	public static Dictionary<TermCmd, HashSet<string>> CmdIdentifiers = new Dictionary<TermCmd, HashSet<string>> {
-		// NOTE: If we want to add the ability to disable all default aliases, we have to persist detection of
-		// commands like PING or QUERY for expansion/concat functionality, perhaps another persistent dictionary?
-		{ TermCmd.ShowList, new HashSet<string>{ "l", "ls" } },
-		{ TermCmd.ShowListU, new HashSet<string>{ "lsu", "lu" } },
-		{ TermCmd.TerminalUplinkConnect, new HashSet<string>{ "uc" } },
-		{ TermCmd.TerminalUplinkVerify, new HashSet<string>{ "uv" } },
-		{ TermCmd.ReactorStartup, new HashSet<string>{ "rs", "start" } },
-		{ TermCmd.ReactorShutdown, new HashSet<string>{ "rsd", "shut", "shutdown" } },
-		{ TermCmd.ReactorVerify, new HashSet<string>{ "rv" } },
-		{ TermCmd.ReadLog, new HashSet<string>{ "cat" } },
-		{ TermCmd.Ping, new HashSet<string>{ "p", "ping" } },
-		{ TermCmd.Query, new HashSet<string>{ "q", "query" } },
-		{ TermCmd.Cls, new HashSet<string>{ "clear" } },
-		{ TermCmd.Raw, new HashSet<string>{ "raw", "r" } },
+	public static ConfigEntry<bool> _DEBUG;
+
+	public static Dictionary<string, string> CmdExpExact = new Dictionary<string, string> {
+		{ "ls", "list" },
+		{ "l", "list" },
+		{ "lsu", "list u"},
+		{ "lu", "list u" },
+		{ "uc", "uplink_connect" },
+		{ "uv", "uplink_verify" },
+		{ "rs", "reactor_startup" },
+		{ "start", "reactor_startup" },
+		{ "rsd", "reactor_shutdown" },
+		{ "shut", "reactor_shutdown" },
+		{ "shutdown", "reactor_shutdown" },
+		{ "rv", "reactor_verify" },
+		{ "cat", "read"},
+		{ "p", "ping" },
+		{ "q", "query" },
+		{ "clear", "cls" },
+		{ "r", "raw" },
 	};
 
-	public static Dictionary<string, HashSet<string>> ObjExpansions = new Dictionary<string, HashSet<string>> {
-		// Resource
-		{ "medipack", new HashSet<string> { "med+" } },
-		{ "tool_refill", new HashSet<string>{ "to+" } },
-		{ "ammopack" , new HashSet<string>{ "am+" } },
-		{ "disinfection_pack" , new HashSet<string>{ "dis+" } },
+	public static List<(string Prefix, string Expansion)> CmdExpPrefix = new List<(string Prefix, string Expansion)> { };
 
-		// Objective Items
-		{ "fog_turbine" , new HashSet<string>{ "turb+" } },
-		{ "neonate_hsu" , new HashSet<string>{ "nhsu+" } },
-		{ "bulkhead_key" , new HashSet<string>{ "bk+", "bulk+" } },
-		{ "bulkhead_dc" , new HashSet<string>{ "bd+" } },
-		{ "hisec_cargo" , new HashSet<string>{ "his+" } },
-		{ "data_cube" , new HashSet<string>{ "dc+", "data+" } },
+	public static Dictionary<string, string> ObjExpExact = new Dictionary<string, string> {
+		{ "nhsu", "neonate_hsu" },
+		{ "diss", "disinfection_station" },
+	};
 
-		// Storage
-		{ "locker" , new HashSet<string>{ "lock+" } },
-
-		// Doors
-		{ "sec_door" , new HashSet<string>{ "sec+", "sd+" } },
-
-		// Misc.
-		{ "nframe" , new HashSet<string>{ "nfr+" } },
-		{ "generator" , new HashSet<string>{ "gen+" } },
-		{ "disinfection_station" , new HashSet<string>{ "diss" } },
+	public static List<(string Prefix, string Expansion)> ObjExpPrefix = new List<(string Prefix, string Expansion)> {
+		( "med", "medipack" ),
+		( "to", "tool_refill" ),
+		( "am", "ammopack" ),
+		( "dis", "disinfection_pack" ),
+		( "turb", "fog_turbine" ),
+		( "bk", "bulkhead_key" ),
+		( "bulk", "bulkhead_key" ),
+		( "bd", "bulkhead_dc" ),
+		( "his", "hisec_cargo" ),
+		( "dc", "data_cube" ),
+		( "data", "data_cube" ),
+		( "lock", "locker" ),
+		( "sec", "sec_door" ),
+		( "sd", "sec_door" ),
+		( "nfr", "nframe" ),
+		( "gen", "generator" ),
 	};
 
 	static ConfigMaster() {
@@ -93,77 +99,97 @@ internal static class ConfigMaster {
 			sect,
 			"LS Performs Object Name Expansion",
 			false,
-			"Attempts to expand first non-number argument for LS (e.g. TOOL to TOOL_REFILL)"
+			"Attempts to expand first non-number argument for LS (e.g. LIST TOOL TOOL to LIST TOOL_REFILL TOOL)"
 		);
 
 		_LsConvertsNum2ZoneId = conf.Bind(
 			sect,
 			"LS Converts Number to Zone ID",
 			false,
-			"Converts first integer argument for LS to zone identifier (e.g. 49 to E_49)"
+			"Converts first integer argument for LS to zone identifier (e.g. LS 49 50 to LS E_49 50)"
 		);
 
 		CustomCmdAliases = conf.Bind(
 			sect,
 			"Custom Command Aliases",
 			"",
-			"Add custom command aliases here. Commands must match Format: <command1>,<alias1>,<alias2>;<command1>,<alias1>,<alias2>\ne.g. \"ls,dir;list\""
+			"Add custom command aliases here.\n" +
+				"Must match Format: \"<command expression>,<alias1>,<alias2>:<command>,<alias1>\"\n" +
+				"Prefix Match: \"Pre+\", Exact Match: \"Exact\"" +
+				"e.g. \"list u, lsu, lu: uplink_verify, uv+\"\n" +
+				"Note: Terms are case-insensitive. Newer definitions override older ones, including defaults. Check README on GitHub/GitLab for details."
 		);
 
 		CustomObjExpansions = conf.Bind(
 			sect,
-			"Custom Command Aliases",
+			"Custom Object Name Expansions",
 			"",
-			"Add custom command aliases here. Commands must match Format: <command1>,<alias1>,<alias2>;<command1>,<alias1>,<alias2>\ne.g. \"ls,dir;list\""
+			"Add custom object name expansions here.\n" +
+				"Must match Format: \"<expansion1>,<identifier1>,<identifier2>:<expansion2>,<identifier1>\"\n" +
+				"Prefix Match: \"Pre+\", Exact Match: \"Exact\"" +
+				"e.g. \"get the fk out, gtfo, gtfi: my_custom_object, mco+\"\n" +
+				"Note: Terms are case-insensitive. Newer definitions override older ones, including defaults. Check README on GitHub/GitLab for details."
 		);
 
-		sect = $"({sect_num++}) Dev";
+		sect = $"(Z) Dev";
 
 		_DEBUG = conf.Bind(sect, "Enable Debugging", false, "Enables Debug Logging");
 	}
 
 	public static void Init() {
-		LoadCustomAlias();
-		LoadCustomExpansion();
+		int default_count = GetExpansionCount();
+		int override_count = 0;
+		override_count += LoadExpansionPairs(CustomCmdAliases.Value, ref CmdExpExact, ref CmdExpPrefix);
+		override_count += LoadExpansionPairs(CustomObjExpansions.Value, ref ObjExpExact, ref ObjExpPrefix);
+		int total_count = GetExpansionCount();
+		Logger.Info($"Aliases/Expansions Loaded: {default_count} Default ({override_count} Prefix Overrides) + {total_count - default_count} User = {total_count} Total");
+		Logger.Info("Config is Loaded");
 	}
 
-	public static void LoadCustomAlias() {
-
+	public static int GetExpansionCount() {
+		return CmdExpExact.Count
+			+ CmdExpPrefix.Count
+			+ ObjExpExact.Count
+			+ ObjExpPrefix.Count;
 	}
 
-	public static void LoadCustomExpansion() {
-		string rawCustomObjExp = CustomObjExpansions.Value;
-		if (string.IsNullOrEmpty(rawCustomObjExp)) {
-			return;
-		}
+	public static int LoadExpansionPairs(string source, ref Dictionary<string, string> targetExact, ref List<(string Prefix, string Expansion)> targetPrefix) {
+		var groups = ParseUtil.FromUserDefGroups(source);
+		int replaced = 0;
 
-		string[] userObjExpansions = rawCustomObjExp.Split(';');
-		foreach (string userObjExp in userObjExpansions) {
-			string[] objExpParts = userObjExp.Split(',').Select(p => p.Trim()).ToArray();
-			if (ObjExpansions.ContainsKey(objExpParts[0])) {
-				var set = ObjExpansions[objExpParts[0]];
-				for (int i = 1; i < objExpParts.Length; i++) {
-					set.Add(objExpParts[i]);
+		foreach (List<string> group in groups) {
+			string expansion = group[0];
+			if (group.Count < 2 || string.IsNullOrWhiteSpace(expansion)) {
+				continue;
+			}
+
+			for (int i = 1; i < group.Count; i++) {
+				string term = group[i];
+				if (string.IsNullOrWhiteSpace(term)) {
+					continue;
 				}
-			} else {
-				HashSet<string> newExpansionList = new HashSet<string>();
-				for (int i = 1; i < objExpParts.Length; i++) {
-					newExpansionList.Add(objExpParts[i]);
+
+
+				if (term.EndsWith("+")) {
+					term = term.Substring(0, term.Length - 1);
+					Logger.Debug($"Index of {term}: {targetPrefix.FindIndex(x => x.Prefix == term)}"); // TODO: Remove
+					int existentIndex = targetPrefix.FindIndex(x => x.Prefix == term);
+					if (existentIndex != -1) {
+						targetPrefix[existentIndex] = (term, expansion);
+						replaced++;
+						Logger.Debug("Overwriting Prefix Expansion: (" + term + " -> " + expansion + ")");
+					} else {
+						targetPrefix.Add((term, expansion));
+					}
+				} else {
+					targetExact[term] = expansion;
 				}
-				ObjExpansions.Add(objExpParts[0], newExpansionList);
 			}
 		}
-	}
 
-	public static void ConfigInfo() {
-		Logger.Debug("ObjExpansion has " + ObjExpansions.Count + " entries");
-		if (DEBUG)
-			foreach (var kvp in ObjExpansions)
-				Logger.Debug($"\t{kvp.Key} -> {Util.Set2Str(kvp.Value, 3)}, ...");
-		Logger.Debug("CmdIdentifiers has " + CmdIdentifiers.Count + " entries");
-		if (DEBUG)
-			foreach (var kvp in CmdIdentifiers)
-				Logger.Debug($"\t{kvp.Key} -> {Util.Set2Str(kvp.Value, 3)}, ...");
+		targetPrefix.Sort((a, b) => b.Prefix.Length.CompareTo(a.Prefix.Length));
+
+		return replaced;
 	}
 
 	public static bool EnableRVAlias {

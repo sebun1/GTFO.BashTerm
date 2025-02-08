@@ -12,7 +12,7 @@ internal static class Logger {
 
 	public static void Debug(object msg) {
 		if (ConfigMaster.DEBUG)
-			Logger.m_LogSource.LogDebug((object)Logger.Format(msg));
+			m_LogSource.LogInfo((object)Format(msg));
 	}
 
 	public static void Info(object msg) => Logger.m_LogSource.LogInfo((object)Logger.Format(msg));

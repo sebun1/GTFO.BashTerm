@@ -1,4 +1,4 @@
-<img src=".assets/icon.png" align="center" width="200" alt="BashTerm Icon">
+<div align="center"><img src="https://git.takina.io/gtfo/BashTerm/-/raw/main/.assets/icon.png?ref_type=heads" width="200" alt="BashTerm Icon"></div>
 
 <h1 align="center">BashTerm</h1>
 
@@ -106,19 +106,19 @@ e.g. `RAW LSU 49` will be executed as `LSU 49` rather than `LIST U E_49`.
 
 Any issues can be opened in the mirror repo on [GitHub](https://github.com/sebun1/GTFO.BashTerm).
 
-This project is not currently planning for open contributions, if there are any specific ideas for contribution/collaboration, please DM me on Discord (`@uwufood`). Any suggestions can also be DMed, although opening an issue on GitHub is largely preferred.
+This project is not currently planned for open contributions; if there are any specific ideas for contribution/collaboration, please DM me on Discord (`@uwufood`). Any suggestions can also be DMed, although opening an issue on GitHub is largely preferred.
 
 # Roadmap
 - [x] **Aliasing** (v0.1.0): Shorthands for commonly used commands or snippets
   - [x] **Customizable Aliases/Expansions** (v0.2.0): Config-defined command aliases and object name expansions
-
 - [ ] **Objective Information**: Print the current objective information in the terminal
 - [ ] **Better Autocomplete**: Pressing tab shows the different candidates if multiple matches exist
 - [ ] **Better Prompt**: Update styling of command prompt (i.e. `\\ROOT\`) to include things like zone information
 - [ ] **Pipe `|`**: Allows for piping command outputs to other commands (e.g. `LIST CELL | QUERY` which queries all cells returned by `LIST CELL`)
 - [ ] **Advanced Filter Options**[^2]: Allows filtering multiple zones, etc. (e.g. zone 115|116|118 -> zone 115 or 116 or 118)
 - [ ] **Command Preservation**[^2]: Preserve typed aliases in the terminal
-- [ ] **Contextual Objective Information**: Display information such as uplink address in the terminal
+  - [ ] **Command History Preservation**: Preserve the arrow-up history for commands for reuse
+
 - [ ] **Better Help**: More detailed help and information on specific commands
 - [ ] **BashTerm Help**: Help for BashTerm itself, directly in the terminal
 
