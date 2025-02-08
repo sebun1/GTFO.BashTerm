@@ -1,8 +1,11 @@
+using System.Collections.Generic;
 using Il2CppSystem.Xml.Schema;
 
 namespace BashTerm;
 
 internal static class Util {
+	// All methods assume and should have calls with lower case strings
+
 	public static string Concat(params string[] args) {
 		return Concat(' ', args);
 	}
@@ -16,66 +19,18 @@ internal static class Util {
 	}
 
 	public static string Concat(char delimiter, string[] args, int start, int end) {
-		if (start < 0) start = 0;
-		if (end > args.Length) end = args.Length;
+		if (start < 0)
+			start = 0;
+		if (end > args.Length)
+			end = args.Length;
 
 		if (args.Length == 0 || start >= end)
 			return "";
 
-		string cmd = args[start];
+		string txt = args[start];
 		for (int i = start + 1; i < end; i++)
-			cmd += delimiter + args[i];
-		return cmd;
-	}
-
-	public static string InterpretObjectType(string input) {
-		if (string.IsNullOrEmpty(input))
-			return input;
-
-		input = input.ToLower();
-
-		// Resource 
-		if (input.StartsWith("med"))
-			return "medipack";
-		if (input.StartsWith("to") || input.StartsWith("tool"))
-			return "tool_refill";
-		if (input.StartsWith("am"))
-			return "ammopack";
-		if (input.StartsWith("dis"))
-			return "disinfection_pack";
-
-		// Objective Item 
-		if (input.StartsWith("turb"))
-			return "fog_turbine";
-		if (input == "nhsu")
-			return "neonate_hsu";
-
-		if (input.StartsWith("bk") || input.StartsWith("bulk"))
-			return "bulkhead_key";
-		if (input.StartsWith("bd"))
-			return "bulkhead_dc";
-
-		// Storage
-		if (input.StartsWith("lock"))
-			return "locker";
-
-        // Doors 
-        if (input.StartsWith("sec") || input.StartsWith("sd"))
-            return "sec_door";
-
-		// Misc.
-		if (input.StartsWith("gen"))
-			return "generator";
-		if (input == "diss")
-			return "disinfection_station";
-
-		// Default: We return what we got
-		return input;
-	}
-
-	public static bool InterpretResourceType(string input, out string res) {
-		res = InterpretObjectType(input);
-		return !(res == input);
+			txt += delimiter + args[i];
+		return txt;
 	}
 
 	public static bool ContainsFlag(params string[] args) {
@@ -85,7 +40,26 @@ internal static class Util {
 		return false;
 	}
 
-	public static bool IsInt(string input) { 
-		return int.TryParse(input, out int result);
+	public static bool IsInt(string input) {
+		return int.TryParse(input, out _);
+	}
+
+	public static void printMaps() {
+		Logger.Info("CmdExpExact:");
+		foreach (var pair in ConfigMaster.CmdExpExact) {
+			Logger.Info("\t" + pair.Key + " -> " + pair.Value);
+		}
+		Logger.Info("CmdExpPrefix:");
+		foreach (var tup in ConfigMaster.CmdExpPrefix) {
+			Logger.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
+		}
+		Logger.Info("ObjExpExact:");
+		foreach (var pair in ConfigMaster.ObjExpExact) {
+			Logger.Info("\t" + pair.Key + " -> " + pair.Value);
+		}
+		Logger.Info("ObjExpPrefix:");
+		foreach (var tup in ConfigMaster.ObjExpPrefix) {
+			Logger.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
+		}
 	}
 }

@@ -1,3 +1,4 @@
+using Dissonance;
 using HarmonyLib;
 using LevelGeneration;
 
@@ -8,17 +9,15 @@ internal class Patch {
 	[HarmonyPatch(
 		typeof(LG_ComputerTerminalCommandInterpreter),
 		nameof(LG_ComputerTerminalCommandInterpreter.EvaluateInput)
-		//nameof(LG_ComputerTerminalCommandInterpreter.TryGetCommand)
-		)]
+	)]
 	[HarmonyPrefix]
-	// TODO: Custom aliases defined via config
 	public static void PreEvaluateCmd(ref string inputString) {
-		string[] args = inputString.ToLower().Split(' ');
-		string cmd = "";
+		string[] args = ParseUtil.CleanSplit(inputString.ToLower());
+		string cmd;
 		string param1 = "";
 		string param2 = "";
 
-		if(ConfigMaster.DEBUG) Logger.Info("Pre-Evaluate Command Received = \"" + inputString + "\"");
+		Logger.Debug("Pre-Evaluate Command Received = \"" + inputString + "\"");
 
 		if (args.Length == 0)
 			return;
@@ -28,74 +27,89 @@ internal class Patch {
 		if (args.Length > 2)
 			param2 = args[2];
 
-		switch (cmd) {
-			case "l":
-			case "ls":
-				cmd = "list";
-				break;
-			case "lu":
-			case "lsu":
-				if (param2 == "") {
-					cmd = "list";
-					if (param1 != "" && int.TryParse(param1, out int n)) {
-						param2 = "e_" + param1;
-					} else
-					{
-						param2 = param1;
+		string cmdExpansion = ParseUtil.GetCmdExpansion(cmd);
+		TermCmd cmdType = ParseUtil.GetCmdType(cmdExpansion);
+
+		Util.printMaps();
+
+		Logger.Debug("PreEval: cmdExpression = " + cmdExpansion);
+		Logger.Debug("PreEval: cmdType = " + cmdType.ToString("G"));
+
+		bool doExpansion = true;
+
+		switch (cmdType) {
+			case TermCmd.ShowList:
+				// TODO: Consider the LSU expansion v.s. LIST case
+				if (ParseUtil.GetCmdExpansion("lsu") == cmdExpansion) {
+					if (Util.IsInt(param1)) param1 = "e_" + param1;
+				} else {
+					bool firstIsInt = Util.IsInt(param1);
+					bool secondIsInt = Util.IsInt(param2);
+
+					if (ConfigMaster.LsConvertsNum2ZoneId) {
+						if (firstIsInt) {
+							param1 = "e_" + param1;
+						} else if (secondIsInt) {
+							param2 = "e_" + param2;
+						}
 					}
-					param1 = "u";
+
+					if (ConfigMaster.LsObjExpansions) {
+						if (!string.IsNullOrWhiteSpace(param1) && !firstIsInt) {
+							param1 = ParseUtil.GetObjExpansion(param1);
+						} else if (!string.IsNullOrWhiteSpace(param2) && !secondIsInt) {
+							param2 = ParseUtil.GetObjExpansion(param2);
+						}
+					}
 				}
 				break;
-			case "uc":
-				cmd = "uplink_connect";
+			case TermCmd.TerminalUplinkVerify:
+				doExpansion = ConfigMaster.EnableUVAlias;
 				break;
-			case "rs":
-			case "start":
-				cmd = "reactor_startup";
+			case TermCmd.ReactorVerify:
+				doExpansion = ConfigMaster.EnableRVAlias;
 				break;
-			case "rsd":
-			case "shut":
-			case "shutdown":
-				cmd = "reactor_shutdown";
-				break;
-			case "uv":
-				if (ConfigMaster.EnableUVAlias)
-                    cmd = "uplink_verify";
-				break;
-			case "rv":
-				if (ConfigMaster.EnableRVAlias)
-                    cmd = "reactor_verify";
-				break;
-			case "p":
-			case "ping":
-				cmd = "ping";
-				// TODO: This logic is limited, but works for now
-				if (args.Length > 3 || 
-					// below is considering the case they didn't executed a command with -T (e.g. ping ??? -t)
-					(args.Length == 3 && !param1.StartsWith("-") && Util.IsInt(param2))) {
-                    param1 = Util.InterpretObjectType(args[1]) + "_" + Util.Concat('_', args, 2, args.Length);
-                    param2 = "";
-				}				
-				break;
-			case "q":
-			case "query":
-				cmd = "query";
-				if (args.Length > 2) { 
-                    param1 = Util.InterpretObjectType(args[1]) + "_" + Util.Concat('_', args, 2, args.Length);
-                    param2 = "";
+			case TermCmd.Ping:
+				if (
+					args.Length > 3
+					// TODO: Double check logic on this one, does this make sense? It doesn't transform if two args and none of them are numbers
+					|| (args.Length == 3 && !Util.ContainsFlag(args) && Util.IsInt(param2))
+				) {
+					param1 =
+						ParseUtil.GetObjExpansion(args[1])
+						+ "_"
+						+ Util.Concat('_', args, 2, args.Length);
+					param2 = "";
 				}
 				break;
-			case "clear":
-				cmd = "cls";
+			case TermCmd.Query:
+				if (args.Length > 2) {
+					param1 =
+						ParseUtil.GetObjExpansion(args[1])
+						+ "_"
+						+ Util.Concat('_', args, 2, args.Length);
+					param2 = "";
+				}
 				break;
+			case TermCmd.Raw:
+				inputString = Util.Concat(args, 1, args.Length);
+				inputString = inputString.ToUpper().Trim(); // Always uppercase and trim before releasing
+				return;
 		}
 
-		if (cmd == "raw" || cmd == "r") {
-			inputString = Util.Concat(args, 1, args.Length);
-		} else {
-            inputString = Util.Concat(cmd, param1, param2).ToUpper().Trim();
+		if (doExpansion) {
+			Logger.Debug("Doing Expansion");
+			cmd = cmdExpansion;
 		}
 
-		if(ConfigMaster.DEBUG) Logger.Info("Command Evaluated as \"" + inputString + "\"");
+		Logger.Debug("cmd = " + cmd);
+		Logger.Debug("param1 = " + param1);
+		Logger.Debug("param2 = " + param2);
+
+		inputString = Util.Concat(cmd, param1, param2);
+
+		inputString = inputString.ToUpper().Trim(); // Always uppercase and trim before releasing
+
+		Logger.Debug("Command Evaluated as \"" + inputString + "\"");
 	}
 }

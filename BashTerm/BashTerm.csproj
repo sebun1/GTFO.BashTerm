@@ -3,7 +3,7 @@
 		<!--
 		<Profile>Default</Profile>
 		-->
-		<Profile>food</Profile>
+		<Profile>ModTest</Profile>
 
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -39,7 +39,7 @@
 		<Reference Include="$(BepInEx)\core\Il2CppInterop.Common.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\Il2CppInterop.Runtime.dll" Private="false" />
 		<Reference Include="$(BepInEx)\interop\*.dll" Private="false" />
-		<Reference Include="C:\Users\marti\Downloads\R6MonoDlls\*.dll" Private="false" />
+		<Reference Include="$(SolutionDir)\R6MonoDlls\*.dll" Private="false" />
 		<Reference Remove="$(BepInEx)\interop\netstandard.dll" />
 	</ItemGroup>
 </Project>
