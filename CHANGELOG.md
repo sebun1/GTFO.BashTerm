@@ -14,6 +14,7 @@ This version introduces a completely revamped aliasing and expansion (in technic
   * Add additional expansions
     * `HIS`+ to `HISEC_CARGO`
     * `NFR`+ to `NFRAME`
+* Fix bug where `DISINFECT_PACK` was previously `DISINFECTION_PACK`
 * Reorganized config File
 * `README`
   * Reorganize with new updates
