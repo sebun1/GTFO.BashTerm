@@ -8,7 +8,7 @@ namespace BashTerm;
 public class Plugin : BasePlugin {
 	public const string NAME = "BashTerm";
 	public const string GUID = "io.takina.gtfo." + NAME;
-	public const string VERSION = "0.2.0";
+	public const string VERSION = "0.2.1";
 
 	public override void Load() {
 		Logger.SetupFromInit(Log);

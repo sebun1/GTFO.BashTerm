@@ -39,7 +39,6 @@
 		<Reference Include="$(BepInEx)\core\Il2CppInterop.Common.dll" Private="false" />
 		<Reference Include="$(BepInEx)\core\Il2CppInterop.Runtime.dll" Private="false" />
 		<Reference Include="$(BepInEx)\interop\*.dll" Private="false" />
-		<Reference Include="$(SolutionDir)\R6MonoDlls\*.dll" Private="false" />
 		<Reference Remove="$(BepInEx)\interop\netstandard.dll" />
 	</ItemGroup>
 </Project>
