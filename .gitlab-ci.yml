@@ -1,0 +1,40 @@
+stages:
+  - build
+  - package
+
+variables:
+  DOTNET_VERSION: "6.0"
+  BUILD_OUTPUT: "$CI_PROJECT_DIR/build"
+  PUBLISH_OUTPUT: "$CI_PROJECT_DIR/pkg"
+  SOLUTION_NAME: "BashTerm"
+
+before_script:
+  - echo "Using .NET version $DOTNET_VERSION"
+  - export DOTNET_ROOT=$(dirname $(which dotnet))
+  - dotnet --version
+
+build:
+  stage: build
+  image: mcr.microsoft.com/dotnet/sdk:6.0
+  script:
+    - dotnet restore
+    - dotnet build --configuration Release --output $BUILD_OUTPUT
+  artifacts:
+    paths:
+      - $BUILD_OUTPUT/
+
+package:
+  stage: package
+  image: mcr.microsoft.com/dotnet/sdk:6.0
+  script:
+    - echo "Packaging..."
+    - mkdir -p $PUBLISH_OUTPUT
+    - cp $BUILD_OUTPUT/$SOLUTION_NAME.dll $PUBLISH_OUTPUT/
+    - cp .assets/icon.png $PUBLISH_OUTPUT/
+    - cp README.md $PUBLISH_OUTPUT/
+    - cp CHANGELOG.md $PUBLISH_OUTPUT/
+    - cp manifest.json $PUBLISH_OUTPUT/
+    - zip -r $CI_PROJECT_DIR/BashTerm.zip $PUBLISH_OUTPUT/
+  artifacts:
+    paths:
+      - BashTerm.zip
