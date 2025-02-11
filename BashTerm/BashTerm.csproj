@@ -18,7 +18,7 @@
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	</PropertyGroup>
 	<Target Name="PostBuild" BeforeTargets="PostBuildEvent">
-		<Delete Files="$(OutputPath)$(AssemblyName).deps.json" />
+		<Delete Files="$(OutputPath)/$(AssemblyName).deps.json" />
 	</Target>
 	<Target Name="Package" AfterTargets="Build">
 		<PropertyGroup>
@@ -26,11 +26,11 @@
 			<ZipFile>$(SolutionDir)BashTerm.zip</ZipFile>
 		</PropertyGroup>
 		<MakeDir Directories="$(PkgFolder)" />
-		<Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(PkgFolder)" />
-		<Copy SourceFiles="$(SolutionDir).assets/icon.png" DestinationFolder="$(PkgFolder)" />
-		<Copy SourceFiles="$(SolutionDir)README.md" DestinationFolder="$(PkgFolder)" />
-		<Copy SourceFiles="$(SolutionDir)CHANGELOG.md" DestinationFolder="$(PkgFolder)" />
-		<Copy SourceFiles="$(SolutionDir)manifest.json" DestinationFolder="$(PkgFolder)" />
+		<Copy SourceFiles="$(OutputPath)/$(AssemblyName).dll" DestinationFolder="$(PkgFolder)" />
+		<Copy SourceFiles="$(SolutionDir)/.assets/icon.png" DestinationFolder="$(PkgFolder)" />
+		<Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(PkgFolder)" />
+		<Copy SourceFiles="$(SolutionDir)/CHANGELOG.md" DestinationFolder="$(PkgFolder)" />
+		<Copy SourceFiles="$(SolutionDir)/manifest.json" DestinationFolder="$(PkgFolder)" />
 		<Exec Command="powershell -NoProfile -Command &quot;Compress-Archive -Path '$(PkgFolder)*' -DestinationPath '$(ZipFile)' -Force&quot;" />
 	</Target>
 	<ItemGroup>
