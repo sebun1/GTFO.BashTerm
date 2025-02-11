@@ -4,7 +4,7 @@ stages:
 variables:
   DOTNET_VERSION: "6.0"
   BUILD_OUTPUT: "$CI_PROJECT_DIR/build"
-  PUBLISH_OUTPUT: "$CI_PROJECT_DIR/pkg"
+  PACKAGE_OUTPUT: "$CI_PROJECT_DIR/BashTerm/pkg"
   SOLUTION_NAME: "BashTerm"
   GTFO_DEP_URL: "https://s3.jector.io/assets/GTFO/GTFOBepInDep.zip"
   GTFO_DEP_DIR: "$CI_PROJECT_DIR/GTFOBepInDep"
@@ -30,8 +30,8 @@ build:
     - dotnet restore
     - echo "Building project..."
     - dotnet build --configuration Release --output $BUILD_OUTPUT
-    - pwd
-    - tree -L 4 .
+    - cd $PACKAGE_OUTPUT
+    - zip -r $CI_PROJECT_DIR/BashTerm.zip ./*
   artifacts:
     paths:
       - BashTerm.zip
