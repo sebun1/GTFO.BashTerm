@@ -1,7 +1,5 @@
 stages:
-  - prepare
   - build
-  - package
 
 variables:
   DOTNET_VERSION: "6.0"
@@ -16,28 +14,18 @@ before_script:
   - export DOTNET_ROOT=$(dirname $(which dotnet))
   - dotnet --version
 
-prepare:
-  stage: prepare
-  tags:
-    - dotnet
-  image: mcr.microsoft.com/dotnet/sdk:6.0
-  before_script:
-    - apt-get update && apt-get install -y unzip
-  script:
-    - echo "Downloading GTFO dependencies..."
-    - wget -O GTFOBepInDep.zip "$GTFO_DEP_URL"
-    - unzip -o GTFOBepInDep.zip -d "$CI_PROJECT_DIR"
-    - ls -R "$GTFO_DEP_DIR"
-  artifacts:
-    paths:
-      - GTFOBepInDep/
-
 build:
   stage: build
   tags:
     - dotnet
   image: mcr.microsoft.com/dotnet/sdk:6.0
+  before_script:
+    - apt-get update && apt-get install -y zip unzip
   script:
+    - echo "Downloading GTFO dependencies..."
+    - wget -O GTFOBepInDep.zip "$GTFO_DEP_URL"
+    - unzip -o GTFOBepInDep.zip -d "$CI_PROJECT_DIR"
+    - ls -R "$GTFO_DEP_DIR"
     - echo "Restoring .NET dependencies..."
     - dotnet restore
     - echo "Building project..."
