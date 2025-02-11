@@ -31,7 +31,7 @@ build:
     - echo "Building project..."
     - dotnet build --configuration Release --output $BUILD_OUTPUT
     - cd $PACKAGE_OUTPUT
-    - zip -r $CI_PROJECT_DIR/BashTerm.zip ./*
+    - zip -j $CI_PROJECT_DIR/BashTerm.zip ./*
   artifacts:
     paths:
       - BashTerm.zip
