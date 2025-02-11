@@ -1,19 +1,17 @@
-<div align="center">
-<img src="https://git.takina.io/gtfo/BashTerm/-/raw/main/.assets/icon.png?ref_type=heads" width="200" alt="BashTerm Icon">
+<div align="center"><img src="https://git.takina.io/gtfo/BashTerm/-/raw/main/.assets/icon.png?ref_type=heads" width="200" alt="BashTerm Icon"></div>
 
-<h1>BashTerm</h1>
+<h1 align="center">BashTerm</h1>
 
-<p>An Improved GTFO Terminal</p>
+<p align="center">An Improved GTFO Terminal</p>
 
-<p><a href="https://git.takina.io/gtfo/BashTerm">GitLab (Source)</a> | <a href="https://github.com/sebun1/GTFO.BashTerm">GitHub (Mirror, Public Issues)</a> | <a href="https://thunderstore.io/c/gtfo/p/food/BashTerm/">Thunderstore (Release)</a></p>
+<p align="center"><a href="https://git.takina.io/gtfo/BashTerm">GitLab (Source)</a> | <a href="https://github.com/sebun1/GTFO.BashTerm">GitHub (Mirror, Public Issues)</a> | <a href="https://thunderstore.io/c/gtfo/p/food/BashTerm/">Thunderstore (Release)</a></p>
 
-<p><i>e.g. Type </i><code>P AMMO 69</code> <i>instead of </i><code>PING AMMOPACK_69</code></p>
+<p align="center"><i>e.g. Type </i><code>P AMMO 69</code> <i>instead of </i><code>PING AMMOPACK_69</code></p>
 
 ---
 
-<h3>Issues / Suggestions</h3>
-<p><b>Please</b> open issues (for suggestions, bugs, etc.) <b>on the <a href="https://github.com/sebun1/GTFO.BashTerm">GitHub repo</a></b> as the GitLab repository is not open for public contributions, thank you!!</p>
-</div>
+<h3 align="center">Issues / Suggestions</h3>
+<p align="center"><b>Please</b> open issues (for suggestions, bugs, etc.) <b>on the <a href="https://github.com/sebun1/GTFO.BashTerm">GitHub repo</a></b> as the GitLab repository is not open for public contributions, thank you!!</p>
 
 # Table of Contents
 
