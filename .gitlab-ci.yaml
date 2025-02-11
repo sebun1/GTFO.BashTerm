@@ -1,0 +1,37 @@
+stages:
+    - build
+
+variables:
+    DOTNET_VERSION: "6.0"
+    BUILD_OUTPUT: "$CI_PROJECT_DIR/build"
+    PACKAGE_OUTPUT: "$CI_PROJECT_DIR/BashTerm/pkg"
+    SOLUTION_NAME: "BashTerm"
+    GTFO_DEP_URL: "https://s3.jector.io/assets/GTFO/GTFOBepInDep.zip"
+    GTFO_DEP_DIR: "$CI_PROJECT_DIR/GTFOBepInDep"
+
+before_script:
+    - echo "Using .NET version $DOTNET_VERSION"
+    - export DOTNET_ROOT=$(dirname $(which dotnet))
+    - dotnet --version
+
+build:
+    stage: build
+    tags:
+        - dotnet
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    before_script:
+        - apt-get update && apt-get install -y tree zip unzip
+    script:
+        - echo "Downloading GTFO dependencies..."
+        - wget -O GTFOBepInDep.zip "$GTFO_DEP_URL"
+        - unzip -o GTFOBepInDep.zip -d "$CI_PROJECT_DIR"
+        - ls -R "$GTFO_DEP_DIR"
+        - echo "Restoring .NET dependencies..."
+        - dotnet restore
+        - echo "Building project..."
+        - dotnet build --configuration Release --output $BUILD_OUTPUT
+        - cd $PACKAGE_OUTPUT
+        - zip -r $CI_PROJECT_DIR/BashTerm.zip ./*
+    artifacts:
+        paths:
+            - BashTerm.zip
