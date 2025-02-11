@@ -30,8 +30,10 @@ build:
     - dotnet restore
     - echo "Building project..."
     - dotnet build --configuration Release --output $BUILD_OUTPUT
-    - cd $PACKAGE_OUTPUT
-    - zip -j $CI_PROJECT_DIR/BashTerm.zip ./*
+    - tree .
+    - cd $PACKAGE_OUTPUT 
+    - tree .
+    - zip -r $CI_PROJECT_DIR/BashTerm.zip ./*
   artifacts:
     paths:
       - BashTerm.zip
