@@ -40,7 +40,7 @@ build:
   script:
     - echo "Moving GTFOBepInDep"
     - pwd
-    - mv GTFOBepInDep ./BashTerm/BashTerm/
+    - mv GTFOBepInDep ./BashTerm/BashTerm/GTFOBepInDep
     - apt-get update && apt-get install -y tree
     - tree -L 4 .
     - echo "Restoring .NET dependencies..."
