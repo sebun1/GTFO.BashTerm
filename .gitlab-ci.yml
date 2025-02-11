@@ -38,9 +38,10 @@ build:
     - dotnet
   image: mcr.microsoft.com/dotnet/sdk:6.0
   script:
+    - ls GTFOBepInDep/
     - echo "Restoring .NET dependencies..."
     - dotnet restore
-    - dotnet msbuild /t:ResolveAssemblyReferences /v:diag
+#     - dotnet msbuild /t:ResolveAssemblyReferences /v:diag
     - echo "Building project..."
     - dotnet build --configuration Release --output $BUILD_OUTPUT
   artifacts:
