@@ -1,12 +1,10 @@
 stages:
-  - prepare
   - build
-  - package
 
 variables:
   DOTNET_VERSION: "6.0"
   BUILD_OUTPUT: "$CI_PROJECT_DIR/build"
-  PUBLISH_OUTPUT: "$CI_PROJECT_DIR/pkg"
+  PACKAGE_OUTPUT: "$CI_PROJECT_DIR/BashTerm/pkg"
   SOLUTION_NAME: "BashTerm"
   GTFO_DEP_URL: "https://s3.jector.io/assets/GTFO/GTFOBepInDep.zip"
   GTFO_DEP_DIR: "$CI_PROJECT_DIR/GTFOBepInDep"
@@ -16,50 +14,26 @@ before_script:
   - export DOTNET_ROOT=$(dirname $(which dotnet))
   - dotnet --version
 
-prepare:
-  stage: prepare
-  tags:
-    - dotnet
-  image: mcr.microsoft.com/dotnet/sdk:6.0
-  before_script:
-    - apt-get update && apt-get install -y unzip
-  script:
-    - echo "Downloading GTFO dependencies..."
-    - wget -O GTFOBepInDep.zip "$GTFO_DEP_URL"
-    - unzip -o GTFOBepInDep.zip -d "$CI_PROJECT_DIR"
-    - ls -R "$GTFO_DEP_DIR"
-  artifacts:
-    paths:
-      - GTFOBepInDep/
-
 build:
   stage: build
   tags:
     - dotnet
   image: mcr.microsoft.com/dotnet/sdk:6.0
+  before_script:
+    - apt-get update && apt-get install -y tree zip unzip
   script:
+    - echo "Downloading GTFO dependencies..."
+    - wget -O GTFOBepInDep.zip "$GTFO_DEP_URL"
+    - unzip -o GTFOBepInDep.zip -d "$CI_PROJECT_DIR"
+    - ls -R "$GTFO_DEP_DIR"
     - echo "Restoring .NET dependencies..."
     - dotnet restore
     - echo "Building project..."
     - dotnet build --configuration Release --output $BUILD_OUTPUT
-  artifacts:
-    paths:
-      - $BUILD_OUTPUT/
-
-package:
-  stage: package
-  tags:
-    - dotnet
-  image: mcr.microsoft.com/dotnet/sdk:6.0
-  script:
-    - echo "Packaging..."
-    - mkdir -p $PUBLISH_OUTPUT
-    - cp $BUILD_OUTPUT/$SOLUTION_NAME.dll $PUBLISH_OUTPUT/
-    - cp .assets/icon.png $PUBLISH_OUTPUT/
-    - cp README.md $PUBLISH_OUTPUT/
-    - cp CHANGELOG.md $PUBLISH_OUTPUT/
-    - cp manifest.json $PUBLISH_OUTPUT/
-    - zip -r $CI_PROJECT_DIR/BashTerm.zip $PUBLISH_OUTPUT/
+    - tree .
+    - cd $PACKAGE_OUTPUT 
+    - tree .
+    - zip -r $CI_PROJECT_DIR/BashTerm.zip ./*
   artifacts:
     paths:
       - BashTerm.zip
