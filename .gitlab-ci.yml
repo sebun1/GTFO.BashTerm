@@ -39,7 +39,10 @@ build:
   image: mcr.microsoft.com/dotnet/sdk:6.0
   script:
     - echo "Moving GTFOBepInDep"
-    - mv GTFOBepInDep ./BashTerm/BashTerm/GTFOBepInDep
+    - pwd
+    - mv GTFOBepInDep ./BashTerm/BashTerm/
+    - apt-get install -y tree
+    - tree -L 4 .
     - echo "Restoring .NET dependencies..."
     - dotnet restore
 #     - dotnet msbuild /t:ResolveAssemblyReferences /v:diag
