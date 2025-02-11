@@ -32,11 +32,9 @@
 		<Copy SourceFiles="$(SolutionDir)/CHANGELOG.md" DestinationFolder="$(PkgFolder)" />
 		<Copy SourceFiles="$(SolutionDir)/manifest.json" DestinationFolder="$(PkgFolder)" />
 		<!-- Windows (local build) -->
+		<Exec Command="echo CI is: $(CI), OS is: $(OS)" />
 		<Exec Condition="'$(OS)' == 'Windows_NT' AND '$(CI)' != 'true'" 
 			Command="powershell -NoProfile -Command &quot;Compress-Archive -Path '$(PkgFolder)*' -DestinationPath '$(ZipFile)' -Force&quot;" />
-		<!-- Linux (CI/CD) -->
-		<Exec Condition="'$(OS)' != 'Windows_NT' OR '$(CI)' == 'true'" 
-			Command="zip -r $(ZipFile) $(PkgFolder)" />
 	</Target>
 	<ItemGroup>
 		<Reference Include="$(BepInEx)\core\0Harmony.dll" Private="false" />
