@@ -1,4 +1,5 @@
 stages:
+  - prepare
   - build
   - package
 
@@ -7,11 +8,29 @@ variables:
   BUILD_OUTPUT: "$CI_PROJECT_DIR/build"
   PUBLISH_OUTPUT: "$CI_PROJECT_DIR/pkg"
   SOLUTION_NAME: "BashTerm"
+  GTFO_DEP_URL: "https://s3.jector.io/assets/GTFO/GTFOBepInDep.zip"
+  GTFO_DEP_DIR: "$CI_PROJECT_DIR/GTFOBepInDep"
 
 before_script:
   - echo "Using .NET version $DOTNET_VERSION"
   - export DOTNET_ROOT=$(dirname $(which dotnet))
   - dotnet --version
+
+prepare:
+  stage: prepare
+  tags:
+    - dotnet
+  image: mcr.microsoft.com/dotnet/sdk:6.0
+  before_script:
+    - apt-get update && apt-get install -y unzip
+  script:
+    - echo "Downloading GTFO dependencies..."
+    - wget -O GTFOBepInDep.zip "$GTFO_DEP_URL"
+    - unzip -o GTFOBepInDep.zip -d "$CI_PROJECT_DIR"
+    - ls -R "$GTFO_DEP_DIR"
+  artifacts:
+    paths:
+      - GTFOBepInDep/
 
 build:
   stage: build
@@ -19,7 +38,16 @@ build:
     - dotnet
   image: mcr.microsoft.com/dotnet/sdk:6.0
   script:
+    - apt-get update && apt-get install -y tree
+    - tree -L 4 .
+    - pwd
+    - echo "Moving GTFOBepInDep"
+    - mv GTFOBepInDep ./BashTerm/BashTerm/GTFOBepInDep
+
+    - echo "Restoring .NET dependencies..."
     - dotnet restore
+#     - dotnet msbuild /t:ResolveAssemblyReferences /v:diag
+    - echo "Building project..."
     - dotnet build --configuration Release --output $BUILD_OUTPUT
   artifacts:
     paths:
