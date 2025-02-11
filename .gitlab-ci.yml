@@ -20,7 +20,7 @@ build:
     - dotnet
   image: mcr.microsoft.com/dotnet/sdk:6.0
   before_script:
-    - apt-get update && apt-get install -y zip unzip
+    - apt-get update && apt-get install -y tree zip unzip
   script:
     - echo "Downloading GTFO dependencies..."
     - wget -O GTFOBepInDep.zip "$GTFO_DEP_URL"
@@ -30,7 +30,8 @@ build:
     - dotnet restore
     - echo "Building project..."
     - dotnet build --configuration Release --output $BUILD_OUTPUT
+    - pwd
+    - tree -L 4 .
   artifacts:
     paths:
-      - $BUILD_OUTPUT/
       - BashTerm.zip
