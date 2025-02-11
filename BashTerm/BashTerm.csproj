@@ -31,8 +31,7 @@
 		<Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(PkgFolder)" />
 		<Copy SourceFiles="$(SolutionDir)/CHANGELOG.md" DestinationFolder="$(PkgFolder)" />
 		<Copy SourceFiles="$(SolutionDir)/manifest.json" DestinationFolder="$(PkgFolder)" />
-		<!-- Windows (local build) -->
-		<Exec Command="echo CI is: $(CI), OS is: $(OS)" />
+		<!-- Windows (local packaging) -->
 		<Exec Condition="'$(OS)' == 'Windows_NT' AND '$(CI)' != 'true'" 
 			Command="powershell -NoProfile -Command &quot;Compress-Archive -Path '$(PkgFolder)*' -DestinationPath '$(ZipFile)' -Force&quot;" />
 	</Target>
