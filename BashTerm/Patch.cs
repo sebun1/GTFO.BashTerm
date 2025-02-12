@@ -1,3 +1,4 @@
+using BashTerm.Parsers;
 using Dissonance;
 using HarmonyLib;
 using LevelGeneration;
@@ -5,108 +6,35 @@ using LevelGeneration;
 namespace BashTerm;
 
 [HarmonyPatch]
-internal class Patch {
+internal class Patch
+{
 	[HarmonyPatch(
-		typeof(LG_ComputerTerminalCommandInterpreter),
-		nameof(LG_ComputerTerminalCommandInterpreter.EvaluateInput)
+		typeof(LG_TERM_PlayerInteracting),
+		nameof(LG_TERM_PlayerInteracting.OnReturn)
 	)]
 	[HarmonyPrefix]
-	public static void PreEvaluateCmd(ref string inputString) {
-		string[] args = ParseUtil.CleanSplit(inputString.ToLower());
-		string cmd;
-		string param1 = "";
-		string param2 = "";
+	public static bool ProcessCommand (ref LG_TERM_PlayerInteracting __instance)
+	{
+		var input = __instance.m_terminal.m_currentLine.ToLower();
+		var result = MainParser.Parse(input);
 
-		Logger.Debug("Pre-Evaluate Command Received = \"" + inputString + "\"");
-
-		if (args.Length == 0)
-			return;
-		cmd = args[0];
-		if (args.Length > 1)
-			param1 = args[1];
-		if (args.Length > 2)
-			param2 = args[2];
-
-		string cmdExpansion = ParseUtil.GetCmdExpansion(cmd);
-		TermCmd cmdType = ParseUtil.GetCmdType(cmdExpansion);
-
-		Logger.Debug("PreEval: cmdExpression = " + cmdExpansion);
-		Logger.Debug("PreEval: cmdType = " + cmdType.ToString("G"));
-
-		bool doExpansion = true;
-
-		switch (cmdType) {
-			case TermCmd.ShowList:
-				if (ParseUtil.GetCmdExpansion("lsu") == cmdExpansion) {
-					if (Util.IsInt(param1)) param1 = "e_" + param1;
-					break;
-				}
-
-				bool firstIsInt = Util.IsInt(param1);
-				bool secondIsInt = Util.IsInt(param2);
-
-				if (ConfigMaster.LsConvertsNum2ZoneId) {
-					if (firstIsInt) {
-						param1 = "e_" + param1;
-					} else if (secondIsInt) {
-						param2 = "e_" + param2;
-					}
-				}
-
-				if (ConfigMaster.LsObjExpansions) {
-					if (!string.IsNullOrWhiteSpace(param1) && !firstIsInt) {
-						param1 = ParseUtil.GetObjExpansion(param1);
-					} else if (!string.IsNullOrWhiteSpace(param2) && !secondIsInt) {
-						param2 = ParseUtil.GetObjExpansion(param2);
-					}
-				}
+		switch (result) {
+			case ParsedCommand(Command cmd):
+				__instance.m_terminal.AddLine($"{cmd}");
+				__instance.m_terminal.m_command.EvaluateInput(commandString(cmd));
 				break;
-			case TermCmd.TerminalUplinkVerify:
-				doExpansion = ConfigMaster.EnableUVAlias;
+			case ParseError(string cause):
+				__instance.m_terminal.AddLine($"parse error: {cause}");
 				break;
-			case TermCmd.ReactorVerify:
-				doExpansion = ConfigMaster.EnableRVAlias;
-				break;
-			case TermCmd.Ping:
-				if (
-					args.Length > 3
-					|| (args.Length == 3 && !Util.ContainsFlag(args))
-				) {
-					param1 =
-						ParseUtil.GetObjExpansion(args[1])
-						+ "_"
-						+ Util.Concat('_', args, 2, args.Length);
-					param2 = "";
-				}
-				break;
-			case TermCmd.Query:
-				if (args.Length > 2) {
-					param1 =
-						ParseUtil.GetObjExpansion(args[1])
-						+ "_"
-						+ Util.Concat('_', args, 2, args.Length);
-					param2 = "";
-				}
-				break;
-			case TermCmd.Raw:
-				inputString = Util.Concat(args, 1, args.Length);
-				inputString = inputString.ToUpper().Trim(); // Always uppercase and trim before releasing
-				return;
 		}
 
-		if (doExpansion) {
-			Logger.Debug("Doing Expansion");
-			cmd = cmdExpansion;
-		}
-
-		Logger.Debug("cmd = " + cmd);
-		Logger.Debug("param1 = " + param1);
-		Logger.Debug("param2 = " + param2);
-
-		inputString = Util.Concat(cmd, param1, param2);
-
-		inputString = inputString.ToUpper().Trim(); // Always uppercase and trim before releasing
-
-		Logger.Debug("Command Evaluated as \"" + inputString + "\"");
+		return false;
 	}
+
+	private static string commandString (Command cmd) =>
+		cmd switch {
+			ListCommand(List<string> args) => $"list {String.Join(' ', args)}",
+			QueryCommand(string arg) => $"query {arg}",
+			PingCommand(string arg) => $"ping {arg}"
+		};
 }
