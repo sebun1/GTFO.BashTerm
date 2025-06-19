@@ -154,7 +154,7 @@ internal static class ConfigMaster {
 	}
 
 	public static int LoadExpansionPairs(string source, ref Dictionary<string, string> targetExact, ref List<(string Prefix, string Expansion)> targetPrefix) {
-		var groups = ParseUtil.FromUserDefGroups(source);
+		var groups = ParseUtil.GetAliasGroups(source);
 		int replaced = 0;
 
 		foreach (List<string> group in groups) {

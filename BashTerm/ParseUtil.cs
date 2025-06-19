@@ -42,25 +42,29 @@ internal static class ParseUtil {
 		return _Txt2Cmd.TryGetValue(input, out TermCmd cmd) ? cmd : TermCmd.None;
 	}
 
-	public static string GetCmdExpansion(string input) {
+	public static string ExpandCmd(string input) {
+		Logger.Debug($"ExpandCmd: Got {input}");
 		if (string.IsNullOrWhiteSpace(input)) {
 			return "";
 		}
 
 		if (ConfigMaster.CmdExpExact.TryGetValue(input, out string? expansion)) {
+			Logger.Debug($"ExpandCmd: Returning (Alias) {expansion}");
 			return expansion;
 		}
 
 		foreach (var tup in ConfigMaster.CmdExpPrefix) {
 			if (input.StartsWith(tup.Prefix)) {
+				Logger.Debug($"ExpandCmd: Returning (Alias) {tup.Expansion}");
 				return tup.Expansion;
 			}
 		}
 
+		Logger.Debug($"ExpandCmd: No change");
 		return input;
 	}
 
-	public static string GetObjExpansion(string input) {
+	public static string ExpandObj(string input) {
 		if (string.IsNullOrWhiteSpace(input)) {
 			return "";
 		}
@@ -84,7 +88,7 @@ internal static class ParseUtil {
 	/// </summary>
 	/// <param name="input">Input to be parsed</param>
 	/// <returns>Parsed groups</returns>
-	public static List<List<string>> FromUserDefGroups(string input) {
+	public static List<List<string>> GetAliasGroups(string input) {
 		input = input.ToLower();
 
 		StringBuilder sb = new StringBuilder();

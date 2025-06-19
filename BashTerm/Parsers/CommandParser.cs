@@ -3,103 +3,173 @@ using System.Diagnostics;
 
 namespace BashTerm.Parsers;
 
-internal class MainParser
-{
-    // Main entry point of the command parser.
+internal class MainParser {
+	// Main entry point of the command parser.
 
-    public static ParseResult Parse (string input)
-    {
-        var parser = new Parser(input);
-        
-        try {
-            var command = parser.ParseCommands();
-            return new ParsedCommand(command);
-        }
+	public static ParseResult Parse(string input) {
+		var parser = new Parser(input);
 
-        catch (Exception e) {
-            return new ParseError(e.ToString());
-        }
-    }
+		if (parser.PeekToken() is TokenEof)
+			return new ParsedCommand(new EmptyCommand());
+
+		try {
+			var command = parser.ParseCommands();
+			return new ParsedCommand(command);
+		} catch () {
+		} catch (Exception e) {
+			return new ParseError(e.ToString());
+		}
+	}
 }
 
 abstract record ParseResult;
 
-record ParsedCommand (Command cmd) : ParseResult;
+record ParsedCommand(Command cmd) : ParseResult;
 
-record ParseError (string cause) : ParseResult;
+record ParseError(string cause) : ParseResult;
 
-abstract record Command;
+internal class ParseException : Exception {
+	public int Position { get; }
 
-record Execve (string name, List<string> args) : Command;
+	public ParseException(string cause, int position) : base(cause) {
+		this.Position = position;
+	}
 
-record ListCommand (List<string> args) : Command;
+	public override string ToString() => $"[ParseError] {Message}";
+}
 
-record QueryCommand (string item) : Command;
+internal class TooManyArgumentsException : ParseException {
+	public string CommandName { get; }
 
-record PingCommand (string item) : Command;
+	public TooManyArgumentsException(string commandName, int position, int got, int expected)
+		: base($"Command '{commandName}' received too many arguments, want {expected}, got {got} [col {position}]", position) {
+		CommandName = commandName;
+	}
+}
 
-record Pipe (Command pre, Command post) : Command;
+internal class MissingArgumentException : ParseException {
+	public string CommandName { get; }
 
-internal class Parser
-{
-    private Lexer lexer;
+	public MissingArgumentException(string commandName, int position, int got, int expected)
+		: base($"Command '{commandName}' is missing arguments, want {expected}, got {got} [col {position}]", position) {
+		CommandName = commandName;
+	}
+}
 
-    public Parser (string input)
-    {
-        this.lexer = new Lexer(input);
-    }
+internal class Parser {
+	private Lexer lexer;
+	private Queue<Token> tokens;
 
-    public Command ParseCommands ()
-    {
-        var cmd = ParseOneCommand();
+	public Parser(string input) {
+		this.lexer = new Lexer(input);
+		this.tokens = new Queue<Token>();
+		tokenizeInput();
+	}
 
-        if (lexer.Peek() is TokenPipe) {
-            lexer.Consume();
-            return new Pipe(cmd, ParseCommands());
-        }
-        else {
-            return cmd;
-        }
-    }
+	private void tokenizeInput() {
+		bool isFirstWord = true;
+		while (true) {
+			Token tok = lexer.Peek();
+			switch (tok) {
+				case TokenEof:
+					return;
 
-    public Command ParseOneCommand ()
-    {
-        Token tok = lexer.Peek();
+				case TokenWord(string word):
+					if (isFirstWord) {
+						string expanded = ParseUtil.ExpandCmd(word);
+						Lexer expLexer = new Lexer(expanded);
+						while (expLexer.Peek() is not TokenEof) {
+							tokens.Enqueue(expLexer.Peek());
+							expLexer.Consume();
+						}
+						isFirstWord = false;
+					} else {
+						tokens.Enqueue(new TokenWord(word));
+					}
+					lexer.Consume();
+					break;
 
-        if (tok is TokenWord(string word)) {
-            lexer.Consume();
+				case TokenPipe:
+					tokens.Enqueue(new TokenPipe());
+					lexer.Consume();
+					isFirstWord = true;
+					break;
 
-            return word switch {
-                "list"   => new ListCommand(ParseArgs()),
-                "query"  => new QueryCommand(ParseArg()),
-                "ping"   => new PingCommand(ParseArg()),
-                _        => throw new Exception($"unrecognized command: {word}")
-            };
-        }
+				default:
+					throw new Exception("impossible");
+			}
+		}
+	}
 
-        throw new Exception($"command must start with a word, got: {tok}");
-    }
+	public Token PeekToken() {
+		return tokens.Count > 0 ? tokens.Peek() : new TokenEof();
+	}
 
-    public string ParseArg ()
-    {
-        Token tok = lexer.Peek();
+	public Token NextToken() {
+		return tokens.Count > 0 ? tokens.Dequeue() : new TokenEof();
+	}
 
-        if (tok is TokenWord(string arg)) {
-            lexer.Consume();
-            return arg;
-        }
-        else {
-            throw new Exception($"expected argument, got {tok}");
-        }
-    }
+	public Command ParseCommands() {
+		var cmd = ParseOneCommand();
 
-    public List<string> ParseArgs ()
-    {
-        List<string> args = new List<string>();
-        while (lexer.Peek() is TokenWord(string arg)) {
-            lexer.Consume();
-            args.Add(arg);
-        }
-        return args;
-    }
+		if (PeekToken() is TokenPipe) {
+			NextToken();
+			return new Pipe(cmd, ParseCommands());
+		} else {
+			return cmd;
+		}
+	}
+
+	public Command ParseOneCommand() {
+		Token tok = PeekToken();
+
+		if (tok is TokenWord(string word)) {
+			NextToken();
+
+			return word switch {
+				"list" => new ListCommand(ParseArgs()),
+				"query" => new QueryCommand(ParseArgs()),
+				"ping" => new PingCommand(ParseArgs()),
+				"reactor_startup" => new ReactorStartCommand(),
+				"reactor_shutdown" => new ReactorStopCommand(),
+				"reactor_verify" => new ReactorVerifyCommand(ParseArg()),
+				"uplink_connect" => new UplinkStartCommand(ParseArg()),
+				"uplink_verify" => new UplinkVerifyCommand(ParseArg()),
+				"uplink_confirm" => new UplinkConfirmCommand(),
+				"logs" => new LogsCommand(),
+				"read" => new ReadCommand(ParseArg()),
+				"start" => new StartCommand(ParseArg()),
+				"info" => new InfoCommand(),
+				"help" => new HelpCommand(),
+				"exit" => new ExitCommand(),
+				"cls" => new ClearCommand(),
+				"raw" => new RawCommand(),
+				_ => new SpecialCommand(string.Join(" ", new List<string>{word}.Concat(ParseArgs())))
+				//_ => throw new Exception($"unrecognized command: {word}")
+			};
+		}
+
+		throw new Exception($"command must start with a word, got: {tok}");
+	}
+
+	public string ParseArg() {
+		Token tok = PeekToken();
+
+		if (tok is TokenWord(string arg)) {
+			NextToken();
+			return arg;
+		} else {
+			throw new Exception($"expected argument, got {tok}");
+		}
+	}
+
+	public List<string> ParseArgs(int expected = 0) {
+		List<string> args = new List<string>();
+		while (PeekToken() is TokenWord(string arg)) {
+			NextToken();
+			args.Add(arg);
+		}
+
+		return args;
+	}
 }

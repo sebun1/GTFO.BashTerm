@@ -9,6 +9,7 @@ public class Plugin : BasePlugin {
 	public const string NAME = "BashTerm";
 	public const string GUID = "io.takina.gtfo." + NAME;
 	public const string VERSION = "0.2.1";
+	public const string BSH_VERSION = "2.1a";
 
 	public override void Load() {
 		Logger.SetupFromInit(Log);
