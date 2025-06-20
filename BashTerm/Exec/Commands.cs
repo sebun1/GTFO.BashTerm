@@ -4,15 +4,12 @@ public abstract record Command;
 
 public record Execve(string name, List<string> args) : Command;
 
-public record RawCommand() : Command;
-
-public record EmptyCommand() : Command;
-
 public record Pipe(Command first, Command post) : Command;
 
 public record Sequence(Command first, Command second) : Command;
 
 /*
+
 public record ListCommand(List<string> args) : Command;
 
 public record QueryCommand(List<string> items) : Command;
@@ -42,6 +39,10 @@ public record InfoCommand() : Command;
 public record HelpCommand() : Command;
 
 public record ExitCommand() : Command;
+
+public record RawCommand() : Command;
+
+public record EmptyCommand() : Command;
 
 public record ClearCommand() : Command;
 

@@ -1,11 +1,12 @@
 ﻿namespace BashTerm;
 
-public static class Styling {
+public static class Clr {
 	public static string Bashterm = "<#FF77A9>";     // Cute pink
 	public static string Accent = "<#FFB347>";       // Warm orange accent
 	public static string Error = "<#D11>";           // Red
 	public static string Warning = "<#B11>";         // Orange-ish red
-	public static string Playful = "<#C084FC>";      // Playful purple (soft lavender/violet)
+	public static string Info = "<#1A1>";			 // Kinda Green
+	public static string Purple = "<#581080>";      // Purple
 	public static string End = "</color>";
 }
 

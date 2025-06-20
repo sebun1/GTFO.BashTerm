@@ -6,10 +6,10 @@ namespace BashTerm.Exec;
 
 public interface IRunnable {
 	string CommandName { get; }
-	string Description { get; }
-	string Help { get; }
+	string Desc { get; }
+	string Man { get; }
 
-	PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal? term);
+	PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal term);
 }
 
 public static class Dispatch {
@@ -58,7 +58,7 @@ public static class Dispatch {
 
 	public static PipedPayload Exec(Command cmd, PipedPayload payload, LG_ComputerTerminal? term = null) {
 		if (!_isInitialized) {
-			throw new Exception("[Exec] Executing commands before initialization");
+			throw new ExecException("Executing commands before initialization");
 		}
 
 		switch(cmd)

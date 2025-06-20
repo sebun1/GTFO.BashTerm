@@ -18,68 +18,39 @@ internal class Patch
 	public static bool ProcessCommand (ref LG_TERM_PlayerInteracting __instance)
 	{
 		var input = __instance.m_terminal.m_currentLine.ToLower();
-		var result = MainParser.Parse(input);
 
-		switch (result) {
-			case ParsedCommand(Command cmd):
-				if (TerminalContext.rawMode) {
-					__instance.m_terminal.m_command.EvaluateInput(input.ToUpper());
+		try {
+			ParsedCommand res = MainParser.Parse(input);
+
+			Command cmd;
+
+			if (res is ParsedCommand(Command c)) {
+				cmd = c;
+			} else {
+				throw new ParserException($"impossible, ParsedCommand is somehow not a ParsedCommand?");
+			}
+
+			if (TerminalChan.RawMode) {
+				if (cmd is Execve(string name, List<string> _) && name == "raw") {
+					TerminalChan.ToggleRawMode();
 				} else {
-					if(ConfigMaster.DEBUG) __instance.m_terminal.AddLine($"{cmd}");
-					try {
-						Dispatch.Exec(cmd, __instance.m_terminal);
-					} catch (Exception e) {
-						__instance.m_terminal.m_command.AddOutput(e.Message);
-						Logger.Error(e);
-					}
-					//__instance.m_terminal.m_command.EvaluateInput(commandString(cmd).ToUpper());
+					__instance.m_terminal.m_command.EvaluateInput(input.ToUpper());
 				}
-				/*
-				else if (cmd is LogsCommand) {
-					__instance.m_terminal.m_command.EvaluateInput("LOGS");
-					__instance.m_terminal.m_command.EvaluateInput("ADMIN_TEMP_OVERRIDE");
-					__instance.m_terminal.m_command.EvaluateInput("CLS");
-					break;
-				} else if (cmd is ListCommand(List<string> args)) {
-					LG_ComputerTerminalManager.WantToSendTerminalCommand(__instance.m_terminal.SyncID, TERM_Command.ShowList, "YOU SUCK", "U", "E_494");
-					LG_ComputerTerminalManager.WantToSendTerminalCommand(__instance.m_terminal.SyncID, TERM_Command.ShowList, "HAHAHAHA", "U", "E_495");
-					break;
-				}
-				*/
-				break;
-
-			case ParseError(string cause):
-				__instance.m_terminal.AddLine($"[Parser] error: {cause}");
-				break;
+			} else {
+				if (ConfigMaster.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Clr.Info}{cmd}{Clr.End}");
+				Dispatch.Exec(cmd, __instance.m_terminal);
+			}
+		} catch (BSHException e) {
+			__instance.m_terminal.m_command.AddOutput($"{Clr.Error}{e}{Clr.End}");
+			Logger.Error(e);
+		} catch (Exception e) {
+			__instance.m_terminal.m_command.AddOutput($"{Clr.Error}{e}{Clr.End}");
+			Logger.Error(e);
 		}
 
-		__instance.m_terminal.m_currentLine = ""; // Clear input line
+		__instance.m_terminal.m_currentLine = "";
 		return false;
 	}
-
-	/*
-	private static string commandString (Command cmd) =>
-		cmd switch {
-			ListCommand(List<string> args) => $"list {String.Join(' ', args)}",
-			QueryCommand(List<string> args) => $"query {String.Join(' ', args)}",
-			PingCommand(List<string> args) => $"ping {String.Join(' ', args)}",
-			ReactorStartCommand => "reactor_startup",
-			ReactorStopCommand => "reactor_shutdown",
-			ReactorVerifyCommand(string code) => $"reactor_verify {code}",
-			UplinkStartCommand(string address) => $"uplink_connect {address}",
-			UplinkVerifyCommand(string code) => $"uplink_verify {code}",
-			UplinkConfirmCommand => "uplink_confirm",
-			LogsCommand => "logs",
-			ReadCommand(string file) => $"read {file}",
-			StartCommand(string protocol) => $"start {protocol}",
-			InfoCommand => "info",
-			HelpCommand => "help",
-			ExitCommand => "exit",
-			ClearCommand => "cls",
-			SpecialCommand(string raw) => raw,
-			_ => ""
-		};
-	*/
 
 	[HarmonyPatch(
 		typeof(LG_ComputerTerminalCommandInterpreter),
@@ -87,13 +58,11 @@ internal class Patch
 	)]
 	[HarmonyPostfix]
 	public static void NewLineStart(ref LG_ComputerTerminalCommandInterpreter __instance, ref string __result) {
-		string res = Styling.Bashterm;
+		string res = Clr.Bashterm;
 
-		string termMode = TerminalContext.rawMode ? "RAW" : "BSH " + Plugin.BSH_VERSION;
+		string termMode = TerminalChan.RawMode ? "RAW" : "BSH " + Plugin.BSH_VERSION;
 		LG_NavInfo zoneNavInfo = __instance.m_terminal.SpawnNode.m_zone.m_navInfo;
 		LG_NavInfo areaNavInfo = __instance.m_terminal.SpawnNode.m_area.m_navInfo;
-		// __instance.m_terminal.AddLine($"[zoneNavInfo] PrefixLong = {zoneNavInfo.PrefixLong}, PrefixShort = {zoneNavInfo.PrefixShort}, Number = {zoneNavInfo.Number}, UseNumber = {zoneNavInfo.UseNumber}, Suffix = {zoneNavInfo.Suffix}");
-		// __instance.m_terminal.AddLine($"[areaNavInfo] PrefixLong = {areaNavInfo.PrefixLong}, PrefixShort = {areaNavInfo.PrefixShort}, Number = {areaNavInfo.Number}, UseNumber = {areaNavInfo.UseNumber}, Suffix = {areaNavInfo.Suffix}");
 
 		res += $"{termMode} ";
 
@@ -104,7 +73,7 @@ internal class Patch
 		}
 
 		res += " >> ";
-		res += Styling.End;
+		res += Clr.End;
 		__result = res;
 	}
 
@@ -121,11 +90,13 @@ internal class Patch
 		int count = localLogs.Count;
 		string zone = term.SpawnNode.m_zone.NavInfo.GetFormattedText(LG_NavInfoFormat.Full_And_Number_With_Underscore);
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
-		__instance.AddOutput($"{Styling.Bashterm}BashTerm Shell v{Plugin.BSH_VERSION}{Styling.End}", spacing: false);
+		__instance.AddOutput($"{Clr.Bashterm}BashTerm Shell v{Plugin.BSH_VERSION}{Clr.End}", spacing: false);
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
 		__instance.AddOutput(
-			$"Welcome to {Styling.Accent}{term.ItemKey}{Styling.End} located in {Styling.Accent}{zone}{Styling.End}");
-		__instance.AddOutput($"There are {count} logs on this terminal", spacing: false);
+			$"Welcome to {Clr.Accent}{term.ItemKey}{Clr.End} located in {Clr.Accent}{zone}{Clr.End}");
+		string isOrAre = count > 1 ? "are" : "is";
+		string sOrNoS = count > 1 ? "s" : "";
+		__instance.AddOutput($"There {isOrAre} {count} log{sOrNoS} on this terminal", spacing: false);
 
 		if (true) { // TODO: Add to config to enable/disable this?
 			foreach (Il2CppSystem.Collections.Generic.KeyValuePair<string, TerminalLogFileData> localLog in
@@ -138,6 +109,7 @@ internal class Patch
 
 		__instance.AddOutput("Type \"HELP\" to get help using the terminal.", spacing: false);
 		__instance.AddOutput("Type \"COMMANDS\" to get a list of all available commands.", spacing: false);
+		__instance.AddOutput("Type \"MAN [COMMAND]\" to read the manual/helpme for a command", spacing: false);
 		__instance.AddOutput("Press [ESC] or type \"EXIT\" to exit");
 		return false;
 	}
@@ -148,7 +120,6 @@ internal class Patch
 	)]
 	[HarmonyPostfix]
 	public static void EnterTerminal(ref LG_TERM_PlayerInteracting __instance) {
-		TerminalContext.EnterTerminal(__instance.m_terminal);
 	}
 
 	[HarmonyPatch(
@@ -157,6 +128,5 @@ internal class Patch
 	)]
 	[HarmonyPostfix]
 	public static void ExitTerminal() {
-		TerminalContext.ExitTerminal();
 	}
 }

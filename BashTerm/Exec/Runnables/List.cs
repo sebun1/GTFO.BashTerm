@@ -5,28 +5,30 @@ namespace BashTerm.Exec.Runnables;
 [CommandHandler("list")]
 public class List : IRunnable {
 	public string CommandName => "list";
-	public string Description => "";
-	public string Help => "";
+	public string Desc => "";
 
-	public PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal? termInherit) {
-		var terminal = termInherit == null ? TerminalContext.TerminalInstance : termInherit;
+	public string Man => @"
+Usage: list [OPTIONS] FILTER_1, FILTER_2
+
+Options:
+	N/A
+";
+
+	public PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
-		string input = cmd;
-		if (args.Count > 0)
-			input += " " + string.Join(" ", args);
-		input = input.ToUpper();
+		string input = Util.GetCommandString(cmd, args);
 
-		// TODO: Not working on single argument
+		var arg0 = args.Count > 0 ? args[0] : "";
+		var arg1 = args.Count > 1 ? args[1] : "";
 
-		// Il2CppSystem.Collections.Generic.Dictionary<string, iTerminalItem>
 		var allTerminalInterfaces = LG_LevelInteractionManager.GetAllTerminalInterfaces();
 		List<iTerminalItem> items = new List<iTerminalItem>();
 
-		TerminalContext.WantToSendCommand(TERM_Command.ShowList, input, args[0], args.Count > 1 ? args[1] : "");
+		LG_ComputerTerminalManager.WantToSendTerminalCommand(terminal.SyncID, TERM_Command.ShowList, input, arg0, arg1);
 
 		foreach (var i in allTerminalInterfaces) {
 			iTerminalItem item = i.Value;
-			if (item.ShowInFloorInventory && SatisfiesFilters(item, args[0], args.Count > 1 ? args[1] : "", terminal)) {
+			if (item.ShowInFloorInventory && SatisfiesFilters(item, arg0, arg1, terminal)) {
 				items.Add(item);
 			}
 		}
@@ -38,7 +40,6 @@ public class List : IRunnable {
 		if (item.SpawnNode == null || item.SpawnNode.m_dimension == null)
 			return false;
 
-		// Only consider items in the same dimension
 		if (item.SpawnNode.m_dimension.DimensionIndex != terminal.SpawnNode.m_dimension.DimensionIndex)
 			return false;
 

@@ -62,4 +62,12 @@ internal static class Util {
 			Logger.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
 		}
 	}
+
+	public static string GetCommandString(string cmd, List<string> args) {
+		string input = cmd;
+		if (args.Count > 0)
+			input += " " + string.Join(" ", args);
+		input = input.ToUpper();
+		return input;
+	}
 }
