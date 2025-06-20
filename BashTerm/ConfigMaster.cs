@@ -4,6 +4,7 @@ using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using BepInEx;
 using BepInEx.Configuration;
+using BashTerm.Parsers;
 using Dissonance;
 using Il2CppSystem.Linq;
 

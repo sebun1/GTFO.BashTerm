@@ -1,5 +1,7 @@
+using BashTerm.Exec;
 using BashTerm.Parsers;
 using Dissonance;
+using GameData;
 using HarmonyLib;
 using LevelGeneration;
 
@@ -20,35 +22,42 @@ internal class Patch
 
 		switch (result) {
 			case ParsedCommand(Command cmd):
-				if (cmd is RawCommand) {
-					TerminalContext.toggleRawMode();
-					break;
-				} else if (cmd is EmptyCommand) {
-					__instance.m_terminal.m_command.EvaluateInput("");
-					break;
-				}
-
-				// TODO: This logic definitely needs to be changed
 				if (TerminalContext.rawMode) {
 					__instance.m_terminal.m_command.EvaluateInput(input.ToUpper());
 				} else {
-					__instance.m_terminal.AddLine($"{cmd}");
-					__instance.m_terminal.m_command.EvaluateInput(commandString(cmd).ToUpper());
+					if(ConfigMaster.DEBUG) __instance.m_terminal.AddLine($"{cmd}");
+					try {
+						Dispatch.Exec(cmd, __instance.m_terminal);
+					} catch (Exception e) {
+						__instance.m_terminal.m_command.AddOutput(e.Message);
+						Logger.Error(e);
+					}
+					//__instance.m_terminal.m_command.EvaluateInput(commandString(cmd).ToUpper());
 				}
-
+				/*
+				else if (cmd is LogsCommand) {
+					__instance.m_terminal.m_command.EvaluateInput("LOGS");
+					__instance.m_terminal.m_command.EvaluateInput("ADMIN_TEMP_OVERRIDE");
+					__instance.m_terminal.m_command.EvaluateInput("CLS");
+					break;
+				} else if (cmd is ListCommand(List<string> args)) {
+					LG_ComputerTerminalManager.WantToSendTerminalCommand(__instance.m_terminal.SyncID, TERM_Command.ShowList, "YOU SUCK", "U", "E_494");
+					LG_ComputerTerminalManager.WantToSendTerminalCommand(__instance.m_terminal.SyncID, TERM_Command.ShowList, "HAHAHAHA", "U", "E_495");
+					break;
+				}
+				*/
 				break;
+
 			case ParseError(string cause):
-				__instance.m_terminal.AddLine($"parse error: {cause}");
+				__instance.m_terminal.AddLine($"[Parser] error: {cause}");
 				break;
 		}
 
 		__instance.m_terminal.m_currentLine = ""; // Clear input line
-
-		//LG_ComputerTerminalManager.WantToSendTerminalCommand();
-
 		return false;
 	}
 
+	/*
 	private static string commandString (Command cmd) =>
 		cmd switch {
 			ListCommand(List<string> args) => $"list {String.Join(' ', args)}",
@@ -70,6 +79,7 @@ internal class Patch
 			SpecialCommand(string raw) => raw,
 			_ => ""
 		};
+	*/
 
 	[HarmonyPatch(
 		typeof(LG_ComputerTerminalCommandInterpreter),
@@ -77,7 +87,7 @@ internal class Patch
 	)]
 	[HarmonyPostfix]
 	public static void NewLineStart(ref LG_ComputerTerminalCommandInterpreter __instance, ref string __result) {
-		string res = "<#C40>";
+		string res = Styling.Bashterm;
 
 		string termMode = TerminalContext.rawMode ? "RAW" : "BSH " + Plugin.BSH_VERSION;
 		LG_NavInfo zoneNavInfo = __instance.m_terminal.SpawnNode.m_zone.m_navInfo;
@@ -94,7 +104,59 @@ internal class Patch
 		}
 
 		res += " >> ";
-		res += "</color>";
+		res += Styling.End;
 		__result = res;
+	}
+
+	[HarmonyPatch(
+		typeof(LG_ComputerTerminalCommandInterpreter),
+		nameof(LG_ComputerTerminalCommandInterpreter.AddInitialTerminalOutput)
+	)]
+	[HarmonyPrefix]
+	public static bool InitialTerminalPrompt(ref LG_ComputerTerminalCommandInterpreter __instance) {
+		// TODO: This doesn't seem to execute on terminals sometimes?
+		// You don't see it when you go on a terminal, have to type INFO
+		LG_ComputerTerminal term = __instance.m_terminal;
+		var localLogs = term.GetLocalLogs();
+		int count = localLogs.Count;
+		string zone = term.SpawnNode.m_zone.NavInfo.GetFormattedText(LG_NavInfoFormat.Full_And_Number_With_Underscore);
+		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
+		__instance.AddOutput($"{Styling.Bashterm}BashTerm Shell v{Plugin.BSH_VERSION}{Styling.End}", spacing: false);
+		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
+		__instance.AddOutput(
+			$"Welcome to {Styling.Accent}{term.ItemKey}{Styling.End} located in {Styling.Accent}{zone}{Styling.End}");
+		__instance.AddOutput($"There are {count} logs on this terminal", spacing: false);
+
+		if (true) { // TODO: Add to config to enable/disable this?
+			foreach (Il2CppSystem.Collections.Generic.KeyValuePair<string, TerminalLogFileData> localLog in
+			         localLogs) {
+				__instance.AddOutput($"{Fmt.Pos(5)}-> {localLog.Key.ToUpper()}{Fmt.EndPos}", spacing: false);
+			}
+		}
+
+		__instance.AddOutput("", spacing: false);
+
+		__instance.AddOutput("Type \"HELP\" to get help using the terminal.", spacing: false);
+		__instance.AddOutput("Type \"COMMANDS\" to get a list of all available commands.", spacing: false);
+		__instance.AddOutput("Press [ESC] or type \"EXIT\" to exit");
+		return false;
+	}
+
+	[HarmonyPatch(
+		typeof(LG_TERM_PlayerInteracting),
+		nameof(LG_TERM_PlayerInteracting.Enter)
+	)]
+	[HarmonyPostfix]
+	public static void EnterTerminal(ref LG_TERM_PlayerInteracting __instance) {
+		TerminalContext.EnterTerminal(__instance.m_terminal);
+	}
+
+	[HarmonyPatch(
+		typeof(LG_TERM_PlayerInteracting),
+		nameof(LG_TERM_PlayerInteracting.Exit)
+	)]
+	[HarmonyPostfix]
+	public static void ExitTerminal() {
+		TerminalContext.ExitTerminal();
 	}
 }

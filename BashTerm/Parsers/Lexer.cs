@@ -5,6 +5,7 @@ internal class Lexer {
 		White, // whitespace
 		WordChar, // alphabetical character & word
 		Pipe, // "|"
+		Semicolon, // ";"
 		Eof // end-of-file / end-of-line
 	}
 
@@ -13,6 +14,7 @@ internal class Lexer {
 		SeenWord, // Saw a word token
 		DoneWord,
 		DonePipe, // Saw a "|"
+		DoneSemicolon, // Saw a ";"
 		DoneEof, // Saw end-of-file/line
 	}
 
@@ -22,8 +24,10 @@ internal class Lexer {
 		{ (LexState.SeenWord, CharClass.WordChar), LexState.SeenWord },
 		{ (LexState.SeenWord, CharClass.White), LexState.DoneWord },
 		{ (LexState.SeenWord, CharClass.Pipe), LexState.DoneWord },
+		{ (LexState.SeenWord, CharClass.Semicolon), LexState.DoneWord },
 		{ (LexState.SeenWord, CharClass.Eof), LexState.DoneWord },
 		{ (LexState.Start, CharClass.Pipe), LexState.DonePipe },
+		{ (LexState.Start, CharClass.Semicolon), LexState.DoneSemicolon},
 		{ (LexState.Start, CharClass.Eof), LexState.DoneEof }
 	};
 
@@ -69,6 +73,7 @@ internal class Lexer {
 		state switch {
 			LexState.DoneWord => true,
 			LexState.DonePipe => true,
+			LexState.DoneSemicolon => true,
 			LexState.DoneEof => true,
 			_ => false
 		};
@@ -80,6 +85,7 @@ internal class Lexer {
 		state switch {
 			LexState.DoneWord => new TokenWord(input.Substring(start, end - start)),
 			LexState.DonePipe => new TokenPipe(),
+			LexState.DoneSemicolon => new TokenSemicolon(),
 			LexState.DoneEof => new TokenEof(),
 			_ => throw new Exception("impossible")
 		};
@@ -99,6 +105,8 @@ internal class Lexer {
 			return CharClass.WordChar;
 		} else if (c == '|') {
 			return CharClass.Pipe;
+		} else if (c == ';') {
+			return CharClass.Semicolon;
 		} else {
 			throw new Exception($"couldn't classify character: {c}");
 		}
