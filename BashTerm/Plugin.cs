@@ -17,9 +17,9 @@ public class Plugin : BasePlugin {
 		Logger.Info(NAME + " " + GUID + " " + VERSION);
 		Logger.Info("Patching...");
 		int handlerCount = Dispatch.Initialize();
+		ConfigMaster.Init();
 		Logger.Debug($"{handlerCount} handlers registered");
 		Harmony.CreateAndPatchAll(typeof(Patch), GUID);
-		ConfigMaster.Init();
 		Logger.Info("Finished Patching");
 	}
 }

@@ -18,7 +18,7 @@ internal class Lexer {
 		DoneEof, // Saw end-of-file/line
 	}
 
-	readonly Dictionary<(LexState, CharClass), LexState> transitions = new Dictionary<(LexState, CharClass), LexState> {
+	readonly Dictionary<(LexState, CharClass), LexState> _transitions = new Dictionary<(LexState, CharClass), LexState> {
 		{ (LexState.Start, CharClass.White), LexState.Start },
 		{ (LexState.Start, CharClass.WordChar), LexState.SeenWord },
 		{ (LexState.SeenWord, CharClass.WordChar), LexState.SeenWord },
@@ -27,7 +27,7 @@ internal class Lexer {
 		{ (LexState.SeenWord, CharClass.Semicolon), LexState.DoneWord },
 		{ (LexState.SeenWord, CharClass.Eof), LexState.DoneWord },
 		{ (LexState.Start, CharClass.Pipe), LexState.DonePipe },
-		{ (LexState.Start, CharClass.Semicolon), LexState.DoneSemicolon},
+		{ (LexState.Start, CharClass.Semicolon), LexState.DoneSemicolon },
 		{ (LexState.Start, CharClass.Eof), LexState.DoneEof }
 	};
 
@@ -41,8 +41,6 @@ internal class Lexer {
 		this.token = Next();
 	}
 
-	// Lex a token.
-
 	private Token Next() {
 		int pos0 = position;
 
@@ -50,9 +48,17 @@ internal class Lexer {
 
 		while (true) {
 			var c = classify(input, position++);
-			state = transitions[(state, c)];
+			state = _transitions[(state, c)];
+
 			if (isFinished(state)) {
-				return convertToken(state, input, pos0, position - 1);
+				// NOOOOOOO MICROCHIPS, YOU HAD A BUG IN THE CODE ;-; ;-; ;-;
+				// TODO: Fix Lexer elegantly, below is temporary fix
+				Token newTok = convertToken(state, input, pos0, position - 1);
+				if (state == LexState.DoneWord &&
+				    (c == CharClass.Pipe || c == CharClass.Semicolon)) {
+					position--; // rewind one char
+				}
+				return newTok;
 			}
 
 			if (state == LexState.Start) {
@@ -87,7 +93,7 @@ internal class Lexer {
 			LexState.DonePipe => new TokenPipe(),
 			LexState.DoneSemicolon => new TokenSemicolon(),
 			LexState.DoneEof => new TokenEof(),
-			_ => throw new Exception("impossible")
+			_ => throw new LexerException("impossible")
 		};
 
 	private CharClass classify(string input, int position) {
@@ -101,15 +107,13 @@ internal class Lexer {
 			return CharClass.White;
 		}
 
-		if (isWordChar(c)) {
+		if (isWordChar(c))
 			return CharClass.WordChar;
-		} else if (c == '|') {
+		if (c == '|')
 			return CharClass.Pipe;
-		} else if (c == ';') {
+		if (c == ';')
 			return CharClass.Semicolon;
-		} else {
-			throw new Exception($"couldn't classify character: {c}");
-		}
+		throw new LexerException($"illegal character / cannot classify: '{c}'");
 	}
 }
 
@@ -119,6 +123,6 @@ record TokenWord(string word) : Token; // "word"
 
 record TokenPipe() : Token; // "|"
 
-record TokenSemicolon() : Token; // ";" // TODO: Add semicolon and Sequence(l, r)
+record TokenSemicolon() : Token; // ";"
 
 record TokenEof() : Token;

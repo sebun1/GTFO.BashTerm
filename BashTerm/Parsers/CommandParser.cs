@@ -5,26 +5,18 @@ using BashTerm.Exec;
 namespace BashTerm.Parsers;
 
 internal class MainParser {
-	public static ParseResult Parse(string input) {
+	public static ParsedCommand Parse(string input) {
 		var parser = new Parser(input);
 
 		if (parser.PeekToken() is TokenEof)
-			return new ParsedCommand(new EmptyCommand());
+			return new ParsedCommand(new Execve("", new List<string>()));
 
-		try {
-			var command = parser.ParseCommands();
-			return new ParsedCommand(command);
-		} catch (Exception e) {
-			return new ParseError(e.ToString());
-		}
+		var command = parser.ParseCommands();
+		return new ParsedCommand(command);
 	}
 }
 
-abstract record ParseResult;
-
-record ParsedCommand(Command cmd) : ParseResult;
-
-record ParseError(string cause) : ParseResult;
+record ParsedCommand(Command cmd);
 
 internal class Parser {
 	private Lexer lexer;
@@ -34,12 +26,18 @@ internal class Parser {
 		this.lexer = new Lexer(input);
 		this.tokens = new Queue<Token>();
 		tokenizeInput();
+		if (ConfigMaster.DEBUG) {
+			foreach (var token in this.tokens) {
+				Logger.Debug(token.ToString());
+			}
+		}
 	}
 
 	private void tokenizeInput() {
 		bool isFirstWord = true;
 		while (true) {
 			Token tok = lexer.Peek();
+			Logger.Debug($"tokenizeInput: {tok}");
 			switch (tok) {
 				case TokenEof:
 					return;
@@ -72,7 +70,7 @@ internal class Parser {
 					break;
 
 				default:
-					throw new Exception("impossible");
+					throw new ParserException("impossible");
 			}
 		}
 	}
@@ -91,12 +89,12 @@ internal class Parser {
 		if (PeekToken() is TokenPipe) {
 			NextToken();
 			return new Pipe(cmd, ParseCommands());
-		} else if (PeekToken() is TokenSemicolon) {
+		}
+		if (PeekToken() is TokenSemicolon) {
 			NextToken();
 			return new Sequence(cmd, ParseCommands());
-		} else {
-			return cmd;
 		}
+		return cmd;
 	}
 
 	public Command ParseOneCommand() {
@@ -104,35 +102,10 @@ internal class Parser {
 
 		if (tok is TokenWord(string word)) {
 			NextToken();
-
 			return new Execve(word, ParseArgs());
-
-			/*
-			return word switch {
-				"list" => new ListCommand(ParseArgs()),
-				"query" => new QueryCommand(ParseArgs()),
-				"ping" => new PingCommand(ParseArgs()),
-				"reactor_startup" => new ReactorStartCommand(),
-				"reactor_shutdown" => new ReactorStopCommand(),
-				"reactor_verify" => new ReactorVerifyCommand(ParseArg()),
-				"uplink_connect" => new UplinkStartCommand(ParseArg()),
-				"uplink_verify" => new UplinkVerifyCommand(ParseArg()),
-				"uplink_confirm" => new UplinkConfirmCommand(),
-				"logs" => new LogsCommand(),
-				"read" => new ReadCommand(ParseArg()),
-				"start" => new StartCommand(ParseArg()),
-				"info" => new InfoCommand(),
-				"help" => new HelpCommand(),
-				"exit" => new ExitCommand(),
-				"cls" => new ClearCommand(),
-				"raw" => new RawCommand(),
-				_ => new SpecialCommand(string.Join(" ", new List<string>{word}.Concat(ParseArgs())))
-				//_ => throw new Exception($"unrecognized command: {word}")
-			};
-			*/
 		}
 
-		throw new Exception($"command must start with a word, got: {tok}");
+		throw new ParserException($"command must start with a word, got: {tok}");
 	}
 
 	public string ParseArg() {
@@ -142,7 +115,7 @@ internal class Parser {
 			NextToken();
 			return arg;
 		} else {
-			throw new Exception($"expected argument, got {tok}");
+			throw new ParserException($"expected argument, got {tok}");
 		}
 	}
 
