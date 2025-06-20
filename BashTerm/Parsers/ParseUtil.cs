@@ -1,7 +1,7 @@
 using System.Text;
 using Dissonance;
 
-namespace BashTerm;
+namespace BashTerm.Parsers;
 
 internal static class ParseUtil {
 	// NOTE: Used to convert references to commands in config to our internal enum
@@ -43,24 +43,24 @@ internal static class ParseUtil {
 	}
 
 	public static string ExpandCmd(string input) {
-		Logger.Debug($"ExpandCmd: Got {input}");
+		Logger.Debug($"ExpandCmd: Got '{input}'");
 		if (string.IsNullOrWhiteSpace(input)) {
 			return "";
 		}
 
 		if (ConfigMaster.CmdExpExact.TryGetValue(input, out string? expansion)) {
-			Logger.Debug($"ExpandCmd: Returning (Alias) {expansion}");
+			Logger.Debug($"ExpandCmd: Returning (Alias) '{expansion}'");
 			return expansion;
 		}
 
 		foreach (var tup in ConfigMaster.CmdExpPrefix) {
 			if (input.StartsWith(tup.Prefix)) {
-				Logger.Debug($"ExpandCmd: Returning (Alias) {tup.Expansion}");
+				Logger.Debug($"ExpandCmd: Returning (Alias) '{tup.Expansion}'");
 				return tup.Expansion;
 			}
 		}
 
-		Logger.Debug($"ExpandCmd: No change");
+		Logger.Debug($"ExpandCmd: No change '{input}'");
 		return input;
 	}
 

@@ -1,11 +1,10 @@
 using System;
 using System.Diagnostics;
+using BashTerm.Exec;
 
 namespace BashTerm.Parsers;
 
 internal class MainParser {
-	// Main entry point of the command parser.
-
 	public static ParseResult Parse(string input) {
 		var parser = new Parser(input);
 
@@ -15,7 +14,6 @@ internal class MainParser {
 		try {
 			var command = parser.ParseCommands();
 			return new ParsedCommand(command);
-		} catch () {
 		} catch (Exception e) {
 			return new ParseError(e.ToString());
 		}
@@ -27,34 +25,6 @@ abstract record ParseResult;
 record ParsedCommand(Command cmd) : ParseResult;
 
 record ParseError(string cause) : ParseResult;
-
-internal class ParseException : Exception {
-	public int Position { get; }
-
-	public ParseException(string cause, int position) : base(cause) {
-		this.Position = position;
-	}
-
-	public override string ToString() => $"[ParseError] {Message}";
-}
-
-internal class TooManyArgumentsException : ParseException {
-	public string CommandName { get; }
-
-	public TooManyArgumentsException(string commandName, int position, int got, int expected)
-		: base($"Command '{commandName}' received too many arguments, want {expected}, got {got} [col {position}]", position) {
-		CommandName = commandName;
-	}
-}
-
-internal class MissingArgumentException : ParseException {
-	public string CommandName { get; }
-
-	public MissingArgumentException(string commandName, int position, int got, int expected)
-		: base($"Command '{commandName}' is missing arguments, want {expected}, got {got} [col {position}]", position) {
-		CommandName = commandName;
-	}
-}
 
 internal class Parser {
 	private Lexer lexer;
@@ -95,6 +65,12 @@ internal class Parser {
 					isFirstWord = true;
 					break;
 
+				case TokenSemicolon:
+					tokens.Enqueue(new TokenSemicolon());
+					lexer.Consume();
+					isFirstWord = true;
+					break;
+
 				default:
 					throw new Exception("impossible");
 			}
@@ -115,6 +91,9 @@ internal class Parser {
 		if (PeekToken() is TokenPipe) {
 			NextToken();
 			return new Pipe(cmd, ParseCommands());
+		} else if (PeekToken() is TokenSemicolon) {
+			NextToken();
+			return new Sequence(cmd, ParseCommands());
 		} else {
 			return cmd;
 		}
@@ -126,6 +105,9 @@ internal class Parser {
 		if (tok is TokenWord(string word)) {
 			NextToken();
 
+			return new Execve(word, ParseArgs());
+
+			/*
 			return word switch {
 				"list" => new ListCommand(ParseArgs()),
 				"query" => new QueryCommand(ParseArgs()),
@@ -147,6 +129,7 @@ internal class Parser {
 				_ => new SpecialCommand(string.Join(" ", new List<string>{word}.Concat(ParseArgs())))
 				//_ => throw new Exception($"unrecognized command: {word}")
 			};
+			*/
 		}
 
 		throw new Exception($"command must start with a word, got: {tok}");
@@ -163,7 +146,7 @@ internal class Parser {
 		}
 	}
 
-	public List<string> ParseArgs(int expected = 0) {
+	public List<string> ParseArgs() {
 		List<string> args = new List<string>();
 		while (PeekToken() is TokenWord(string arg)) {
 			NextToken();

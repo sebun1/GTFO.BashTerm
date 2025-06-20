@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using BashTerm.Exec;
+using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 
@@ -8,13 +9,15 @@ namespace BashTerm;
 public class Plugin : BasePlugin {
 	public const string NAME = "BashTerm";
 	public const string GUID = "io.takina.gtfo." + NAME;
-	public const string VERSION = "0.2.1";
-	public const string BSH_VERSION = "2.1a";
+	public const string VERSION = "0.3.0";
+	public const string BSH_VERSION = "3.0a";
 
 	public override void Load() {
 		Logger.SetupFromInit(Log);
 		Logger.Info(NAME + " " + GUID + " " + VERSION);
 		Logger.Info("Patching...");
+		int handlerCount = Dispatch.Initialize();
+		Logger.Debug($"{handlerCount} handlers registered");
 		Harmony.CreateAndPatchAll(typeof(Patch), GUID);
 		ConfigMaster.Init();
 		Logger.Info("Finished Patching");
