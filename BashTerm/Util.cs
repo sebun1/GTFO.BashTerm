@@ -70,4 +70,7 @@ internal static class Util {
 		input = input.ToUpper();
 		return input;
 	}
+
+	public static string RemoveAllNumbers(string input) =>
+		System.Text.RegularExpressions.Regex.Replace(input, @"\d", "");
 }
