@@ -73,4 +73,9 @@ internal static class Util {
 
 	public static string RemoveAllNumbers(string input) =>
 		System.Text.RegularExpressions.Regex.Replace(input, @"\d", "");
+
+	public static string ReplaceTabWithSpaces(string input, int spaces = 4) {
+		string tabReplacement = new string(' ', spaces);
+		return System.Text.RegularExpressions.Regex.Replace(input, @"\t", tabReplacement);
+	}
 }
