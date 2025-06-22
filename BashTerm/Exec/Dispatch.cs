@@ -7,20 +7,20 @@ namespace BashTerm.Exec;
 public interface IRunnable {
 	string CommandName { get; }
 	string Desc { get; }
-	string Man { get; }
+	string Manual { get; }
 
 	PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal term);
 }
 
 public static class Dispatch {
-	private static Dictionary<string, IRunnable> _handlers = new Dictionary<string, IRunnable>();
-	private static bool _isInitialized = false;
-	private static IRunnable? _fallback;
+	internal static Dictionary<string, IRunnable> Handlers = new Dictionary<string, IRunnable>();
+	internal static bool IsInitialized = false;
+	internal static IRunnable? Fallback;
 
 	public static int Initialize() {
-		_fallback = new FallbackCommand();
+		Fallback = new FallbackCommand();
 		int count = RegisterAllCommands();
-		_isInitialized = true;
+		IsInitialized = true;
 		return count;
 	}
 
@@ -42,13 +42,13 @@ public static class Dispatch {
 			}
 		}
 
-		return _handlers.Count;
+		return Handlers.Count;
 	}
 
 	private static bool Hook(string cmd, IRunnable handler) {
 		cmd = cmd.Trim().ToLower();
-		if (_handlers.ContainsKey(cmd)) { return false; }
-		_handlers[cmd] = handler;
+		if (Handlers.ContainsKey(cmd)) { return false; }
+		Handlers[cmd] = handler;
 		return true;
 	}
 
@@ -57,7 +57,7 @@ public static class Dispatch {
 	}
 
 	public static PipedPayload Exec(Command cmd, PipedPayload payload, LG_ComputerTerminal? term = null) {
-		if (!_isInitialized) {
+		if (!IsInitialized) {
 			throw new ExecException("Executing commands before initialization");
 		}
 
@@ -67,10 +67,10 @@ public static class Dispatch {
 				throw new ExecException("Exec called with null command");
 
 			case Execve(string name, List<string> args):
-				if (_handlers.TryGetValue(name, out IRunnable? handler)) {
+				if (Handlers.TryGetValue(name, out IRunnable? handler)) {
 					return handler.Run(name, args, payload, term);
 				}
-				return _fallback.Run(name, args, payload, term);
+				return Fallback.Run(name, args, payload, term);
 
 			case Pipe(Command first, Command post):
 				return Exec(post, Exec(first, payload, term), term);

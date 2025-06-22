@@ -24,6 +24,16 @@ internal class Patch
 
 			Command cmd;
 
+			/*
+				m_inputBuffer.Add(inputString);
+				m_terminal.m_caretBlinkOffsetFromEnd = 0;
+				m_inputBufferStep = 0;
+				if (m_inputBuffer.Count > 10)
+				{
+					m_inputBuffer.RemoveAt(0);
+				}
+			 */
+
 			if (res is ParsedCommand(Command c)) {
 				cmd = c;
 			} else {
@@ -37,8 +47,8 @@ internal class Patch
 					__instance.m_terminal.m_command.EvaluateInput(input.ToUpper());
 				}
 			} else {
-				if (ConfigMaster.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Clr.Info}{cmd}{Clr.End}");
 				Dispatch.Exec(cmd, __instance.m_terminal);
+				if (ConfigMaster.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Clr.Info}{cmd}{Clr.End}");
 			}
 		} catch (BSHException e) {
 			__instance.m_terminal.m_command.AddOutput($"{Clr.Error}{e}{Clr.End}");
@@ -93,7 +103,7 @@ internal class Patch
 		__instance.AddOutput($"{Clr.Bashterm}BashTerm Shell v{Plugin.BSH_VERSION}{Clr.End}", spacing: false);
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
 		__instance.AddOutput(
-			$"Welcome to {Clr.Accent}{term.ItemKey}{Clr.End} located in {Clr.Accent}{zone}{Clr.End}");
+			$"Welcome to <b>{Clr.Accent}{term.ItemKey}{Clr.End}</b> located in <b>{Clr.Accent}{zone}{Clr.End}</b>");
 		string isOrAre = count > 1 ? "are" : "is";
 		string sOrNoS = count > 1 ? "s" : "";
 		__instance.AddOutput($"There {isOrAre} {count} log{sOrNoS} on this terminal", spacing: false);

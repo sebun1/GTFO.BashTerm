@@ -7,7 +7,7 @@ public class List : IRunnable {
 	public string CommandName => "list";
 	public string Desc => "";
 
-	public string Man => @"
+	public string Manual => @"
 Usage: list [OPTIONS] FILTER_1, FILTER_2
 
 Options:

@@ -11,13 +11,13 @@ namespace BashTerm.Exec.Runnables;
 public class Query : IRunnable {
 	public string CommandName => "query";
 	public string Desc => "Queries the location of a single item (or multiple through piping)";
-	public string Man => @"
+	public string Manual => @"
 NAME
 		query - tool for querying the locations of items throughout the complex
 
 SYNOPSIS
 		QUERY <u>ITEM</u> -> ItemQueryResult / ItemQueryResults
-		ItemList -> QUERY [-S <u>SORT OPTIONS</u>]
+		ItemList -> QUERY [-S <u>SORTING STRING</u>]
 
 OPTIONS
 		-S, --SORT
@@ -30,9 +30,9 @@ OPTIONS
 
 			To specify whether you want a category to be specified in ascending or descending order, immediately follow the flag with a + or - e.g. ""I-"", if no order is specified, the sort defaults to ascending order (i.e. +).
 
-			The priority for sorting is determined by the relative location of the flags in the string, if category x has its flag placed before category y, then query will try to sort via category x, if the results are inconclusive (i.e. there is a draw), it will fall back and compare category y, and so on.
+			<pos=30%>The priority for sorting is determined by the relative location of the flags in the string, if category x has its flag placed before category y, then query will try to sort via category x, if the results are inconclusive (i.e. there is a draw), it will fall back and compare category y, and so on.</pos>
 
-			For example, the sorting string ""Z+I+C-"" asks query to sort by zone number first in ascending order, if that fails sort by the item ID in ascending order, then sort capacity in descending order (items with most capacity comes first). Taking default behavior into mind, this sorting string can also be equivalently written as ""ZIC-"".
+			<indent=30%>For example, the sorting string ""Z+I+C-"" asks query to sort by zone number first in ascending order, if that fails sort by the item ID in ascending order, then sort capacity in descending order (items with most capacity comes first). Taking default behavior into mind, this sorting string can also be equivalently written as ""ZIC-"".</indent>
 ";
 
 	public PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal terminal) {

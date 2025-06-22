@@ -7,6 +7,10 @@ public class ExecException : BSHException {
 	public override string ToString() => $"[ExecError] >> {Message}";
 }
 
+public class CmdRunException : ExecException {
+	public CmdRunException(string cause) : base($"[CmdRunException] >> {cause}") {}
+}
+
 public class CommandException : ExecException {
 	public string CommandName { get; }
 
