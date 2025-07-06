@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using BashTerm.Exec.Runnables;
+using BashTerm.Parsers;
 using LevelGeneration;
 
 namespace BashTerm.Exec;
@@ -9,11 +10,15 @@ public interface IRunnable {
 	string Desc { get; }
 	string Manual { get; }
 
+	FlagSchema FSchema { get; }
+
 	PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal term);
+	bool TryGetVar(LG_ComputerTerminal term, string varName, out string value);
+	bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded);
 }
 
 public static class Dispatch {
-	internal static Dictionary<string, IRunnable> Handlers = new Dictionary<string, IRunnable>();
+	internal static Dictionary<string, IRunnable> Handlers = new();
 	internal static bool IsInitialized = false;
 	internal static IRunnable? Fallback;
 
@@ -82,5 +87,9 @@ public static class Dispatch {
 			default:
 				throw new UnknownParserCommandTypeException(cmd.GetType());
 		}
+	}
+
+	public static Command VarCmd2Cmd(LG_ComputerTerminal term, VarCommand cmd) {
+
 	}
 }

@@ -63,4 +63,13 @@ Options:
 		return noFilters || satisfiesFilters;
 	}
 
+	public bool TryGetVar(LG_ComputerTerminal term, string varName, out string value) {
+		value = "";
+		return false;
+	}
+
+	public bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded) {
+		expanded = "";
+		return false;
+	}
 }

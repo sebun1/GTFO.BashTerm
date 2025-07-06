@@ -29,17 +29,17 @@ internal static class TerminalChan {
 
 	public static void LogInfo(string src, string msg) {
 		_infoCount++;
-		BSHLogs.Add($"{Clr.Info}[{src}] >> {msg}{Clr.End}");
+		BSHLogs.Add($"{Clr.Info}INFO[{src}] >> {msg}{Clr.End}");
 	}
 
 	public static void LogWarn(string src, string msg) {
 		_warnCount++;
-		BSHLogs.Add($"{Clr.Warning}[{src}] >> {msg}{Clr.End}");
+		BSHLogs.Add($"{Clr.Warning}WARN[{src}] >> {msg}{Clr.End}");
 	}
 
 	public static void LogError(string src, string msg) {
 		_errorCount++;
-		BSHLogs.Add($"{Clr.Error}[{src}] >> {msg}{Clr.End}");
+		BSHLogs.Add($"{Clr.Error}ERRR[{src}] >> {msg}{Clr.End}");
 	}
 }
 
