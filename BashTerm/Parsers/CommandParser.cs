@@ -19,58 +19,22 @@ internal class MainParser {
 record ParsedCommand(Command cmd);
 
 internal class Parser {
-	private Lexer lexer;
+	private LexerB lexer;
 	private Queue<Token> tokens;
 
 	public Parser(string input) {
-		this.lexer = new Lexer(input);
+		this.lexer = new LexerB(input);
 		this.tokens = new Queue<Token>();
-		tokenizeInput();
+		bool firstWord = true;
+		foreach (Token tk in this.lexer.GetTokens())
+		{
+			if (firstWord) {
+				firstWord = false;
+			}
+		}
 		if (ConfigMaster.DEBUG) {
 			foreach (var token in this.tokens) {
 				Logger.Debug(token.ToString());
-			}
-		}
-	}
-
-	private void tokenizeInput() {
-		bool isFirstWord = true;
-		while (true) {
-			Token tok = lexer.Peek();
-			Logger.Debug($"tokenizeInput: {tok}");
-			switch (tok) {
-				case TokenEof:
-					return;
-
-				case TokenWord(string word):
-					if (isFirstWord) {
-						string expanded = ParseUtil.ExpandCmd(word);
-						Lexer expLexer = new Lexer(expanded);
-						while (expLexer.Peek() is not TokenEof) {
-							tokens.Enqueue(expLexer.Peek());
-							expLexer.Consume();
-						}
-						isFirstWord = false;
-					} else {
-						tokens.Enqueue(new TokenWord(word));
-					}
-					lexer.Consume();
-					break;
-
-				case TokenPipe:
-					tokens.Enqueue(new TokenPipe());
-					lexer.Consume();
-					isFirstWord = true;
-					break;
-
-				case TokenSemicolon:
-					tokens.Enqueue(new TokenSemicolon());
-					lexer.Consume();
-					isFirstWord = true;
-					break;
-
-				default:
-					throw new ParserException("impossible");
 			}
 		}
 	}
@@ -83,21 +47,21 @@ internal class Parser {
 		return tokens.Count > 0 ? tokens.Dequeue() : new TokenEof();
 	}
 
-	public Command ParseCommands() {
+	public VarCommand ParseCommands() {
 		var cmd = ParseOneCommand();
 
 		if (PeekToken() is TokenPipe) {
 			NextToken();
-			return new Pipe(cmd, ParseCommands());
+			return new VarPipe(cmd, ParseCommands());
 		}
 		if (PeekToken() is TokenSemicolon) {
 			NextToken();
-			return new Sequence(cmd, ParseCommands());
+			return new VarSequence(cmd, ParseCommands());
 		}
 		return cmd;
 	}
 
-	public Command ParseOneCommand() {
+	public VarCommand ParseOneCommand() {
 		Token tok = PeekToken();
 
 		if (tok is TokenWord(string word)) {

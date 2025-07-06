@@ -4,7 +4,7 @@ using Il2CppSystem.Xml.Schema;
 namespace BashTerm;
 
 internal static class Util {
-	// All methods assume and should have calls with lower case strings
+	private const int TERMINAL_COL_WIDTH = 90;
 
 	public static string Concat(params string[] args) {
 		return Concat(' ', args);
@@ -73,9 +73,4 @@ internal static class Util {
 
 	public static string RemoveAllNumbers(string input) =>
 		System.Text.RegularExpressions.Regex.Replace(input, @"\d", "");
-
-	public static string ReplaceTabWithSpaces(string input, int spaces = 4) {
-		string tabReplacement = new string(' ', spaces);
-		return System.Text.RegularExpressions.Regex.Replace(input, @"\t", tabReplacement);
-	}
 }

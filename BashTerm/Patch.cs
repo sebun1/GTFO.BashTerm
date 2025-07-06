@@ -41,7 +41,7 @@ internal class Patch
 			}
 
 			if (TerminalChan.RawMode) {
-				if (cmd is Execve(string name, List<string> _) && name == "raw") {
+				if (cmd is Execve("raw", List<string> _)) {
 					TerminalChan.ToggleRawMode();
 				} else {
 					__instance.m_terminal.m_command.EvaluateInput(input.ToUpper());
@@ -119,7 +119,8 @@ internal class Patch
 
 		__instance.AddOutput("Type \"HELP\" to get help using the terminal.", spacing: false);
 		__instance.AddOutput("Type \"COMMANDS\" to get a list of all available commands.", spacing: false);
-		__instance.AddOutput("Type \"MAN [COMMAND]\" to read the manual/helpme for a command", spacing: false);
+		__instance.AddOutput("Type \"HELP BSH\" to get help using BashTerm", spacing: false);
+		__instance.AddOutput("Type \"MAN <COMMAND>\" to read the manual for a command", spacing: false);
 		__instance.AddOutput("Press [ESC] or type \"EXIT\" to exit");
 		return false;
 	}

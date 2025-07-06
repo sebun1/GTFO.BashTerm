@@ -14,11 +14,9 @@ public class CmdRunException : ExecException {
 public class CommandException : ExecException {
 	public string CommandName { get; }
 
-	public CommandException(string command, string cause) : base(cause) {
+	public CommandException(string command, string cause) : base($"[CommandError] ({command}) >> {cause}") {
 		CommandName = command;
 	}
-
-	public override string ToString() => $"[CommandError] ({CommandName}) >> {Message}";
 }
 
 public class UnknownParserCommandTypeException : ExecException {

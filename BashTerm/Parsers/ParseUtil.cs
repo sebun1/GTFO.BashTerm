@@ -32,54 +32,52 @@ internal static class ParseUtil {
 		{ "raw" , TermCmd.Raw },
 	};
 
-	/// <summary>
-	/// Interprets the command type of a command string, only the first term is considered.
-	/// </summary>
-	/// <param name="input">Command to interpret, can include arguments</param>
-	/// <returns></returns>
-	public static TermCmd GetCmdType(string input) {
-		input = input.Split(' ')[0].Trim().ToLower();
-		return _Txt2Cmd.TryGetValue(input, out TermCmd cmd) ? cmd : TermCmd.None;
-	}
-
-	public static string ExpandCmd(string input) {
+	public static bool TryExpandCmd(string input, out string expansion) {
 		Logger.Debug($"ExpandCmd: Got '{input}'");
+		expansion = "";
 		if (string.IsNullOrWhiteSpace(input)) {
-			return "";
+			return false;
 		}
 
-		if (ConfigMaster.CmdExpExact.TryGetValue(input, out string? expansion)) {
-			Logger.Debug($"ExpandCmd: Returning (Alias) '{expansion}'");
-			return expansion;
+		if (ConfigMaster.CmdExpExact.TryGetValue(input, out string? eps)) {
+			Logger.Debug($"ExpandCmd: Returning (Alias) '{eps}'");
+			expansion = eps;
+			return true;
 		}
 
 		foreach (var tup in ConfigMaster.CmdExpPrefix) {
 			if (input.StartsWith(tup.Prefix)) {
 				Logger.Debug($"ExpandCmd: Returning (Alias) '{tup.Expansion}'");
-				return tup.Expansion;
+				expansion = tup.Expansion;
+				return true;
 			}
 		}
 
 		Logger.Debug($"ExpandCmd: No change '{input}'");
-		return input;
+		expansion = input;
+		return false;
 	}
 
-	public static string ExpandObj(string input) {
-		if (string.IsNullOrWhiteSpace(input)) {
-			return "";
+	public static bool TryExpandObj(string objName, out string expansion) {
+		expansion = "";
+		if (string.IsNullOrWhiteSpace(objName)) {
+			return false;
 		}
 
-		if (ConfigMaster.ObjExpExact.TryGetValue(input, out string? expansion)) {
-			return expansion;
+		if (ConfigMaster.ObjExpExact.TryGetValue(objName, out string? eps)) {
+			expansion = eps;
+			return true;
 		}
 
 		foreach (var tup in ConfigMaster.ObjExpPrefix) {
-			if (input.StartsWith(tup.Prefix)) {
-				return tup.Expansion;
+			if (objName.StartsWith(tup.Prefix)) {
+				expansion = tup.Expansion;
+				return true;
 			}
 		}
 
-		return input;
+		expansion = objName;
+		return false;
 	}
 
 	/// <summary>

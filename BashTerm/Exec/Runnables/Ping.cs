@@ -11,4 +11,14 @@ public class Ping : IRunnable {
 	public PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal? termInherit) {
 		return new EmptyPayload();
 	}
+
+	public bool TryGetVar(LG_ComputerTerminal term, string varName, out string value) {
+		value = "";
+		return false;
+	}
+
+	public bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded) {
+		expanded = "";
+		return false;
+	}
 }
