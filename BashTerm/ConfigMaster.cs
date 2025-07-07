@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using BepInEx;
 using BepInEx.Configuration;
 using BashTerm.Parsers;
+using BashTerm.Utils;
 using Dissonance;
 using Il2CppSystem.Linq;
 

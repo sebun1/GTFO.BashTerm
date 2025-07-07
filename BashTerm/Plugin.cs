@@ -1,4 +1,5 @@
 ﻿using BashTerm.Exec;
+using BashTerm.Utils;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;

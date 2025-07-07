@@ -1,4 +1,5 @@
-﻿using LevelGeneration;
+﻿using BashTerm.Parsers;
+using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
@@ -6,12 +7,28 @@ namespace BashTerm.Exec.Runnables;
 public class Raw : IRunnable {
 	public string CommandName => "raw";
 	public string Desc => "Toggle between BashTerm interpreter and raw input (GTFO native interpreter)";
-	public string Manual => "Use this command to switch to GTFO native interpreter when BashTerm misinterprets, please also report any problems with the interpreter!";
+	public string Manual => "Use this command to switch to GTFO native interpreter when BashTerm misbehaves, feel free to report any problems or bugs!";
 
-	public PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public FlagSchema FSchema { get; }
+
+	public Raw() {
+		FSchema = new FlagSchema();
+	}
+
+	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 		TerminalChan.ToggleRawMode();
 		terminal.m_command.AddOutput("", spacing: false);
 		return new EmptyPayload();
+	}
+
+	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {
+		value = "";
+		return false;
+	}
+
+	public bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded) {
+		expanded = "";
+		return false;
 	}
 }

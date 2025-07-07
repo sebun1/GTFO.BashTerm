@@ -1,21 +1,29 @@
-﻿using LevelGeneration;
+﻿using BashTerm.Parsers;
+using BashTerm.Utils;
+using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
 [CommandHandler("man")]
 public class Man : IRunnable {
 	public string CommandName => "man";
-	public string Desc => "Reads the manual for a given command";
+	public string Desc => "Read the manual for a given command";
 
 	public string Manual => @"
 NAME
 		man - read the manual for a given command
 
-SYNOPSIS
+USAGE
 		MAN <u>COMMAND</u>
 ";
 
-	public PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public FlagSchema FSchema { get; }
+
+	public Man() {
+		FSchema = new FlagSchema();
+	}
+
+	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 
 		if (!Dispatch.IsInitialized) {
@@ -35,7 +43,7 @@ SYNOPSIS
 		return new EmptyPayload();
 	}
 
-	public bool TryGetVar(LG_ComputerTerminal term, string varName, out string value) {
+	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {
 		value = "";
 		return false;
 	}

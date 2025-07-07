@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace BashTerm;
+namespace BashTerm.Utils;
 
 public static class ManualFormatter
 {
