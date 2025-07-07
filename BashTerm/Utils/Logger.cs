@@ -1,7 +1,7 @@
 using BepInEx.Logging;
 
 #nullable disable
-namespace BashTerm;
+namespace BashTerm.Utils;
 
 internal static class Logger {
 	private static ManualLogSource m_LogSource;

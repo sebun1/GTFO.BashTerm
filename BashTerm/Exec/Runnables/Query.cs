@@ -1,9 +1,7 @@
 ﻿using System.Text.RegularExpressions;
-using Gear;
 using LevelGeneration;
-using BashTerm;
 using BashTerm.Parsers;
-using Dissonance;
+using BashTerm.Utils;
 
 namespace BashTerm.Exec.Runnables;
 
@@ -16,8 +14,8 @@ NAME
 		query - tool for querying the locations of items throughout the complex
 
 USAGE
-		QUERY <u>ITEM</u> -> ItemQueryResult / ItemQueryResults
-		ItemList -> QUERY [-S <u>SORTING STRING</u>]
+		QUERY <u>ITEM</u> -> <b>ItemQueryResult</b>|<b>ItemQueryResults</b>
+		<b>ItemList</b> -> QUERY [-S <u>SORTING RULE</u>]
 
 OPTIONS
 		-S, --SORT
@@ -35,19 +33,17 @@ OPTIONS
 			For example, the sorting string ""Z+I+C-"" asks query to sort by zone number first in ascending order, if that fails sort by the item ID in ascending order, then sort capacity in descending order (items with most capacity comes first). Taking default behavior into mind, this sorting string can also be equivalently written as ""ZIC-"".
 ";
 
-	private FlagSchema _fSchema;
-	public FlagSchema FSchema => _fSchema;
+	public FlagSchema FSchema { get; }
 
 	public Query() {
-		_fSchema = new FlagSchema();
-		_fSchema.Add("s", "sort", FlagType.Value);
+		FSchema = new FlagSchema();
+		FSchema.Add("s", "sort", FlagType.Value);
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 
 		string input = Util.GetCommandString(cmd, args);
-		FlagParser fp = new FlagParser(args);
 
 		switch (payload) {
 			case ItemList(List<iTerminalItem> items):
@@ -55,7 +51,7 @@ OPTIONS
 				float timeCost = GetAdjustedQueryCost(items.Count);
 				string timeCostStr = timeCost.ToString("N0");
 				// TODO: Make default configurable in config
-				string sortFlag = (fp.GetVal("-s", "--sort") ?? "Z+I+C-").Trim().ToUpper();
+				string sortFlag = (opts["-s"] ?? "Z+I+C-").Trim().ToUpper();
 				Logger.Debug($"Query cost: {timeCostStr}, priority flag: {sortFlag}");
 
 				items.Sort(new TerminalItemComparator(sortFlag));
@@ -140,7 +136,7 @@ OPTIONS
 		return (float)Math.Round(cost / Math.Log(b * cost + c));
 	}
 
-	public bool TryGetVar(LG_ComputerTerminal term, string varName, out string value) {
+	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {
 		value = "";
 		return false;
 	}

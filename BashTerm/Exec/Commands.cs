@@ -24,7 +24,7 @@ public record Sequence(Command first, Command second) : Command {
 
 public abstract record VarCommand;
 
-public record VarExecve(string name, List<TokenWord> args) : VarCommand {
+public record VarExecve(TokenWord name, List<TokenWord> args) : VarCommand {
 	public override string ToString() {
 		return $"VarExecve[{name}]{{ {string.Join(", ", args)} }}";
 	}

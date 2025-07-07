@@ -1,4 +1,6 @@
-﻿using LevelGeneration;
+﻿using BashTerm.Parsers;
+using BashTerm.Utils;
+using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
@@ -14,7 +16,13 @@ Options:
 	N/A
 ";
 
-	public PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public FlagSchema FSchema { get; }
+
+	public List() {
+		FSchema = new FlagSchema();
+	}
+
+	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 		string input = Util.GetCommandString(cmd, args);
 
@@ -63,7 +71,7 @@ Options:
 		return noFilters || satisfiesFilters;
 	}
 
-	public bool TryGetVar(LG_ComputerTerminal term, string varName, out string value) {
+	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {
 		value = "";
 		return false;
 	}

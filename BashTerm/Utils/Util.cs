@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Il2CppSystem.Xml.Schema;
 
-namespace BashTerm;
+namespace BashTerm.Utils;
 
 internal static class Util {
 	private const int TERMINAL_COL_WIDTH = 90;

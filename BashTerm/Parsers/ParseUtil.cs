@@ -1,4 +1,5 @@
 using System.Text;
+using BashTerm.Utils;
 using Dissonance;
 
 namespace BashTerm.Parsers;
@@ -32,7 +33,7 @@ internal static class ParseUtil {
 		{ "raw" , TermCmd.Raw },
 	};
 
-	public static bool TryExpandCmd(string input, out string expansion) {
+	public static bool TryExpandAlias(string input, out string expansion) {
 		Logger.Debug($"ExpandCmd: Got '{input}'");
 		expansion = "";
 		if (string.IsNullOrWhiteSpace(input)) {

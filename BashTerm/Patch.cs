@@ -1,5 +1,6 @@
 using BashTerm.Exec;
 using BashTerm.Parsers;
+using BashTerm.Utils;
 using Dissonance;
 using GameData;
 using HarmonyLib;
@@ -17,13 +18,10 @@ internal class Patch
 	[HarmonyPrefix]
 	public static bool ProcessCommand (ref LG_TERM_PlayerInteracting __instance)
 	{
+		// TODO: Consider not making it lower, allow case variation. Will want to change other code that returns uppercase, if any
 		var input = __instance.m_terminal.m_currentLine.ToLower();
 
 		try {
-			ParsedCommand res = MainParser.Parse(input);
-
-			Command cmd;
-
 			/*
 				m_inputBuffer.Add(inputString);
 				m_terminal.m_caretBlinkOffsetFromEnd = 0;
@@ -34,19 +32,14 @@ internal class Patch
 				}
 			 */
 
-			if (res is ParsedCommand(Command c)) {
-				cmd = c;
-			} else {
-				throw new ParserException($"impossible, ParsedCommand is somehow not a ParsedCommand?");
-			}
-
 			if (TerminalChan.RawMode) {
-				if (cmd is Execve("raw", List<string> _)) {
+				if (input.Trim().ToLower().Split(' ')[0] == "raw") {
 					TerminalChan.ToggleRawMode();
 				} else {
 					__instance.m_terminal.m_command.EvaluateInput(input.ToUpper());
 				}
 			} else {
+				VarCommand cmd = MainParser.Parse(input);
 				Dispatch.Exec(cmd, __instance.m_terminal);
 				if (ConfigMaster.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Clr.Info}{cmd}{Clr.End}");
 			}
@@ -92,7 +85,7 @@ internal class Patch
 		nameof(LG_ComputerTerminalCommandInterpreter.AddInitialTerminalOutput)
 	)]
 	[HarmonyPrefix]
-	public static bool InitialTerminalPrompt(ref LG_ComputerTerminalCommandInterpreter __instance) {
+	public static bool InfoPrompt(ref LG_ComputerTerminalCommandInterpreter __instance) {
 		// TODO: This doesn't seem to execute on terminals sometimes?
 		// You don't see it when you go on a terminal, have to type INFO
 		LG_ComputerTerminal term = __instance.m_terminal;
