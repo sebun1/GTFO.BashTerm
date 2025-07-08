@@ -22,9 +22,9 @@ public static class Sync {
 
 		if (timeoutMs > 0) {
 			var timeoutTask = Task.Delay(timeoutMs);
-			var winner = await Task.WhenAny(tcs.Task, timeoutTask);
+			var first = await Task.WhenAny(tcs.Task, timeoutTask);
 
-			if (winner == timeoutTask) {
+			if (first == timeoutTask) {
 				q.TryDequeue(out _);
 				throw new TimeoutException($"channel {source} timed out");
 			}
@@ -49,8 +49,8 @@ public static class Sync {
 public abstract record SyncSrc;
 
 // When terminal user presses Enter (for managed input)
-public record SyncSrcOnReturn(uint Id) : SyncSrc;
+public record SyncSrcOnReturn(int Id) : SyncSrc;
 
 // When command is received on ReceiveCommand
-public record SyncSrcOnReceiveCmd(uint Id) : SyncSrc;
+public record SyncSrcOnReceiveCmd(int Id) : SyncSrc;
 

@@ -56,6 +56,7 @@ internal class Patch {
 		return false;
 	}
 
+	/*
 	[HarmonyPatch(
 		typeof(LG_TERM_PlayerInteracting),
 		nameof(LG_TERM_PlayerInteracting.ParseInput)
@@ -70,6 +71,7 @@ internal class Patch {
 
 		return false;
 	}
+	*/
 
 	[HarmonyPatch(
 		typeof(LG_ComputerTerminalCommandInterpreter),
@@ -101,9 +103,13 @@ internal class Patch {
 		nameof(LG_ComputerTerminalCommandInterpreter.ReceiveCommand)
 	)]
 	[HarmonyPostfix]
-	public static void ReceiveCmd(ref LG_ComputerTerminalCommandInterpreter __instance) {
-		if (Sync.Signal(new SyncSrcOnReceiveCmd(__instance.m_terminal.SyncID))) {
+	public static void ReceiveCmd(ref LG_ComputerTerminalCommandInterpreter __instance, TERM_Command cmd, string inputLine) {
+		Logger.Debug($"ReceiveCmd with cmd={cmd} inputLine={inputLine}");
+		if (Sync.Signal(new SyncSrcOnReceiveCmd(__instance.m_terminal.m_serialNumber))) {
 			// TODO: correspond with managing in
+			Logger.Debug("Successfully signaled SyncSrcOnReceiveCmd");
+		} else {
+			Logger.Debug("There was nothing to signal for SyncSrcOnReceiveCmd");
 		}
 	}
 
