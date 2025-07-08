@@ -40,13 +40,13 @@ internal static class ParseUtil {
 			return false;
 		}
 
-		if (ConfigMaster.CmdExpExact.TryGetValue(input, out string? eps)) {
+		if (ConfigMgr.CmdExpExact.TryGetValue(input, out string? eps)) {
 			Logger.Debug($"ExpandCmd: Returning (Alias) '{eps}'");
 			expansion = eps;
 			return true;
 		}
 
-		foreach (var tup in ConfigMaster.CmdExpPrefix) {
+		foreach (var tup in ConfigMgr.CmdExpPrefix) {
 			if (input.StartsWith(tup.Prefix)) {
 				Logger.Debug($"ExpandCmd: Returning (Alias) '{tup.Expansion}'");
 				expansion = tup.Expansion;
@@ -65,12 +65,12 @@ internal static class ParseUtil {
 			return false;
 		}
 
-		if (ConfigMaster.ObjExpExact.TryGetValue(objName, out string? eps)) {
+		if (ConfigMgr.ObjExpExact.TryGetValue(objName, out string? eps)) {
 			expansion = eps;
 			return true;
 		}
 
-		foreach (var tup in ConfigMaster.ObjExpPrefix) {
+		foreach (var tup in ConfigMgr.ObjExpPrefix) {
 			if (objName.StartsWith(tup.Prefix)) {
 				expansion = tup.Expansion;
 				return true;

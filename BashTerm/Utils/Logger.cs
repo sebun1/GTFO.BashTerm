@@ -11,7 +11,7 @@ internal static class Logger {
 	private static string Format(object data) => data.ToString();
 
 	public static void Debug(object msg) {
-		if (ConfigMaster.DEBUG)
+		if (ConfigMgr.DEBUG)
 			m_LogSource.LogInfo((object)Format(msg));
 	}
 

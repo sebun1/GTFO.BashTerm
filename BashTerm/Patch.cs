@@ -1,7 +1,6 @@
-using BashTerm.Exec;
 using BashTerm.Parsers;
 using BashTerm.Utils;
-using Dissonance;
+using BashTerm.Exec;
 using GameData;
 using HarmonyLib;
 using LevelGeneration;
@@ -9,15 +8,14 @@ using LevelGeneration;
 namespace BashTerm;
 
 [HarmonyPatch]
-internal class Patch
-{
+internal class Patch {
 	[HarmonyPatch(
 		typeof(LG_TERM_PlayerInteracting),
 		nameof(LG_TERM_PlayerInteracting.OnReturn)
 	)]
 	[HarmonyPrefix]
-	public static bool ProcessCommand (ref LG_TERM_PlayerInteracting __instance)
-	{
+	public static bool ProcessCommand(ref LG_TERM_PlayerInteracting __instance) {
+		Bsh.Renew(__instance.m_terminal);
 		// TODO: Consider not making it lower, allow case variation. Will want to change other code that returns uppercase, if any
 		var input = __instance.m_terminal.m_currentLine.ToLower();
 
@@ -32,26 +30,44 @@ internal class Patch
 				}
 			 */
 
-			if (TerminalChan.RawMode) {
+			if (BshSystem.RawMode) {
 				if (input.Trim().ToLower().Split(' ')[0] == "raw") {
-					TerminalChan.ToggleRawMode();
+					BshSystem.ToggleRawMode();
 				} else {
 					__instance.m_terminal.m_command.EvaluateInput(input.ToUpper());
 				}
 			} else {
 				VarCommand cmd = MainParser.Parse(input);
 				Dispatch.Exec(cmd, __instance.m_terminal);
-				if (ConfigMaster.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Clr.Info}{cmd}{Clr.End}");
+				if (ConfigMgr.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Clr.Info}{cmd}{Clr.End}");
 			}
-		} catch (BSHException e) {
+		}
+		catch (BSHException e) {
 			__instance.m_terminal.m_command.AddOutput($"{Clr.Error}{e}{Clr.End}");
 			Logger.Error(e);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			__instance.m_terminal.m_command.AddOutput($"{Clr.Error}{e}{Clr.End}");
 			Logger.Error(e);
 		}
 
 		__instance.m_terminal.m_currentLine = "";
+		Bsh.Expire();
+		return false;
+	}
+
+	[HarmonyPatch(
+		typeof(LG_TERM_PlayerInteracting),
+		nameof(LG_TERM_PlayerInteracting.ParseInput)
+	)]
+	[HarmonyPrefix]
+	public static bool ParseInput(ref LG_TERM_PlayerInteracting __instance) {
+		// TODO
+
+		InputMapper.GetButtonDownKeyMouseGamepad(InputAction.TerminalDel, eFocusState.ComputerTerminal);
+
+		// Input.inputString =
+
 		return false;
 	}
 
@@ -63,7 +79,7 @@ internal class Patch
 	public static void NewLineStart(ref LG_ComputerTerminalCommandInterpreter __instance, ref string __result) {
 		string res = Clr.Bashterm;
 
-		string termMode = TerminalChan.RawMode ? "RAW" : "BSH " + Plugin.BSH_VERSION;
+		string termMode = BshSystem.RawMode ? "RAW" : "BSH " + Plugin.BSH_VERSION;
 		LG_NavInfo zoneNavInfo = __instance.m_terminal.SpawnNode.m_zone.m_navInfo;
 		LG_NavInfo areaNavInfo = __instance.m_terminal.SpawnNode.m_area.m_navInfo;
 
@@ -78,6 +94,17 @@ internal class Patch
 		res += " >> ";
 		res += Clr.End;
 		__result = res;
+	}
+
+	[HarmonyPatch(
+		typeof(LG_ComputerTerminalCommandInterpreter),
+		nameof(LG_ComputerTerminalCommandInterpreter.ReceiveCommand)
+	)]
+	[HarmonyPostfix]
+	public static void ReceiveCmd(ref LG_ComputerTerminalCommandInterpreter __instance) {
+		if (Sync.Signal(new SyncSrcOnReceiveCmd(__instance.m_terminal.SyncID))) {
+			// TODO: correspond with managing in
+		}
 	}
 
 	[HarmonyPatch(
@@ -101,7 +128,8 @@ internal class Patch
 		string sOrNoS = count > 1 ? "s" : "";
 		__instance.AddOutput($"There {isOrAre} {count} log{sOrNoS} on this terminal", spacing: false);
 
-		if (true) { // TODO: Add to config to enable/disable this?
+		if (true) {
+			// TODO: Add to config to enable/disable this?
 			foreach (Il2CppSystem.Collections.Generic.KeyValuePair<string, TerminalLogFileData> localLog in
 			         localLogs) {
 				__instance.AddOutput($"{Fmt.Pos(5)}-> {localLog.Key.ToUpper()}{Fmt.EndPos}", spacing: false);

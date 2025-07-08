@@ -1,10 +1,14 @@
 namespace BashTerm;
 
-internal static class TerminalChan {
+internal static class BshSystem {
 	private static bool _rawMode;
 	private static int _infoCount;
 	private static int _warnCount;
 	private static int _errorCount;
+
+	// TODO: Scrollback buffer
+	public const long SCROLLBACK_SIZE = 1000;
+	private static List<string> _scrollback = new();
 
 	public static List<string> BSHLogs = new List<string>();
 	public static bool RawMode {
