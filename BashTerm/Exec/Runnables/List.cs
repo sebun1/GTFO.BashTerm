@@ -22,7 +22,7 @@ Options:
 		FSchema = new FlagSchema();
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public async Task<PipedPayload> Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 		string input = Util.GetCommandString(cmd, args);
 
@@ -34,7 +34,7 @@ Options:
 
 		LG_ComputerTerminalManager.WantToSendTerminalCommand(terminal.SyncID, TERM_Command.ShowList, input, arg0, arg1);
 
-		Sync.WaitFor(new SyncSrcOnReceiveCmd(terminal.SyncID), 0);
+		await Sync.WaitAsync(new SyncSrcOnReceiveCmd(terminal.m_serialNumber), 10000);
 
 		foreach (var i in allTerminalInterfaces) {
 			iTerminalItem item = i.Value;

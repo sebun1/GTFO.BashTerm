@@ -15,7 +15,7 @@ public class Ping : IRunnable {
 		FSchema = new FlagSchema();
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal? termInherit) {
+	public async Task<PipedPayload> Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal? termInherit) {
 		return new EmptyPayload();
 	}
 

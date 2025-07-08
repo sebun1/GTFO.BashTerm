@@ -14,7 +14,7 @@ public interface IRunnable {
 
 	FlagSchema FSchema { get; }
 
-	PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal term);
+	Task<PipedPayload> Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal term);
 	bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value);
 	bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded);
 }
@@ -60,11 +60,11 @@ public static class Dispatch {
 		return true;
 	}
 
-	public static PipedPayload Exec(VarCommand cmd, LG_ComputerTerminal term) {
-		return Exec(cmd, new EmptyPayload(), term);
+	public static async Task<PipedPayload> Exec(VarCommand cmd, LG_ComputerTerminal term) {
+		return await Exec(cmd, new EmptyPayload(), term);
 	}
 
-	public static PipedPayload Exec(VarCommand cmd, PipedPayload payload, LG_ComputerTerminal term) {
+	public static async Task<PipedPayload> Exec(VarCommand cmd, PipedPayload payload, LG_ComputerTerminal term) {
 		if (!IsInitialized) {
 			throw new ExecException("executing commands before initialization");
 		}
@@ -80,17 +80,17 @@ public static class Dispatch {
 					List<string> args = CtxArgs2Str(wArgs, term, handler);
 					FlagParser fp = new FlagParser(args, handler.FSchema);
 					CmdOpts opts = new CmdOpts(fp.Flags);
-					return handler.Run(name, fp.Positionals, opts, payload, term);
+					return await handler.Run(name, fp.Positionals, opts, payload, term);
 				}
 				var argsNoCtx = Args2Str(wArgs, term);
-				return Fallback!.Run(name, argsNoCtx, CmdOpts.EmptyOpts(), payload, term);
+				return await Fallback!.Run(name, argsNoCtx, CmdOpts.EmptyOpts(), payload, term);
 
 			case VarPipe(VarCommand first, VarCommand post):
-				return Exec(post, Exec(first, payload, term), term);
+				return await Exec(post, await Exec(first, payload, term), term);
 
 			case VarSequence(VarCommand first, VarCommand second):
-				Exec(first, payload, term);
-				return Exec(second, term);
+				await Exec(first, payload, term);
+				return await Exec(second, term);
 
 			default:
 				throw new UnknownParserCommandTypeException(cmd.GetType());

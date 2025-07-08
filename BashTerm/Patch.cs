@@ -14,7 +14,16 @@ internal class Patch {
 		nameof(LG_TERM_PlayerInteracting.OnReturn)
 	)]
 	[HarmonyPrefix]
-	public static bool ProcessCommand(ref LG_TERM_PlayerInteracting __instance) {
+	public static bool ProcessCommandPre() {
+		return false;
+	}
+
+	[HarmonyPatch(
+		typeof(LG_TERM_PlayerInteracting),
+		nameof(LG_TERM_PlayerInteracting.OnReturn)
+	)]
+	[HarmonyPostfix]
+	public static async void ProcessCommand(LG_TERM_PlayerInteracting __instance) {
 		Bsh.Renew(__instance.m_terminal);
 		// TODO: Consider not making it lower, allow case variation. Will want to change other code that returns uppercase, if any
 		var input = __instance.m_terminal.m_currentLine.ToLower();
@@ -38,7 +47,7 @@ internal class Patch {
 				}
 			} else {
 				VarCommand cmd = MainParser.Parse(input);
-				Dispatch.Exec(cmd, __instance.m_terminal);
+				await Dispatch.Exec(cmd, __instance.m_terminal);
 				if (ConfigMgr.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Clr.Info}{cmd}{Clr.End}");
 			}
 		}
@@ -53,7 +62,7 @@ internal class Patch {
 
 		__instance.m_terminal.m_currentLine = "";
 		Bsh.Expire();
-		return false;
+		//return false;
 	}
 
 	/*

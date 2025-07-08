@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using LevelGeneration;
 using BashTerm.Parsers;
 using BashTerm.Utils;
@@ -40,7 +40,7 @@ OPTIONS
 		FSchema.Add("s", "sort", FlagType.Value);
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public async Task<PipedPayload> Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 
 		string input = Util.GetCommandString(cmd, args);
@@ -78,6 +78,8 @@ OPTIONS
 					throw new MissingArgumentException(CommandName, 0, 1);
 				LG_ComputerTerminalManager.WantToSendTerminalCommand(terminal.SyncID, TERM_Command.Query, input,
 					args[0], "");
+
+				await Sync.WaitAsync(new SyncSrcOnReceiveCmd(terminal.m_serialNumber), 5000);
 
 				if (LG_LevelInteractionManager.TryGetTerminalInterface(args[0].ToUpper(),
 					    terminal.SpawnNode.m_dimension.DimensionIndex, out var target)) {

@@ -10,10 +10,6 @@ public static class Sync {
 		return _channels.GetOrAdd(type, new ConcurrentQueue<TaskCompletionSource<bool>>());
 	}
 
-	public static void WaitFor(SyncSrc source, int timeoutMs) {
-		Task.Run(async () => { await WaitAsync(source, timeoutMs); });
-	}
-
 	public static async Task WaitAsync(SyncSrc source, int timeoutMs) {
 		Logger.Debug($"Sync.WaitAsync: waiting on {source} with timeout={timeoutMs}ms");
 		var tcs = new TaskCompletionSource<bool>();
@@ -26,7 +22,8 @@ public static class Sync {
 
 			if (first == timeoutTask) {
 				q.TryDequeue(out _);
-				throw new TimeoutException($"channel {source} timed out");
+				Logger.Warn("Sync.WaitAsync: timeout while waiting for signal on " + source);
+				return;
 			}
 		} else {
 			await tcs.Task;

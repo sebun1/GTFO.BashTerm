@@ -15,7 +15,7 @@ public class Raw : IRunnable {
 		FSchema = new FlagSchema();
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public async Task<PipedPayload> Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 		BshSystem.ToggleRawMode();
 		terminal.m_command.AddOutput("", spacing: false);
