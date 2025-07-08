@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using LevelGeneration;
 using BashTerm.Parsers;
 using BashTerm.Utils;
@@ -154,7 +154,11 @@ internal class TerminalItemComparator : IComparer<iTerminalItem> {
 		_priorityFlag = priorityFlag.Trim().ToUpper();
 	}
 
-	public int Compare(iTerminalItem x, iTerminalItem y) {
+	public int Compare(iTerminalItem? x, iTerminalItem? y) {
+		if (x == null && y == null) return 0;
+		if (x == null) return 1;
+		if (y == null) return -1;
+
 		for (int i = 0; i < _priorityFlag.Length; i++) {
 			char field = _priorityFlag[i];
 			char direction = i + 1 < _priorityFlag.Length ? _priorityFlag[i + 1] : (char)0;
