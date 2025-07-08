@@ -28,7 +28,7 @@ USAGE
 
 		if (!Dispatch.IsInitialized) {
 			terminal.m_command.AddOutput("");
-			TerminalChan.LogError("Man", "tried to get manual before Dispatch is initialized, this is impossible??");
+			BshSystem.LogError("Man", "tried to get manual before Dispatch is initialized, this is impossible??");
 			throw new CmdRunException("manuals aren't loaded yet");
 		}
 

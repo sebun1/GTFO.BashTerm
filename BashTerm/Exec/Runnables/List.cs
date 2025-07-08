@@ -34,6 +34,8 @@ Options:
 
 		LG_ComputerTerminalManager.WantToSendTerminalCommand(terminal.SyncID, TERM_Command.ShowList, input, arg0, arg1);
 
+		Sync.WaitFor(new SyncSrcOnReceiveCmd(terminal.SyncID), 0);
+
 		foreach (var i in allTerminalInterfaces) {
 			iTerminalItem item = i.Value;
 			if (item.ShowInFloorInventory && SatisfiesFilters(item, arg0, arg1, terminal)) {

@@ -56,7 +56,7 @@ internal class Parser {
 			}
 		}
 
-		if (ConfigMaster.DEBUG) {
+		if (ConfigMgr.DEBUG) {
 			foreach (var token in this._tokens) {
 				Logger.Debug(token.ToString());
 			}

@@ -45,7 +45,7 @@ public static class Dispatch {
 					Logger.Debug($"{type.FullName} hooked with command name '{attr.Name}'");
 				} else {
 					Logger.Warn($"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
-					TerminalChan.LogWarn("dispatch", $"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
+					BshSystem.LogWarn("dispatch", $"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
 				}
 			}
 		}
