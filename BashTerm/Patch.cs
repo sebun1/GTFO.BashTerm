@@ -39,15 +39,15 @@ internal class Patch {
 			} else {
 				VarCommand cmd = MainParser.Parse(input);
 				Dispatch.Exec(cmd, __instance.m_terminal);
-				if (ConfigMgr.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Clr.Info}{cmd}{Clr.End}");
+				if (ConfigMgr.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Styles.Info}{cmd}{Styles.CEnd}");
 			}
 		}
 		catch (BSHException e) {
-			__instance.m_terminal.m_command.AddOutput($"{Clr.Error}{e}{Clr.End}");
+			__instance.m_terminal.m_command.AddOutput($"{Styles.Error}{e}{Styles.CEnd}");
 			Logger.Error(e);
 		}
 		catch (Exception e) {
-			__instance.m_terminal.m_command.AddOutput($"{Clr.Error}{e}{Clr.End}");
+			__instance.m_terminal.m_command.AddOutput($"{Styles.Error}{e}{Styles.CEnd}");
 			Logger.Error(e);
 		}
 
@@ -79,7 +79,7 @@ internal class Patch {
 	)]
 	[HarmonyPostfix]
 	public static void NewLineStart(ref LG_ComputerTerminalCommandInterpreter __instance, ref string __result) {
-		string res = Clr.Bashterm;
+		string res = Styles.Bashterm;
 
 		string termMode = BshSystem.RawMode ? "RAW" : "BSH " + Plugin.BSH_VERSION;
 		LG_NavInfo zoneNavInfo = __instance.m_terminal.SpawnNode.m_zone.m_navInfo;
@@ -94,8 +94,20 @@ internal class Patch {
 		}
 
 		res += " >> ";
-		res += Clr.End;
+		res += Styles.CEnd;
 		__result = res;
+	}
+
+	[HarmonyPatch(
+		typeof(LG_ComputerTerminalCommandInterpreter),
+		nameof(LG_ComputerTerminalCommandInterpreter.ReceiveCommand)
+	)]
+	[HarmonyPrefix]
+	public static bool ReceiveCmdPre(ref LG_ComputerTerminalCommandInterpreter __instance, TERM_Command cmd,
+		string inputLine) {
+		if (cmd == TERM_Command.EmptyLine && Bsh.DetectSyncedIO(inputLine))
+			return false;
+		return true;
 	}
 
 	[HarmonyPatch(
@@ -126,10 +138,10 @@ internal class Patch {
 		int count = localLogs.Count;
 		string zone = term.SpawnNode.m_zone.NavInfo.GetFormattedText(LG_NavInfoFormat.Full_And_Number_With_Underscore);
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
-		__instance.AddOutput($"{Clr.Bashterm}BashTerm Shell v{Plugin.BSH_VERSION}{Clr.End}", spacing: false);
+		__instance.AddOutput($"{Styles.Bashterm}BashTerm Shell v{Plugin.BSH_VERSION}{Styles.CEnd}", spacing: false);
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
 		__instance.AddOutput(
-			$"Welcome to <b>{Clr.Accent}{term.ItemKey}{Clr.End}</b> located in <b>{Clr.Accent}{zone}{Clr.End}</b>");
+			$"Welcome to <b>{Styles.Accent}{term.ItemKey}{Styles.CEnd}</b> located in <b>{Styles.Accent}{zone}{Styles.CEnd}</b>");
 		string isOrAre = count > 1 ? "are" : "is";
 		string sOrNoS = count > 1 ? "s" : "";
 		__instance.AddOutput($"There {isOrAre} {count} log{sOrNoS} on this terminal", spacing: false);
@@ -138,7 +150,7 @@ internal class Patch {
 			// TODO: Add to config to enable/disable this?
 			foreach (Il2CppSystem.Collections.Generic.KeyValuePair<string, TerminalLogFileData> localLog in
 			         localLogs) {
-				__instance.AddOutput($"{Fmt.Pos(5)}-> {localLog.Key.ToUpper()}{Fmt.EndPos}", spacing: false);
+				__instance.AddOutput($"{Styles.Pos(5)}-> {localLog.Key.ToUpper()}{Styles.EndPos}", spacing: false);
 			}
 		}
 
