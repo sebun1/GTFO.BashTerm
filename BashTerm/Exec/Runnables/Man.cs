@@ -37,7 +37,7 @@ USAGE
 
 		if (Dispatch.Handlers.TryGetValue(args[0], out var runnable)) {
 			terminal.m_command.AddOutput($"Showing manual for [{cmd}]:", spacing: false);
-			terminal.m_command.AddOutput(ManualFormatter.GetFormattedManual(runnable.Manual));
+			terminal.m_command.AddOutput(Fmt.Wrap(runnable.Manual));
 		}
 
 		return new EmptyPayload();

@@ -3,40 +3,43 @@ using System.Text.RegularExpressions;
 
 namespace BashTerm.Utils;
 
-public static class ManualFormatter
+public static class Fmt
 {
-    public const int TERMINAL_COL_WIDTH = 80;
+    public const int TerminalColWidth = 80;
 
-    public static string GetFormattedManual(string input, int indentSpaces = 4)
-    {
-        var resultLines = new List<string>();
-        foreach (var line in input.Split('\n'))
-        {
-            // Count leading tabs
-            int tabCount = 0;
-            foreach (char c in line)
-            {
-                if (c == '\t') tabCount++;
-                else break;
-            }
+    public static string Wrap(string input, int indentSpaces = 4, int maxCols = TerminalColWidth) {
+	    return string.Join('\n', WrapList(input, indentSpaces, maxCols));
+    }
 
-            string lineContent = line.TrimStart('\t');
-            string baseIndent = new string(' ', tabCount * indentSpaces);
+    public static List<string> WrapList(string input, int indentSpaces = 4, int maxCols = TerminalColWidth) {
+	    var resultLines = new List<string>();
+	    foreach (var line in input.Split('\n'))
+	    {
+		    // Count leading tabs
+		    int tabCount = 0;
+		    foreach (char c in line)
+		    {
+			    if (c == '\t') tabCount++;
+			    else break;
+		    }
 
-            var wrappedLines = WrapLine(lineContent, TERMINAL_COL_WIDTH, baseIndent);
-            if (wrappedLines.Count > 0)
-            {
-                resultLines.Add(baseIndent + wrappedLines[0]); // First line
-                for (int i = 1; i < wrappedLines.Count; i++)
-                    resultLines.Add(baseIndent + wrappedLines[i]); // Wrapped lines
-            }
-            else
-            {
-                resultLines.Add(baseIndent); // Blank line
-            }
-        }
+		    string lineContent = line.TrimStart('\t');
+		    string baseIndent = new string(' ', tabCount * indentSpaces);
 
-        return string.Join("\n", resultLines);
+		    var wrappedLines = WrapLine(lineContent, maxCols, baseIndent);
+		    if (wrappedLines.Count > 0)
+		    {
+			    resultLines.Add(baseIndent + wrappedLines[0]); // First line
+			    for (int i = 1; i < wrappedLines.Count; i++)
+				    resultLines.Add(baseIndent + wrappedLines[i]); // Wrapped lines
+		    }
+		    else
+		    {
+			    resultLines.Add(baseIndent); // Blank line
+		    }
+	    }
+
+	    return resultLines;
     }
 
     private static List<string> WrapLine(string input, int maxWidth, string baseIndent)
