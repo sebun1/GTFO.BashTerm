@@ -141,7 +141,7 @@ internal class Patch {
 		__instance.AddOutput($"{Styles.Bashterm}BashTerm Shell v{Plugin.BSH_VERSION}{Styles.CEnd}", spacing: false);
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
 		__instance.AddOutput(
-			$"Welcome to <b>{Styles.Accent}{term.ItemKey}{Styles.CEnd}</b> located in <b>{Styles.Accent}{zone}{Styles.CEnd}</b>");
+			$"Welcome to {Styles.Accent}{term.ItemKey}{Styles.CEnd} located in {Styles.Accent}{zone}{Styles.CEnd}");
 		string isOrAre = count > 1 ? "are" : "is";
 		string sOrNoS = count > 1 ? "s" : "";
 		__instance.AddOutput($"There {isOrAre} {count} log{sOrNoS} on this terminal", spacing: false);
