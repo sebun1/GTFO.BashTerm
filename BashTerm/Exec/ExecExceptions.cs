@@ -1,4 +1,6 @@
-﻿namespace BashTerm.Exec;
+﻿using BashTerm.Runtime;
+
+namespace BashTerm.Exec;
 
 public class ExecException : BSHException {
 

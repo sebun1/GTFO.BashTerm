@@ -1,4 +1,6 @@
-﻿namespace BashTerm.Parsers;
+﻿using BashTerm.Runtime;
+
+namespace BashTerm.Parsers;
 
 public class ParserException : BSHException {
 
