@@ -1,11 +1,25 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
+using BashTerm.Exec;
 
 namespace BashTerm.Utils;
+
+public interface IFmtToStringable
+{
+	string FmtToString();
+}
 
 public static class Fmt
 {
     public const int TerminalColWidth = 80;
+
+    public static string Indent(VarCommand cmd) {
+	    return Indent(cmd.FmtToString(), 2);
+    }
+
+    public static string Indent(string input, int indentSpaces = 4) {
+	    return input.Replace("\n", "\n" + new string(' ', indentSpaces));
+    }
 
     public static string Wrap(string input, int indentSpaces = 4, int maxCols = TerminalColWidth) {
 	    return string.Join('\n', WrapList(input, indentSpaces, maxCols));

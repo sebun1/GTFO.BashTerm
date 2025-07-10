@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using BashTerm.Utils;
 
 namespace BashTerm.Parsers;
 
@@ -238,18 +239,32 @@ public class LexerB {
 
 public abstract record Token;
 
-public record TokenWord(WordPart[] parts) : Token {
-	public override string ToString() => $"TokenWord{{ {string.Join<WordPart>(", ", parts)} }}";
+public record TokenWord(WordPart[] parts) : Token, IFmtToStringable {
+	public override string ToString() {
+		return $"\"{string.Join<WordPart>("", parts)}\"";
+	}
+
+	public string FmtToString() {
+		if (parts.Length == 0) return "";
+		if (parts.Length == 1) return parts[0].FmtToString();
+		string formattedParts = string.Join("", parts.Select(p => p.FmtToString()));
+		return $"\"{formattedParts}\"";
+	}
 };
 
-public abstract record WordPart;
+public abstract record WordPart : IFmtToStringable {
+	public abstract string FmtToString();
+};
 
 public record WordText(string text) : WordPart {
-	public override string ToString() => $"\"{text}\"";
+	public override string ToString() => $"{text}";
+
+	public override string FmtToString() => $"{text}";
 };
 
 public record WordVar(string varName) : WordPart {
 	public override string ToString() => $"${{{varName}}}";
+	public override string FmtToString() => $"<#66D9EF>${varName}</color>";
 };
 
 public record TokenPipe() : Token {

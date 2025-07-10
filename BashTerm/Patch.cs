@@ -39,7 +39,8 @@ internal class Patch {
 			} else {
 				VarCommand cmd = MainParser.Parse(input);
 				Dispatch.Exec(cmd, __instance.m_terminal);
-				if (ConfigMgr.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Styles.Info}{cmd}{Styles.CEnd}");
+				//if (ConfigMgr.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Styles.Info}{cmd.FmtToString()}{Styles.CEnd}");
+				if (ConfigMgr.DEBUG) __instance.m_terminal.m_command.AddOutput($"{cmd.FmtToString()}");
 			}
 		}
 		catch (BSHException e) {

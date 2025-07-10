@@ -10,18 +10,18 @@ public class Query : IRunnable {
 	public string CommandName => "query";
 	public string Desc => "Queries the location of a single item (or multiple through piping)";
 	public string Manual => @"
-NAME
+<b>NAME</b>
 		query - tool for querying the locations of items throughout the complex
 
-USAGE
-		QUERY <u>ITEM</u> -> <b>ItemQueryResult</b>|<b>ItemQueryResults</b>
-		<b>ItemList</b> -> QUERY [-S <u>SORTING RULE</u>]
+<b>USAGE</b>
+		query <u>item</u> -> <b>ItemQueryResult</b>|<b>ItemQueryResults</b>
+		<b>ItemList</b> -> query [-s <u>sorting string</u>]
 
-OPTIONS
-		-S, --SORT
+<b>OPTIONS</b>
+		-s, --sort
 			Sort the list printed in the query summary in a specific order specified with a single sorting string, this also changes the order of items returned in ItemQueryResults.
 
-			There are three categories for sorting that can be configured, each specified with a flag
+			There are three categories for sorting that can be configured, each specified with a flag (case-insensitive):
 				Item ID      I
 				Zone         Z or L
 				Capacity     C
