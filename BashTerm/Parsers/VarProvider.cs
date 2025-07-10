@@ -15,15 +15,19 @@ public class VarProvider {
 		// Strict match
 		switch (varName) {
 			case "SHELL":
+			case "shell":
 				value = "BSH";
 				return true;
 			case "ZONE":
+			case "zone":
 				value =  $"ZONE_{_term.SpawnNode.m_zone.ID}";
 				return true;
 			case "ZONE_ID":
+			case "zone_id":
 				value = _term.SpawnNode.m_zone.ID.ToString();
 				return true;
 			case "AREA":
+			case "area":
 				value = _term.SpawnNode.m_area.m_navInfo.Suffix;
 				return true;
 		}

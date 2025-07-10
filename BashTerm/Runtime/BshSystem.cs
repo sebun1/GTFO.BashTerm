@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace BashTerm;
+namespace BashTerm.Runtime;
 
 internal class BshSystem : MonoBehaviour {
 	private static bool _rawMode;
