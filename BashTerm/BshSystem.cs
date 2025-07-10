@@ -1,6 +1,8 @@
+using UnityEngine;
+
 namespace BashTerm;
 
-internal static class BshSystem {
+internal class BshSystem : MonoBehaviour {
 	private static bool _rawMode;
 	private static int _infoCount;
 	private static int _warnCount;
@@ -44,6 +46,10 @@ internal static class BshSystem {
 	public static void LogError(string src, string msg) {
 		_errorCount++;
 		BSHLogs.Add($"{Styles.Error}ERRR[{src}] >> {msg}{Styles.CEnd}");
+	}
+
+	public void Update() {
+
 	}
 }
 
