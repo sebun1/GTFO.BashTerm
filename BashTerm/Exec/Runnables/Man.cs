@@ -1,26 +1,34 @@
-﻿using LevelGeneration;
+﻿using BashTerm.Parsers;
+using BashTerm.Utils;
+using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
 [CommandHandler("man")]
 public class Man : IRunnable {
 	public string CommandName => "man";
-	public string Desc => "Queries the location of a single item (or multiple through piping)";
+	public string Desc => "Read the manual for a given command";
 
 	public string Manual => @"
 NAME
 		man - read the manual for a given command
 
-SYNOPSIS
+USAGE
 		MAN <u>COMMAND</u>
 ";
 
-	public PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public FlagSchema FSchema { get; }
+
+	public Man() {
+		FSchema = new FlagSchema();
+	}
+
+	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 
 		if (!Dispatch.IsInitialized) {
 			terminal.m_command.AddOutput("");
-			TerminalChan.LogError("Man", "tried to get manual before Dispatch is initialized, this is impossible??");
+			BshSystem.LogError("Man", "tried to get manual before Dispatch is initialized, this is impossible??");
 			throw new CmdRunException("manuals aren't loaded yet");
 		}
 
@@ -29,10 +37,19 @@ SYNOPSIS
 
 		if (Dispatch.Handlers.TryGetValue(args[0], out var runnable)) {
 			terminal.m_command.AddOutput($"Showing manual for [{cmd}]:", spacing: false);
-			// TODO: The output is weird with indentation and line wrapping
-			terminal.m_command.AddOutput(Util.ReplaceTabWithSpaces(runnable.Manual));
+			terminal.m_command.AddOutput(Fmt.Wrap(runnable.Manual));
 		}
 
 		return new EmptyPayload();
+	}
+
+	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {
+		value = "";
+		return false;
+	}
+
+	public bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded) {
+		expanded = "";
+		return false;
 	}
 }

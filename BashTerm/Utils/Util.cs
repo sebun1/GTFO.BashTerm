@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using Il2CppSystem.Xml.Schema;
 
-namespace BashTerm;
+namespace BashTerm.Utils;
 
 internal static class Util {
-	// All methods assume and should have calls with lower case strings
+	private const int TERMINAL_COL_WIDTH = 90;
 
 	public static string Concat(params string[] args) {
 		return Concat(' ', args);
@@ -46,19 +46,19 @@ internal static class Util {
 
 	public static void printMaps() {
 		Logger.Info("CmdExpExact:");
-		foreach (var pair in ConfigMaster.CmdExpExact) {
+		foreach (var pair in ConfigMgr.CmdExpExact) {
 			Logger.Info("\t" + pair.Key + " -> " + pair.Value);
 		}
 		Logger.Info("CmdExpPrefix:");
-		foreach (var tup in ConfigMaster.CmdExpPrefix) {
+		foreach (var tup in ConfigMgr.CmdExpPrefix) {
 			Logger.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
 		}
 		Logger.Info("ObjExpExact:");
-		foreach (var pair in ConfigMaster.ObjExpExact) {
+		foreach (var pair in ConfigMgr.ObjExpExact) {
 			Logger.Info("\t" + pair.Key + " -> " + pair.Value);
 		}
 		Logger.Info("ObjExpPrefix:");
-		foreach (var tup in ConfigMaster.ObjExpPrefix) {
+		foreach (var tup in ConfigMgr.ObjExpPrefix) {
 			Logger.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
 		}
 	}
@@ -73,9 +73,4 @@ internal static class Util {
 
 	public static string RemoveAllNumbers(string input) =>
 		System.Text.RegularExpressions.Regex.Replace(input, @"\d", "");
-
-	public static string ReplaceTabWithSpaces(string input, int spaces = 4) {
-		string tabReplacement = new string(' ', spaces);
-		return System.Text.RegularExpressions.Regex.Replace(input, @"\t", tabReplacement);
-	}
 }

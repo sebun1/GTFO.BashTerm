@@ -8,8 +8,11 @@
 		<DebugType>None</DebugType>
 		<AssemblyName>$(SolutionName)</AssemblyName>
 		<RootNamespace>$(SolutionName)</RootNamespace>
+		
+		<IsMacOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsMacOS>
 		<BepInEx Condition="'$(CI)' == 'true'">$(SolutionDir)/GTFOBepInDep</BepInEx>
-		<BepInEx Condition="'$(CI)' != 'true'">$(AppData)\com.kesomannen.gale\gtfo\profiles\$(Profile)\BepInEx</BepInEx>
+		<BepInEx Condition="'$(CI)' != 'true' AND '$(IsMacOS)' != 'true'">$(AppData)\com.kesomannen.gale\gtfo\profiles\$(Profile)\BepInEx</BepInEx>
+		<BepInEx Condition="'$(CI)' != 'true' AND '$(IsMacOS)' == 'true'">/opt/GTFOBepInDep</BepInEx>
 		<!-- <BepInEx Condition="'$(CI)' != 'true'">$(AppData)\r2modmanPlus-local\GTFO\profiles\$(Profile)\BepInEx</BepInEx> -->
 		<BuildDirectory>$(BepInEx)\plugins\$(SolutionName)\</BuildDirectory>
 		<OutputPath>$(BuildDirectory)</OutputPath>

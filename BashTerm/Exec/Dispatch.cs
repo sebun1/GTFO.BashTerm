@@ -1,5 +1,8 @@
 ﻿using System.Reflection;
+using System.Text;
 using BashTerm.Exec.Runnables;
+using BashTerm.Parsers;
+using BashTerm.Utils;
 using LevelGeneration;
 
 namespace BashTerm.Exec;
@@ -9,11 +12,15 @@ public interface IRunnable {
 	string Desc { get; }
 	string Manual { get; }
 
-	PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal term);
+	FlagSchema FSchema { get; }
+
+	PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal term);
+	bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value);
+	bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded);
 }
 
 public static class Dispatch {
-	internal static Dictionary<string, IRunnable> Handlers = new Dictionary<string, IRunnable>();
+	internal static Dictionary<string, IRunnable> Handlers = new();
 	internal static bool IsInitialized = false;
 	internal static IRunnable? Fallback;
 
@@ -38,6 +45,7 @@ public static class Dispatch {
 					Logger.Debug($"{type.FullName} hooked with command name '{attr.Name}'");
 				} else {
 					Logger.Warn($"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
+					BshSystem.LogWarn("dispatch", $"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
 				}
 			}
 		}
@@ -52,35 +60,98 @@ public static class Dispatch {
 		return true;
 	}
 
-	public static PipedPayload Exec(Command cmd, LG_ComputerTerminal? term = null) {
+	public static PipedPayload Exec(VarCommand cmd, LG_ComputerTerminal term) {
 		return Exec(cmd, new EmptyPayload(), term);
 	}
 
-	public static PipedPayload Exec(Command cmd, PipedPayload payload, LG_ComputerTerminal? term = null) {
+	public static PipedPayload Exec(VarCommand cmd, PipedPayload payload, LG_ComputerTerminal term) {
 		if (!IsInitialized) {
-			throw new ExecException("Executing commands before initialization");
+			throw new ExecException("executing commands before initialization");
 		}
 
 		switch(cmd)
 		{
 			case null:
-				throw new ExecException("Exec called with null command");
+				throw new ExecException("cannot execute null command");
 
-			case Execve(string name, List<string> args):
+			case VarExecve(TokenWord wName, List<TokenWord> wArgs):
+				string name = Arg2Str(wName, term);
 				if (Handlers.TryGetValue(name, out IRunnable? handler)) {
-					return handler.Run(name, args, payload, term);
+					List<string> args = CtxArgs2Str(wArgs, term, handler);
+					FlagParser fp = new FlagParser(args, handler.FSchema);
+					CmdOpts opts = new CmdOpts(fp.Flags);
+					return handler.Run(name, fp.Positionals, opts, payload, term);
 				}
-				return Fallback.Run(name, args, payload, term);
+				var argsNoCtx = Args2Str(wArgs, term);
+				return Fallback!.Run(name, argsNoCtx, CmdOpts.EmptyOpts(), payload, term);
 
-			case Pipe(Command first, Command post):
+			case VarPipe(VarCommand first, VarCommand post):
 				return Exec(post, Exec(first, payload, term), term);
 
-			case Sequence(Command first, Command second):
+			case VarSequence(VarCommand first, VarCommand second):
 				Exec(first, payload, term);
 				return Exec(second, term);
 
 			default:
 				throw new UnknownParserCommandTypeException(cmd.GetType());
 		}
+	}
+
+	private static List<string> Args2Str(List<TokenWord> wArgs, LG_ComputerTerminal term) {
+		List<string> args = new();
+		foreach (TokenWord tw in wArgs) {
+			args.Add(Arg2Str(tw, term));
+		}
+
+		return args;
+	}
+
+	private static string Arg2Str(TokenWord word, LG_ComputerTerminal term) {
+		VarProvider vp = new VarProvider(term);
+		StringBuilder sb = new();
+		foreach (WordPart part in word.parts) {
+			switch (part) {
+				case WordVar wv:
+					if (vp.TryGetVarValue(wv.varName, out string? value)) {
+						sb.Append(value);
+					}
+					break;
+				case WordText wt:
+					sb.Append(wt.text);
+					break;
+			}
+		}
+		return sb.ToString();
+	}
+
+	private static List<string> CtxArgs2Str(List<TokenWord> wArgs, LG_ComputerTerminal term, IRunnable handler) {
+		List<string> args = new();
+		foreach (TokenWord tw in wArgs) {
+			args.Add(CtxArg2Str(tw, term, handler));
+		}
+		return args;
+	}
+
+	private static string CtxArg2Str(TokenWord word, LG_ComputerTerminal term, IRunnable handler) {
+		VarProvider vp = new VarProvider(term);
+		StringBuilder sb = new();
+		foreach (WordPart part in word.parts) {
+			switch (part) {
+				case WordVar wv:
+					if (vp.TryGetVarValue(wv.varName, out string? value) ||
+					    handler.TryGetVarValue(term, wv.varName, out value)) {
+						sb.Append(value);
+					}
+					break;
+				case WordText wt:
+					sb.Append(wt.text);
+					break;
+			}
+		}
+
+		if (handler.TryExpandArg(term, sb.ToString(), out string? expanded)) {
+			return expanded;
+		}
+		return sb.ToString();
 	}
 }

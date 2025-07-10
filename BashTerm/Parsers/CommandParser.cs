@@ -1,129 +1,108 @@
 using System;
 using System.Diagnostics;
 using BashTerm.Exec;
+using BashTerm.Utils;
+using Il2CppSystem.Data;
 
 namespace BashTerm.Parsers;
 
 internal class MainParser {
-	public static ParsedCommand Parse(string input) {
+	public static VarCommand Parse(string input) {
 		var parser = new Parser(input);
 
 		if (parser.PeekToken() is TokenEof)
-			return new ParsedCommand(new Execve("", new List<string>()));
+			return new VarExecve(new TokenWord(new WordPart[] { new WordText("") }), new());
+		// TODO: ^ make cleaner way of declaring empty Execve
 
 		var command = parser.ParseCommands();
-		return new ParsedCommand(command);
+		return command;
 	}
 }
 
-record ParsedCommand(Command cmd);
-
 internal class Parser {
-	private Lexer lexer;
-	private Queue<Token> tokens;
+	private Queue<Token> _tokens;
 
 	public Parser(string input) {
-		this.lexer = new Lexer(input);
-		this.tokens = new Queue<Token>();
-		tokenizeInput();
-		if (ConfigMaster.DEBUG) {
-			foreach (var token in this.tokens) {
+		LexerB lexer = new LexerB(input);
+		_tokens = new();
+		bool firstWord = true;
+		var tokens = lexer.GetTokens();
+		foreach (Token tk in tokens) {
+			switch (tk) {
+				case TokenWord word:
+					if (firstWord && word.parts.Length == 1 && word.parts[0] is WordText wt &&
+					    ParseUtil.TryExpandAlias(wt.text, out var expansion)) {
+						var expLexer = new LexerB(expansion);
+						var expTokens = expLexer.GetTokens();
+						foreach (Token expTk in expTokens) {
+							if (expTk is TokenEof) break;
+							_tokens.Enqueue(expTk);
+						}
+					} else {
+						_tokens.Enqueue(tk);
+					}
+					firstWord = false;
+					break;
+
+				case TokenPipe:
+				case TokenSemicolon:
+				case TokenEof:
+					firstWord = true;
+					_tokens.Enqueue(tk);
+					break;
+
+				default:
+					throw new UnexpectedTokenException($"got unexpected token from lexer: {tk.GetType().FullName}");
+			}
+		}
+
+		if (ConfigMgr.DEBUG) {
+			foreach (var token in this._tokens) {
 				Logger.Debug(token.ToString());
 			}
 		}
 	}
 
-	private void tokenizeInput() {
-		bool isFirstWord = true;
-		while (true) {
-			Token tok = lexer.Peek();
-			Logger.Debug($"tokenizeInput: {tok}");
-			switch (tok) {
-				case TokenEof:
-					return;
-
-				case TokenWord(string word):
-					if (isFirstWord) {
-						string expanded = ParseUtil.ExpandCmd(word);
-						Lexer expLexer = new Lexer(expanded);
-						while (expLexer.Peek() is not TokenEof) {
-							tokens.Enqueue(expLexer.Peek());
-							expLexer.Consume();
-						}
-						isFirstWord = false;
-					} else {
-						tokens.Enqueue(new TokenWord(word));
-					}
-					lexer.Consume();
-					break;
-
-				case TokenPipe:
-					tokens.Enqueue(new TokenPipe());
-					lexer.Consume();
-					isFirstWord = true;
-					break;
-
-				case TokenSemicolon:
-					tokens.Enqueue(new TokenSemicolon());
-					lexer.Consume();
-					isFirstWord = true;
-					break;
-
-				default:
-					throw new ParserException("impossible");
-			}
-		}
-	}
-
 	public Token PeekToken() {
-		return tokens.Count > 0 ? tokens.Peek() : new TokenEof();
+		return _tokens.Count > 0 ? _tokens.Peek() : new TokenEof();
 	}
 
 	public Token NextToken() {
-		return tokens.Count > 0 ? tokens.Dequeue() : new TokenEof();
+		return _tokens.Count > 0 ? _tokens.Dequeue() : new TokenEof();
 	}
 
-	public Command ParseCommands() {
+	public VarCommand ParseCommands() {
 		var cmd = ParseOneCommand();
 
 		if (PeekToken() is TokenPipe) {
 			NextToken();
-			return new Pipe(cmd, ParseCommands());
+			return new VarPipe(cmd, ParseCommands());
 		}
+
 		if (PeekToken() is TokenSemicolon) {
 			NextToken();
-			return new Sequence(cmd, ParseCommands());
+			return new VarSequence(cmd, ParseCommands());
 		}
+
 		return cmd;
 	}
 
-	public Command ParseOneCommand() {
+	public VarCommand ParseOneCommand() {
 		Token tok = PeekToken();
 
-		if (tok is TokenWord(string word)) {
+		if (tok is TokenWord word) {
 			NextToken();
-			return new Execve(word, ParseArgs());
+			return new VarExecve(word, ParseArgs());
 		}
 
 		throw new ParserException($"command must start with a word, got: {tok}");
 	}
 
-	public string ParseArg() {
-		Token tok = PeekToken();
-
-		if (tok is TokenWord(string arg)) {
+	public List<TokenWord> ParseArgs() {
+		List<TokenWord> args = new();
+		while (PeekToken() is TokenWord word) {
 			NextToken();
-			return arg;
-		} else {
-			throw new ParserException($"expected argument, got {tok}");
-		}
-	}
-
-	public List<string> ParseArgs() {
-		List<string> args = new List<string>();
-		while (PeekToken() is TokenWord(string arg)) {
-			NextToken();
-			args.Add(arg);
+			args.Add(word);
 		}
 
 		return args;

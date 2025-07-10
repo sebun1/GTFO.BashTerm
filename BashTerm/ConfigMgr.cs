@@ -5,12 +5,13 @@ using System.Runtime.CompilerServices;
 using BepInEx;
 using BepInEx.Configuration;
 using BashTerm.Parsers;
+using BashTerm.Utils;
 using Dissonance;
 using Il2CppSystem.Linq;
 
 namespace BashTerm;
 
-internal static class ConfigMaster {
+internal static class ConfigMgr {
 	public static ConfigFile conf;
 
 	//public static ConfigEntry<int> CONFIG_NOTICE;
@@ -71,7 +72,7 @@ internal static class ConfigMaster {
 		( "gen", "generator" ),
 	};
 
-	static ConfigMaster() {
+	static ConfigMgr() {
 		string cfgPath = Path.Combine(Paths.ConfigPath, $"{Plugin.NAME}.cfg");
 		conf = new ConfigFile(cfgPath, true);
 

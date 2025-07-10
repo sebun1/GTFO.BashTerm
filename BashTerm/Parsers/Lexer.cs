@@ -1,3 +1,4 @@
+/*
 namespace BashTerm.Parsers;
 
 internal class Lexer {
@@ -126,3 +127,4 @@ record TokenPipe() : Token; // "|"
 record TokenSemicolon() : Token; // ";"
 
 record TokenEof() : Token;
+*/

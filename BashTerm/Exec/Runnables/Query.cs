@@ -1,9 +1,7 @@
-﻿using System.Text.RegularExpressions;
-using Gear;
+using System.Text.RegularExpressions;
 using LevelGeneration;
-using BashTerm;
 using BashTerm.Parsers;
-using Dissonance;
+using BashTerm.Utils;
 
 namespace BashTerm.Exec.Runnables;
 
@@ -12,34 +10,40 @@ public class Query : IRunnable {
 	public string CommandName => "query";
 	public string Desc => "Queries the location of a single item (or multiple through piping)";
 	public string Manual => @"
-NAME
+<b>NAME</b>
 		query - tool for querying the locations of items throughout the complex
 
-SYNOPSIS
-		QUERY <u>ITEM</u> -> ItemQueryResult / ItemQueryResults
-		ItemList -> QUERY [-S <u>SORTING STRING</u>]
+<b>USAGE</b>
+		query <u>item</u> -> <b>ItemQueryResult</b>|<b>ItemQueryResults</b>
+		<b>ItemList</b> -> query [-s <u>sorting string</u>]
 
-OPTIONS
-		-S, --SORT
+<b>OPTIONS</b>
+		-s, --sort
 			Sort the list printed in the query summary in a specific order specified with a single sorting string, this also changes the order of items returned in ItemQueryResults.
 
-			There are three categories for sorting that can be configured, each specified with a flag
+			There are three categories for sorting that can be configured, each specified with a flag (case-insensitive):
 				Item ID      I
 				Zone         Z or L
 				Capacity     C
 
 			To specify whether you want a category to be specified in ascending or descending order, immediately follow the flag with a + or - e.g. ""I-"", if no order is specified, the sort defaults to ascending order (i.e. +).
 
-			<pos=30%>The priority for sorting is determined by the relative location of the flags in the string, if category x has its flag placed before category y, then query will try to sort via category x, if the results are inconclusive (i.e. there is a draw), it will fall back and compare category y, and so on.</pos>
+			The priority for sorting is determined by the relative location of the flags in the string, if category x has its flag placed before category y, then query will try to sort via category x, if the results are inconclusive (i.e. there is a draw), it will fall back and compare category y, and so on.
 
-			<indent=30%>For example, the sorting string ""Z+I+C-"" asks query to sort by zone number first in ascending order, if that fails sort by the item ID in ascending order, then sort capacity in descending order (items with most capacity comes first). Taking default behavior into mind, this sorting string can also be equivalently written as ""ZIC-"".</indent>
+			For example, the sorting string ""Z+I+C-"" asks query to sort by zone number first in ascending order, if that fails sort by the item ID in ascending order, then sort capacity in descending order (items with most capacity comes first). Taking default behavior into mind, this sorting string can also be equivalently written as ""ZIC-"".
 ";
 
-	public PipedPayload Run(string cmd, List<string> args, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public FlagSchema FSchema { get; }
+
+	public Query() {
+		FSchema = new FlagSchema();
+		FSchema.Add("s", "sort", FlagType.Value);
+	}
+
+	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 
 		string input = Util.GetCommandString(cmd, args);
-		FlagParser fp = new FlagParser(args);
 
 		switch (payload) {
 			case ItemList(List<iTerminalItem> items):
@@ -47,7 +51,7 @@ OPTIONS
 				float timeCost = GetAdjustedQueryCost(items.Count);
 				string timeCostStr = timeCost.ToString("N0");
 				// TODO: Make default configurable in config
-				string sortFlag = (fp.GetVal("-s", "--sort") ?? "Z+I+C-").Trim().ToUpper();
+				string sortFlag = (opts["-s"] ?? "Z+I+C-").Trim().ToUpper();
 				Logger.Debug($"Query cost: {timeCostStr}, priority flag: {sortFlag}");
 
 				items.Sort(new TerminalItemComparator(sortFlag));
@@ -85,9 +89,8 @@ OPTIONS
 						terminal.SpawnNode.m_zone == target.SpawnNode.m_zone,
 						GetCapacity(target)
 					);
-				} else {
-					return new ItemQueryResult(false, "", "ZONE_???", false, 0);
 				}
+				return new ItemQueryResult(false, "", "ZONE_???", false, 0);
 		}
 	}
 
@@ -105,25 +108,22 @@ OPTIONS
 	private void PrintQuerySummary(List<iTerminalItem> items, string sortFlag, LG_ComputerTerminal terminal) {
 		var lines = new Il2CppSystem.Collections.Generic.List<string>();
 		List<short> col = new List<short> { 0, 25, 35 };
-		terminal.m_command.AddOutput($"\n{Clr.Accent}<b>Query Summary</b>{Clr.End} ", spacing: false);
-		terminal.m_command.AddOutput($"\n{Clr.Info}Sort=[{sortFlag}]{Clr.End}", spacing: false);
+		terminal.m_command.AddOutput($"\n{Styles.Accent}<b>Query Summary</b>{Styles.CEnd} ", spacing: false);
+		terminal.m_command.AddOutput($"\n{Styles.Info}Sort=[{sortFlag}]{Styles.CEnd}", spacing: false);
 
 		string resHeader = "";
-		// resHeader += $"{Fmt.Pos(col[0])}{Clr.Purple}ID{Clr.End} {Clr.Info}[I]{Clr.End}{Fmt.EndPos}";
-		// resHeader += $"{Fmt.Pos(col[1])}{Clr.Purple}CAPACITY{Clr.End} {Clr.Info}[C]{Clr.End}{Fmt.EndPos}";
-		// resHeader += $"{Fmt.Pos(col[2])}{Clr.Purple}LOCATION{Clr.End} {Clr.Info}[Z/L]{Clr.End}{Fmt.EndPos}";
-		resHeader += $"{Fmt.Pos(col[0])}ID {Clr.Info}[I]{Clr.End}{Fmt.EndPos}";
-		resHeader += $"{Fmt.Pos(col[1])}CAPACITY {Clr.Info}[C]{Clr.End}{Fmt.EndPos}";
-		resHeader += $"{Fmt.Pos(col[2])}LOCATION {Clr.Info}[Z/L]{Clr.End}{Fmt.EndPos}";
+		resHeader += $"{Styles.Pos(col[0])}ID {Styles.Info}[I]{Styles.CEnd}{Styles.EndPos}";
+		resHeader += $"{Styles.Pos(col[1])}CAPACITY {Styles.Info}[C]{Styles.CEnd}{Styles.EndPos}";
+		resHeader += $"{Styles.Pos(col[2])}LOCATION {Styles.Info}[Z/L]{Styles.CEnd}{Styles.EndPos}";
 		lines.Add($"{resHeader}\n");
 
 		foreach (var item in items) {
 			int cap = GetCapacity(item);
 			string capString = cap < 0 ? "-" : cap.ToString() + "%";
 			string str = "";
-			str += $"{Fmt.Pos(col[0])}{item.TerminalItemKey}{Fmt.EndPos}";
-			str += $"{Fmt.Pos(col[1])}{capString}{Fmt.EndPos}";
-			str += $"{Fmt.Pos(col[2])}{item.FloorItemLocation}{Fmt.EndPos}";
+			str += $"{Styles.Pos(col[0])}{item.TerminalItemKey}{Styles.EndPos}";
+			str += $"{Styles.Pos(col[1])}{capString}{Styles.EndPos}";
+			str += $"{Styles.Pos(col[2])}{item.FloorItemLocation}{Styles.EndPos}";
 			lines.Add(str);
 		}
 		terminal.m_command.AddOutput(lines);
@@ -135,23 +135,36 @@ OPTIONS
 		float c = 1.2f;
 		return (float)Math.Round(cost / Math.Log(b * cost + c));
 	}
+
+	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {
+		value = "";
+		return false;
+	}
+
+	public bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded) {
+		expanded = "";
+		return false;
+	}
 }
 
 internal class TerminalItemComparator : IComparer<iTerminalItem> {
-	// Consisting of I Z C and +/- e.g. "I+Z-C-" "IZ+C-"
 	private readonly string _priorityFlag;
 
 	public TerminalItemComparator(string priorityFlag) {
 		_priorityFlag = priorityFlag.Trim().ToUpper();
 	}
 
-	public int Compare(iTerminalItem x, iTerminalItem y) {
-		for (int i = 0; i < _priorityFlag.Length - 1; i += 2) {
+	public int Compare(iTerminalItem? x, iTerminalItem? y) {
+		if (x == null && y == null) return 0;
+		if (x == null) return 1;
+		if (y == null) return -1;
+
+		for (int i = 0; i < _priorityFlag.Length; i++) {
 			char field = _priorityFlag[i];
-			char direction = _priorityFlag[i + 1];
+			char direction = i + 1 < _priorityFlag.Length ? _priorityFlag[i + 1] : (char)0;
 
 			int result = field switch {
-				'I' => CompareID(x, y),
+				'I' => CompareIDNoNumber(x, y),
 				'Z' or 'L' => CompareZone(x, y),
 				'C' => CompareCapacity(x, y),
 				_ => 0
@@ -160,9 +173,9 @@ internal class TerminalItemComparator : IComparer<iTerminalItem> {
 			if (result != 0)
 				return direction == '-' ? -result : result;
 		}
-		Logger.Debug($"Comparing {x.TerminalItemKey} to {y.TerminalItemKey}. CompareID={CompareID(x, y)} CompareZone={CompareZone(x, y)} CompareCapacity={CompareCapacity(x, y)}");
+		// Logger.Debug($"Comparing {x.TerminalItemKey} to {y.TerminalItemKey}. CompareID={CompareIDNoNumber(x, y)} CompareZone={CompareZone(x, y)} CompareCapacity={CompareCapacity(x, y)}");
 
-		return 0;
+		return CompareID(x, y);
 	}
 
 	public int CompareCapacity(iTerminalItem x, iTerminalItem y) {
@@ -173,7 +186,11 @@ internal class TerminalItemComparator : IComparer<iTerminalItem> {
 		return x.SpawnNode.m_zone.ID.CompareTo(y.SpawnNode.m_zone.ID);
 	}
 
-	public int CompareID(iTerminalItem x, iTerminalItem y) {
+	public int CompareIDNoNumber(iTerminalItem x, iTerminalItem y) {
 		return string.CompareOrdinal(Util.RemoveAllNumbers(x.TerminalItemKey), Util.RemoveAllNumbers(y.TerminalItemKey));
+	}
+
+	public int CompareID(iTerminalItem x, iTerminalItem y) {
+		return string.CompareOrdinal(x.TerminalItemKey, y.TerminalItemKey);
 	}
 }
