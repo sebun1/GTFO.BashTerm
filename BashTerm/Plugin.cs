@@ -1,4 +1,5 @@
 ﻿using BashTerm.Exec;
+using BashTerm.Utils;
 using BepInEx;
 using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
@@ -17,7 +18,7 @@ public class Plugin : BasePlugin {
 		Logger.Info(NAME + " " + GUID + " " + VERSION);
 		Logger.Info("Patching...");
 		int handlerCount = Dispatch.Initialize();
-		ConfigMaster.Init();
+		ConfigMgr.Init();
 		Logger.Debug($"{handlerCount} handlers registered");
 		Harmony.CreateAndPatchAll(typeof(Patch), GUID);
 		Logger.Info("Finished Patching");

@@ -1,10 +1,16 @@
+using UnityEngine;
+
 namespace BashTerm;
 
-internal static class TerminalChan {
+internal class BshSystem : MonoBehaviour {
 	private static bool _rawMode;
 	private static int _infoCount;
 	private static int _warnCount;
 	private static int _errorCount;
+
+	// TODO: Scrollback buffer
+	public const long SCROLLBACK_SIZE = 1000;
+	private static List<string> _scrollback = new();
 
 	public static List<string> BSHLogs = new List<string>();
 	public static bool RawMode {
@@ -29,17 +35,21 @@ internal static class TerminalChan {
 
 	public static void LogInfo(string src, string msg) {
 		_infoCount++;
-		BSHLogs.Add($"{Clr.Info}[{src}] >> {msg}{Clr.End}");
+		BSHLogs.Add($"{Styles.Info}INFO[{src}] >> {msg}{Styles.CEnd}");
 	}
 
 	public static void LogWarn(string src, string msg) {
 		_warnCount++;
-		BSHLogs.Add($"{Clr.Warning}[{src}] >> {msg}{Clr.End}");
+		BSHLogs.Add($"{Styles.Warning}WARN[{src}] >> {msg}{Styles.CEnd}");
 	}
 
 	public static void LogError(string src, string msg) {
 		_errorCount++;
-		BSHLogs.Add($"{Clr.Error}[{src}] >> {msg}{Clr.End}");
+		BSHLogs.Add($"{Styles.Error}ERRR[{src}] >> {msg}{Styles.CEnd}");
+	}
+
+	public void Update() {
+
 	}
 }
 
