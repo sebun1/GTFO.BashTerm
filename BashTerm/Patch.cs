@@ -1,6 +1,7 @@
 using BashTerm.Parsers;
 using BashTerm.Utils;
 using BashTerm.Exec;
+using BashTerm.Runtime;
 using GameData;
 using HarmonyLib;
 using LevelGeneration;
@@ -163,6 +164,24 @@ internal class Patch {
 		__instance.AddOutput("Type \"MAN <COMMAND>\" to read the manual for a command", spacing: false);
 		__instance.AddOutput("Press [ESC] or type \"EXIT\" to exit");
 		return false;
+	}
+
+	[HarmonyPatch(
+		typeof(LG_ComputerTerminalCommandInterpreter),
+		nameof(LG_ComputerTerminalCommandInterpreter.UpdateTerminalScreen)
+	)]
+	[HarmonyPostfix]
+	public static void UpdateTerminalScreen(ref LG_ComputerTerminalCommandInterpreter __instance, string currentLine, bool hasLocalPlayer) {
+		Logger.Debug($"currentLine='{currentLine}', hasLocalPlayer={hasLocalPlayer}");
+		string msg = "";
+		for (int i = 0; i < 50; i++) {
+			msg += $"<#F00>[{i:000}]</color>";
+			for (int j = 0; j < 135; j++) {
+				msg += $"{j % 10}";
+			}
+			msg += "\n";
+		}
+		__instance.m_text.SetCharArray(msg.ToCharArray());
 	}
 
 	[HarmonyPatch(
