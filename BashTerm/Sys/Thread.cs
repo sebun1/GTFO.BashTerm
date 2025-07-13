@@ -1,4 +1,4 @@
-﻿namespace BashTerm.Runtime;
+﻿namespace BashTerm.Sys;
 
 public class Thread {
 	public int TID { get; }

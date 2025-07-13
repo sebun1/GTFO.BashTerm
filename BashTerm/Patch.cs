@@ -1,9 +1,11 @@
 using BashTerm.Parsers;
 using BashTerm.Utils;
 using BashTerm.Exec;
+using BashTerm.Sys;
 using GameData;
 using HarmonyLib;
 using LevelGeneration;
+using UnityEngine.UI;
 
 namespace BashTerm;
 
@@ -18,6 +20,8 @@ internal class Patch {
 		Bsh.Renew(__instance.m_terminal);
 		// TODO: Consider not making it lower, allow case variation. Will want to change other code that returns uppercase, if any
 		var input = __instance.m_terminal.m_currentLine.ToLower();
+
+		__instance.m_terminal.m_text.Rebuild(CanvasUpdate.PreRender);
 
 		try {
 			/*
@@ -138,11 +142,12 @@ internal class Patch {
 		var localLogs = term.GetLocalLogs();
 		int count = localLogs.Count;
 		string zone = term.SpawnNode.m_zone.NavInfo.GetFormattedText(LG_NavInfoFormat.Full_And_Number_With_Underscore);
+		string playerName = __instance.m_terminal.m_localInteractionSource?.PlayerName;
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
-		__instance.AddOutput($"{Styles.Bashterm}BashTerm Shell v{Plugin.BSH_VERSION}{Styles.CEnd}", spacing: false);
+		__instance.AddOutput($"{Styles.Bashterm}BSH v{Plugin.BSH_VERSION}{Styles.CEnd}", spacing: false);
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
-		__instance.AddOutput(
-			$"Welcome to {Styles.Accent}{term.ItemKey}{Styles.CEnd} located in {Styles.Accent}{zone}{Styles.CEnd}");
+		__instance.AddOutput($"Hi {Styles.Bashterm}{playerName}{Styles.CEnd}, welcome back!");
+		__instance.AddOutput( $"Welcome to {Styles.Accent}{term.ItemKey}{Styles.CEnd} located in {Styles.Accent}{zone}{Styles.CEnd}");
 		string isOrAre = count > 1 ? "are" : "is";
 		string sOrNoS = count > 1 ? "s" : "";
 		__instance.AddOutput($"There {isOrAre} {count} log{sOrNoS} on this terminal", spacing: false);

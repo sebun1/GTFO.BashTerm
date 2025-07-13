@@ -1,16 +1,16 @@
-﻿namespace BashTerm.Runtime;
+﻿namespace BashTerm.Sys;
 
 public class Screen {
 	public const int Rows = 50; // TODO: Update to actual
-	public int WindowID { get; }
+	public int ScreenID { get; }
 	public List<string> OutputHistory { get; }
 	private Queue<string> _outputQueue;
 	private string _displayBuffer;
 
 	private int _position;
 
-	public Screen(int windowID) {
-		WindowID = windowID;
+	public Screen(int screenID) {
+		ScreenID = screenID;
 		OutputHistory = new List<string>();
 		_outputQueue = new Queue<string>();
 		_displayBuffer = "";

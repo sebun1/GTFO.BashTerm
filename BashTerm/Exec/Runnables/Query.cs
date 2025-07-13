@@ -72,12 +72,11 @@ public class Query : IRunnable {
 				return new ItemQueryResults(results);
 
 			default:
-				if (args.Count > 1)
-					throw new TooManyArgumentsException(CommandName, args.Count, 1);
 				if (args.Count == 0)
 					throw new MissingArgumentException(CommandName, 0, 1);
+				string objName = string.Join('_', args);
 				LG_ComputerTerminalManager.WantToSendTerminalCommand(terminal.SyncID, TERM_Command.Query, input,
-					args[0], "");
+					objName, "");
 
 				if (LG_LevelInteractionManager.TryGetTerminalInterface(args[0].ToUpper(),
 					    terminal.SpawnNode.m_dimension.DimensionIndex, out var target)) {
@@ -142,7 +141,8 @@ public class Query : IRunnable {
 	}
 
 	public bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded) {
-		expanded = "";
+		if (ParseUtil.TryExpandObj(arg, out expanded))
+			return true;
 		return false;
 	}
 }

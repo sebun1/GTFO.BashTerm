@@ -25,7 +25,9 @@ public class Ping : IRunnable {
 	}
 
 	public bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded) {
-		expanded = "";
+		if (ParseUtil.TryExpandObj(arg, out expanded))
+			return true;
+		expanded = arg;
 		return false;
 	}
 }

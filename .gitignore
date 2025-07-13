@@ -1,5 +1,6 @@
 .vs/
 R6MonoDlls/
 tests/
+.idea/
 BashTerm.zip
 **/.DS_Store
