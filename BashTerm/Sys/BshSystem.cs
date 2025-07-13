@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace BashTerm.Runtime;
+namespace BashTerm.Sys;
 
 internal class BshSystem : MonoBehaviour {
 	private static bool _rawMode;
@@ -8,11 +8,8 @@ internal class BshSystem : MonoBehaviour {
 	private static int _warnCount;
 	private static int _errorCount;
 
-	// TODO: Scrollback buffer
-	public const long SCROLLBACK_SIZE = 1000;
-	private static List<string> _scrollback = new();
-
 	public static List<string> BSHLogs = new List<string>();
+
 	public static bool RawMode {
 		get { return _rawMode; }
 	}

@@ -77,7 +77,13 @@ Options:
 	}
 
 	public bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded) {
-		expanded = "";
+		if (ConfigMgr.LsConvertsNum2ZoneId && Util.IsInt(arg)) {
+			expanded = $"e_{arg}";
+			return true;
+		}
+		if (ConfigMgr.LsObjExpansions && ParseUtil.TryExpandObj(arg, out expanded))
+			return true;
+		expanded = arg;
 		return false;
 	}
 }
