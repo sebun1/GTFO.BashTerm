@@ -10,10 +10,11 @@ public class Raw : IProc {
 	public string Desc => "Toggle between BashTerm interpreter and raw input (GTFO native interpreter)";
 	public string Manual => "Use this command to switch to GTFO native interpreter when BashTerm misbehaves, feel free to report any problems or bugs!";
 
-	public FlagSchema FSchema { get; }
+	public static readonly FlagSchema FSchema = CreateFlagSchema();
 
-	public Raw() {
-		FSchema = new FlagSchema();
+	public static FlagSchema CreateFlagSchema() {
+		FlagSchema fs = new FlagSchema();
+		return fs;
 	}
 
 	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {

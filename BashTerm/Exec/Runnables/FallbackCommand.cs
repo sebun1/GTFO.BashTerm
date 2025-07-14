@@ -9,10 +9,11 @@ public class FallbackCommand : IProc {
 	public string Desc => "Fallback handler for simple, special, or unrecognized commands.";
 	public string Manual => "Executes commands through the GTFO interpreter, should never be called manually";
 
-	public FlagSchema FSchema { get; }
+	public static readonly FlagSchema FSchema = CreateFlagSchema();
 
-	public FallbackCommand() {
-		FSchema = new FlagSchema();
+	public static FlagSchema CreateFlagSchema() {
+		FlagSchema fs = new FlagSchema();
+		return fs;
 	}
 
 	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {

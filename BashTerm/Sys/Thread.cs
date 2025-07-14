@@ -6,6 +6,5 @@ public class Thread {
 
 	public Thread(int id) {
 		TID = id;
-		scrn = new Screen(id);
 	}
 }

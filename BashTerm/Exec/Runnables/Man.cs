@@ -1,4 +1,5 @@
-﻿using BashTerm.Parsers;
+﻿using System.Reflection;
+using BashTerm.Parsers;
 using BashTerm.Sys;
 using BashTerm.Utils;
 using LevelGeneration;
@@ -18,10 +19,11 @@ USAGE
 		MAN <u>COMMAND</u>
 ";
 
-	public FlagSchema FSchema { get; }
+	public static readonly FlagSchema FSchema = CreateFlagSchema();
 
-	public Man() {
-		FSchema = new FlagSchema();
+	public static FlagSchema CreateFlagSchema() {
+		FlagSchema fs = new FlagSchema();
+		return fs;
 	}
 
 	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
@@ -36,9 +38,11 @@ USAGE
 		if (args.Count < 1) throw new MissingArgumentException(CommandName, args.Count, 1);
 		if (args.Count > 1) throw new TooManyArgumentsException(CommandName, args.Count, 1);
 
-		if (Dispatch.Handlers.TryGetValue(args[0], out var runnable)) {
+		if (Dispatch.HandlerTypes.TryGetValue(args[0], out Type procType)) {
+			FieldInfo manualField = procType.GetField("Manual", BindingFlags.Public | BindingFlags.Static);
+			string man = (string)manualField.GetValue(null);
 			terminal.m_command.AddOutput($"Showing manual for [{cmd}]:", spacing: false);
-			terminal.m_command.AddOutput(Fmt.Wrap(runnable.Manual));
+			terminal.m_command.AddOutput(Fmt.Wrap(man));
 		}
 
 		return new EmptyPayload();

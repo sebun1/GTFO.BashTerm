@@ -5,15 +5,16 @@ using LevelGeneration;
 namespace BashTerm.Exec.Runnables;
 
 //[CommandHandler("ping")]
-public class Ping : IProc {
+public class Ping : ProcBase, IProc {
 	public string CommandName => "ping";
 	public string Desc => "";
-	public string Manual => "";
+	public static string Manual = new string("");
 
-	public FlagSchema FSchema { get; }
+	public static readonly FlagSchema FSchema = CreateFlagSchema();
 
-	public Ping() {
-		FSchema = new FlagSchema();
+	public static FlagSchema CreateFlagSchema() {
+		FlagSchema fs = new FlagSchema();
+		return fs;
 	}
 
 	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal? termInherit) {

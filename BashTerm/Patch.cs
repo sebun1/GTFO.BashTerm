@@ -1,12 +1,13 @@
 using BashTerm.Parsers;
-using BashTerm.Utils;
 using BashTerm.Exec;
 using BashTerm.Sys;
 using GameData;
 using HarmonyLib;
 using LevelGeneration;
 using TenCC.Utils;
+using UnityEngine;
 using UnityEngine.UI;
+using Logger = BashTerm.Utils.Logger;
 
 namespace BashTerm;
 
@@ -177,8 +178,30 @@ internal class Patch {
 	)]
 	[HarmonyPrefix]
 	public static bool ParseInput(ref LG_TERM_PlayerInteracting __instance) {
-		// TODO: We take care of all the inputs
+		if (BshSystem.RawMode) {
+			return true;
+		}
 
+		if (Input.GetKeyDown(KeyCode.UpArrow)) {
+			// history prev
+			Logger.Debug("KEYDOWN: UpArrow");
+		} else if (Input.GetKeyDown(KeyCode.DownArrow)) {
+			// history next
+			Logger.Debug("KEYDOWN: DownArrow");
+		}
+
+		if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+			// cursor left
+			Logger.Debug("KEYDOWN: LeftArrow");
+		} else if (Input.GetKeyDown(KeyCode.RightArrow)) {
+			// cursor right
+			Logger.Debug("KEYDOWN: RightArrow");
+		}
+
+		if (!string.IsNullOrEmpty(Input.inputString))
+			Logger.Debug($"Input.inputString={Input.inputString}");
+
+		return true;
 		return false;
 	}
 
@@ -193,9 +216,10 @@ internal class Patch {
 		// (things like press any key to continue every max_line is not necessary etc.)
 		// CharBuffer t = new CharBuffer();
 		//__instance.m_text.SetCharArray();
-		__instance.m_text.text = "Test";
+		//__instance.m_text.text = "Test";
 
-		return false;
+		//return false;
+		return true;
 	}
 
 	[HarmonyPatch(

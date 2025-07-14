@@ -10,6 +10,7 @@ namespace BashTerm.Exec;
 
 public static class Dispatch {
 	internal static Dictionary<string, IProc> Handlers = new();
+	internal static Dictionary<string, Type> HandlerTypes = new();
 	internal static bool IsInitialized = false;
 	internal static IProc? Fallback;
 
@@ -29,8 +30,7 @@ public static class Dispatch {
 		foreach (var type in types) {
 			var attr = type.GetCustomAttribute<CommandHandlerAttribute>();
 			if (attr != null && typeof(IProc).IsAssignableFrom(type)) {
-				IProc instance = (IProc)Activator.CreateInstance(type);
-				if (Hook(attr.Name, instance)) {
+				if (Hook(attr.Name, type)) {
 					Logger.Debug($"{type.FullName} hooked with command name '{attr.Name}'");
 				} else {
 					Logger.Warn($"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
@@ -42,10 +42,11 @@ public static class Dispatch {
 		return Handlers.Count;
 	}
 
-	private static bool Hook(string cmd, IProc handler) {
+	private static bool Hook(string cmd, Type handlerType) {
 		cmd = cmd.Trim().ToLower();
 		if (Handlers.ContainsKey(cmd)) { return false; }
-		Handlers[cmd] = handler;
+		HandlerTypes[cmd] = handlerType;
+		Handlers[cmd] = (IProc)Activator.CreateInstance(handlerType);
 		return true;
 	}
 
@@ -65,9 +66,11 @@ public static class Dispatch {
 
 			case VarExecve(TokenWord wName, List<TokenWord> wArgs):
 				string name = Arg2Str(wName, term);
-				if (Handlers.TryGetValue(name, out IProc? handler)) {
+				if (Handlers.TryGetValue(name, out IProc? handler) && HandlerTypes.TryGetValue(name, out Type handlerType)) {
+					FieldInfo fSchemaField = handlerType.GetField("FSchema", BindingFlags.Public | BindingFlags.Static)!;
+					FlagSchema? schema = (FlagSchema?)fSchemaField.GetValue(null);
 					List<string> args = CtxArgs2Str(wArgs, term, handler);
-					FlagParser fp = new FlagParser(args, handler.FSchema);
+					FlagParser fp = new FlagParser(args, schema ?? new FlagSchema());
 					CmdOpts opts = new CmdOpts(fp.Flags);
 					return handler.Run(name, fp.Positionals, opts, payload, term);
 				}

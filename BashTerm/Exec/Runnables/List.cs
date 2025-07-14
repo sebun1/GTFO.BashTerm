@@ -17,10 +17,11 @@ Options:
 	N/A
 ";
 
-	public FlagSchema FSchema { get; }
+	public static readonly FlagSchema FSchema = CreateFlagSchema();
 
-	public List() {
-		FSchema = new FlagSchema();
+	private static FlagSchema CreateFlagSchema() {
+		FlagSchema fs = new FlagSchema();
+		return fs;
 	}
 
 	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
