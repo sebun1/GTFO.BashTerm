@@ -1,9 +1,10 @@
 ﻿using BashTerm.Parsers;
+using BashTerm.Sys;
 using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
-public class FallbackCommand : IRunnable {
+public class FallbackCommand : IProc {
 	public string CommandName => "FALLBACK";
 	public string Desc => "Fallback handler for simple, special, or unrecognized commands.";
 	public string Manual => "Executes commands through the GTFO interpreter, should never be called manually";
