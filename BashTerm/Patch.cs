@@ -5,6 +5,7 @@ using BashTerm.Sys;
 using GameData;
 using HarmonyLib;
 using LevelGeneration;
+using TenCC.Utils;
 using UnityEngine.UI;
 
 namespace BashTerm;
@@ -168,6 +169,20 @@ internal class Patch {
 		__instance.AddOutput("Type \"MAN <COMMAND>\" to read the manual for a command", spacing: false);
 		__instance.AddOutput("Press [ESC] or type \"EXIT\" to exit");
 		return false;
+	}
+
+	[HarmonyPatch(
+		typeof(LG_ComputerTerminalCommandInterpreter),
+		nameof(LG_ComputerTerminalCommandInterpreter.UpdateTerminalScreen)
+	)]
+	[HarmonyPrefix]
+	public static void EnterTerminal(ref LG_ComputerTerminalCommandInterpreter __instance, string currentLine,
+		bool hasLocalPlayer) {
+		// TODO: Overwrite entire UpdateTerminalScreen logic
+		// (things like press any key to continue every max_line is not necessary etc.)
+		CharBuffer t = new CharBuffer();
+		//__instance.m_text.SetCharArray();
+
 	}
 
 	[HarmonyPatch(

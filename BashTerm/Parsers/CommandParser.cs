@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using BashTerm.Exec;
 using BashTerm.Utils;
-using Il2CppSystem.Data;
 
 namespace BashTerm.Parsers;
 

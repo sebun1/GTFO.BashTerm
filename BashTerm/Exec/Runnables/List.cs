@@ -1,11 +1,12 @@
 ﻿using BashTerm.Parsers;
+using BashTerm.Sys;
 using BashTerm.Utils;
 using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
 [CommandHandler("list")]
-public class List : IRunnable {
+public class List : IProc {
 	public string CommandName => "list";
 	public string Desc => "";
 

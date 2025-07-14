@@ -1,15 +1,16 @@
 using System.Text.RegularExpressions;
 using LevelGeneration;
 using BashTerm.Parsers;
+using BashTerm.Sys;
 using BashTerm.Utils;
 
 namespace BashTerm.Exec.Runnables;
 
 [CommandHandler("query")]
-public class Query : IRunnable {
-	public string CommandName => "query";
-	public string Desc => "Queries the location of a single item (or multiple through piping)";
-	public string Manual => @"
+public class Query : IProc {
+	public static string CommandName => "query";
+	public static string Desc => "Queries the location of a single item (or multiple through piping)";
+	public static string Manual => @"
 <b>NAME</b>
 		query - tool for querying the locations of items throughout the complex
 
@@ -33,12 +34,17 @@ public class Query : IRunnable {
 			For example, the sorting string ""Z+I+C-"" asks query to sort by zone number first in ascending order, if that fails sort by the item ID in ascending order, then sort capacity in descending order (items with most capacity comes first). Taking default behavior into mind, this sorting string can also be equivalently written as ""ZIC-"".
 ";
 
-	public FlagSchema FSchema { get; }
+	public static bool WantDedicatedScreen => false;
 
-	public Query() {
-		FSchema = new FlagSchema();
-		FSchema.Add("s", "sort", FlagType.Value);
+	public static readonly FlagSchema FSchema = CreateFlagSchema();
+
+	private static FlagSchema CreateFlagSchema() {
+		FlagSchema fs = new FlagSchema();
+		fs.Add("s", "sort", FlagType.Value);
+		return fs;
 	}
+
+
 
 	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);

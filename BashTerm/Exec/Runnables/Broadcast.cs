@@ -1,11 +1,12 @@
 using BashTerm.Parsers;
+using BashTerm.Sys;
 using BashTerm.Utils;
 using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
 [CommandHandler("broadcast")]
-public class Broadcast : IRunnable {
+public class Broadcast : IProc {
 	public string CommandName => "broadcast";
 	public string Desc => "Broadcast a message to all users! Even non-BashTerm users!";
 

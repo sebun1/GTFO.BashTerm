@@ -1,10 +1,11 @@
 ﻿using BashTerm.Parsers;
+using BashTerm.Sys;
 using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
 //[CommandHandler("ping")]
-public class Ping : IRunnable {
+public class Ping : IProc {
 	public string CommandName => "ping";
 	public string Desc => "";
 	public string Manual => "";

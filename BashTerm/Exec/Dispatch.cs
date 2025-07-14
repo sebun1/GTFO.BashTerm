@@ -8,22 +8,10 @@ using LevelGeneration;
 
 namespace BashTerm.Exec;
 
-public interface IRunnable {
-	string CommandName { get; }
-	string Desc { get; }
-	string Manual { get; }
-
-	FlagSchema FSchema { get; }
-
-	PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal term);
-	bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value);
-	bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded);
-}
-
 public static class Dispatch {
-	internal static Dictionary<string, IRunnable> Handlers = new();
+	internal static Dictionary<string, IProc> Handlers = new();
 	internal static bool IsInitialized = false;
-	internal static IRunnable? Fallback;
+	internal static IProc? Fallback;
 
 	public static int Initialize() {
 		Fallback = new FallbackCommand();
@@ -40,8 +28,8 @@ public static class Dispatch {
 
 		foreach (var type in types) {
 			var attr = type.GetCustomAttribute<CommandHandlerAttribute>();
-			if (attr != null && typeof(IRunnable).IsAssignableFrom(type)) {
-				IRunnable instance = (IRunnable)Activator.CreateInstance(type);
+			if (attr != null && typeof(IProc).IsAssignableFrom(type)) {
+				IProc instance = (IProc)Activator.CreateInstance(type);
 				if (Hook(attr.Name, instance)) {
 					Logger.Debug($"{type.FullName} hooked with command name '{attr.Name}'");
 				} else {
@@ -54,7 +42,7 @@ public static class Dispatch {
 		return Handlers.Count;
 	}
 
-	private static bool Hook(string cmd, IRunnable handler) {
+	private static bool Hook(string cmd, IProc handler) {
 		cmd = cmd.Trim().ToLower();
 		if (Handlers.ContainsKey(cmd)) { return false; }
 		Handlers[cmd] = handler;
@@ -77,7 +65,7 @@ public static class Dispatch {
 
 			case VarExecve(TokenWord wName, List<TokenWord> wArgs):
 				string name = Arg2Str(wName, term);
-				if (Handlers.TryGetValue(name, out IRunnable? handler)) {
+				if (Handlers.TryGetValue(name, out IProc? handler)) {
 					List<string> args = CtxArgs2Str(wArgs, term, handler);
 					FlagParser fp = new FlagParser(args, handler.FSchema);
 					CmdOpts opts = new CmdOpts(fp.Flags);
@@ -125,7 +113,7 @@ public static class Dispatch {
 		return sb.ToString();
 	}
 
-	private static List<string> CtxArgs2Str(List<TokenWord> wArgs, LG_ComputerTerminal term, IRunnable handler) {
+	private static List<string> CtxArgs2Str(List<TokenWord> wArgs, LG_ComputerTerminal term, IProc handler) {
 		List<string> args = new();
 		foreach (TokenWord tw in wArgs) {
 			args.Add(CtxArg2Str(tw, term, handler));
@@ -133,7 +121,7 @@ public static class Dispatch {
 		return args;
 	}
 
-	private static string CtxArg2Str(TokenWord word, LG_ComputerTerminal term, IRunnable handler) {
+	private static string CtxArg2Str(TokenWord word, LG_ComputerTerminal term, IProc handler) {
 		VarProvider vp = new VarProvider(term);
 		StringBuilder sb = new();
 		foreach (WordPart part in word.parts) {
