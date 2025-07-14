@@ -4,8 +4,6 @@ using Il2CppSystem.Xml.Schema;
 namespace BashTerm.Utils;
 
 internal static class Util {
-	private const int TERMINAL_COL_WIDTH = 90;
-
 	public static string Concat(params string[] args) {
 		return Concat(' ', args);
 	}
@@ -31,13 +29,6 @@ internal static class Util {
 		for (int i = start + 1; i < end; i++)
 			txt += delimiter + args[i];
 		return txt;
-	}
-
-	public static bool ContainsFlag(params string[] args) {
-		foreach (string arg in args)
-			if (arg.StartsWith("-"))
-				return true;
-		return false;
 	}
 
 	public static bool IsInt(string input) {
@@ -69,6 +60,16 @@ internal static class Util {
 			input += " " + string.Join(" ", args);
 		input = input.ToUpper();
 		return input;
+	}
+
+	/// <summary>
+	/// Computes the effective display width excluding xml-like TextMeshPro tags
+	/// </summary>
+	/// <param name="txt">Text to be analyzed</param>
+	/// <returns>Effective width of the line given a single line, -1 otherwise</returns>
+	public static int GetRealLineWidth(string txt) {
+		// TODO
+		return -1;
 	}
 
 	public static string RemoveAllNumbers(string input) =>

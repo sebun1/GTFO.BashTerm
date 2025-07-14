@@ -1,7 +1,8 @@
-﻿namespace BashTerm.Sys;
+namespace BashTerm.Sys;
 
 public abstract class Screen {
-	public const int Rows = 50; // TODO: Update to actual
+	public const int Cols = 150;
+	public const int Rows = 50;
 	public int ScreenID { get; }
 	public List<string> OutputHistory { get; }
 	protected Queue<string> _outputQueue;
@@ -43,8 +44,22 @@ public abstract class Screen {
 
 }
 
-public class BshScreen : Screen {
-	public BshScreen(int screenID) : base(screenID) {}
+public class MainScreen : Screen {
+	private static MainScreen _instance;
+	private static readonly object _lock = new object();
+
+	public static MainScreen Instance {
+		get {
+			lock (_lock) {
+				if (_instance == null) {
+					_instance = new MainScreen();
+				}
+			}
+			return _instance;
+		}
+	}
+
+	private MainScreen() : base(0) {}
 
 	internal void Clear() {
 

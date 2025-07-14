@@ -172,17 +172,30 @@ internal class Patch {
 	}
 
 	[HarmonyPatch(
+		typeof(LG_TERM_PlayerInteracting),
+		nameof(LG_TERM_PlayerInteracting.ParseInput)
+	)]
+	[HarmonyPrefix]
+	public static bool ParseInput(ref LG_TERM_PlayerInteracting __instance) {
+		// TODO: We take care of all the inputs
+
+		return false;
+	}
+
+	[HarmonyPatch(
 		typeof(LG_ComputerTerminalCommandInterpreter),
 		nameof(LG_ComputerTerminalCommandInterpreter.UpdateTerminalScreen)
 	)]
 	[HarmonyPrefix]
-	public static void EnterTerminal(ref LG_ComputerTerminalCommandInterpreter __instance, string currentLine,
+	public static bool UpdateTerminalScreen(ref LG_ComputerTerminalCommandInterpreter __instance, string currentLine,
 		bool hasLocalPlayer) {
 		// TODO: Overwrite entire UpdateTerminalScreen logic
 		// (things like press any key to continue every max_line is not necessary etc.)
-		CharBuffer t = new CharBuffer();
+		// CharBuffer t = new CharBuffer();
 		//__instance.m_text.SetCharArray();
+		__instance.m_text.text = "Test";
 
+		return false;
 	}
 
 	[HarmonyPatch(
