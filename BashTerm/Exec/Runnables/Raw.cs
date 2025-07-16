@@ -4,7 +4,7 @@ using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
-[CommandHandler("raw")]
+[BshProc("raw")]
 public class Raw : IProc {
 	public string CommandName => "raw";
 	public string Desc => "Toggle between BashTerm interpreter and raw input (GTFO native interpreter)";

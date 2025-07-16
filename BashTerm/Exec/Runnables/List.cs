@@ -5,7 +5,7 @@ using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
-[CommandHandler("list")]
+[BshProc("list")]
 public class List : IProc {
 	public string CommandName => "list";
 	public string Desc => "";

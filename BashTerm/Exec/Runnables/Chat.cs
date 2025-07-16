@@ -1,11 +1,11 @@
 ﻿namespace BashTerm.Exec.Runnables;
 
-[CommandHandler("chat")]
+[BshProc("chat")]
 public class Chat {
 
 }
 
-[CommandHandler("say")]
+[BshProc("say")]
 public class Say {
 
 }

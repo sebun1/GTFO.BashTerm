@@ -1,4 +1,4 @@
-﻿using BashTerm.Exec;
+using BashTerm.Exec;
 using BashTerm.Parsers;
 using LevelGeneration;
 
@@ -18,19 +18,18 @@ public interface IProc {
 	bool TryExpandArg(LG_ComputerTerminal term, string arg, out string expanded);
 }
 
-public abstract class ProcBase {
-	// TODO: This is not enforced compile time, but it is convention ?
-	// should probably enforce some other way
-	/*
-	 * TODO:
-	 * - Not all classes are updated to static files
-	 * - Dispatch does not check (but it doesn't really matter because we need to update dispatch anyways)
-	 */
+public class ProcManifest {
+	public static string ProcName;
+	public static string Desc;
+	public static string Manual;
+	public static bool WantDedicatedScreen;
+	public static FlagSchema FSchema;
 
-	public static string ProcName { get; }
-	public static string Desc { get; }
-	public static string Manual { get; }
-	public static bool WantDedicatedScreen { get; }
-	public static FlagSchema FSchema { get; }
+	public ProcManifest(string name, string desc, string manual, bool wantScreen, FlagSchema fSchema) {
+		ProcName = name;
+		Desc = desc;
+		Manual = manual;
+		WantDedicatedScreen = wantScreen;
+		FSchema = fSchema;
+	}
 }
-

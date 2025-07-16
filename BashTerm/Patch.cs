@@ -36,7 +36,7 @@ internal class Patch {
 				}
 			 */
 
-			if (BshSystem.RawMode) {
+			if (BshSystem.UserRawMode) {
 				if (input.Trim().ToLower().Split(' ')[0] == "raw") {
 					BshSystem.ToggleRawMode();
 				} else {
@@ -88,7 +88,7 @@ internal class Patch {
 	public static void NewLineStart(ref LG_ComputerTerminalCommandInterpreter __instance, ref string __result) {
 		string res = Styles.Bashterm;
 
-		string termMode = BshSystem.RawMode ? "RAW" : "BSH " + Plugin.BSH_VERSION;
+		string termMode = BshSystem.UserRawMode ? "RAW" : "BSH " + Plugin.BSH_VERSION;
 		LG_NavInfo zoneNavInfo = __instance.m_terminal.SpawnNode.m_zone.m_navInfo;
 		LG_NavInfo areaNavInfo = __instance.m_terminal.SpawnNode.m_area.m_navInfo;
 
@@ -178,7 +178,7 @@ internal class Patch {
 	)]
 	[HarmonyPrefix]
 	public static bool ParseInput(ref LG_TERM_PlayerInteracting __instance) {
-		if (BshSystem.RawMode) {
+		if (BshSystem.UserRawMode) {
 			return true;
 		}
 

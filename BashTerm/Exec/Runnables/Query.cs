@@ -6,11 +6,11 @@ using BashTerm.Utils;
 
 namespace BashTerm.Exec.Runnables;
 
-[CommandHandler("query")]
+[BshProc("query")]
 public class Query : IProc {
-	public static string CommandName => "query";
-	public static string Desc => "Queries the location of a single item (or multiple through piping)";
-	public static string Manual => @"
+	private static readonly string ProcName = "query";
+	private static readonly string Desc = "Queries the location of a single item (or multiple through piping)";
+	private static readonly string Manual = @"
 <b>NAME</b>
 		query - tool for querying the locations of items throughout the complex
 
@@ -34,9 +34,9 @@ public class Query : IProc {
 			For example, the sorting string ""Z+I+C-"" asks query to sort by zone number first in ascending order, if that fails sort by the item ID in ascending order, then sort capacity in descending order (items with most capacity comes first). Taking default behavior into mind, this sorting string can also be equivalently written as ""ZIC-"".
 ";
 
-	public static bool WantDedicatedScreen => false;
+	private static readonly bool WantDedicatedScreen = false;
 
-	public static readonly FlagSchema FSchema = CreateFlagSchema();
+	private static readonly FlagSchema FSchema = CreateFlagSchema();
 
 	private static FlagSchema CreateFlagSchema() {
 		FlagSchema fs = new FlagSchema();
@@ -44,10 +44,13 @@ public class Query : IProc {
 		return fs;
 	}
 
-
+	// TODO: New standard for program classes -- GetManifest must return a ProcManifest object
+	public static ProcManifest GetManifest() {
+		return new ProcManifest(ProcName, Desc, Manual, WantDedicatedScreen, FSchema);
+	}
 
 	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
-		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
+		if (terminal == null) throw new NullTerminalInstanceException(ProcName);
 
 		string input = Util.GetCommandString(cmd, args);
 
@@ -79,7 +82,7 @@ public class Query : IProc {
 
 			default:
 				if (args.Count == 0)
-					throw new MissingArgumentException(CommandName, 0, 1);
+					throw new MissingArgumentException(ProcName, 0, 1);
 				string objName = string.Join('_', args);
 				LG_ComputerTerminalManager.WantToSendTerminalCommand(terminal.SyncID, TERM_Command.Query, input,
 					objName, "");

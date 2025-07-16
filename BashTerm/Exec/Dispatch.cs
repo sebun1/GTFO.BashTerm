@@ -28,13 +28,13 @@ public static class Dispatch {
 		// TODO: Record commands that are not hooked?
 
 		foreach (var type in types) {
-			var attr = type.GetCustomAttribute<CommandHandlerAttribute>();
+			var attr = type.GetCustomAttribute<BshProcAttribute>();
 			if (attr != null && typeof(IProc).IsAssignableFrom(type)) {
 				if (Hook(attr.Name, type)) {
 					Logger.Debug($"{type.FullName} hooked with command name '{attr.Name}'");
 				} else {
 					Logger.Warn($"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
-					BshSystem.LogWarn("dispatch", $"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
+					Bsh.LogWarn("dispatch", $"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
 				}
 			}
 		}

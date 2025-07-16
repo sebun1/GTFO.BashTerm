@@ -6,7 +6,7 @@ using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
-[CommandHandler("man")]
+[BshProc("man")]
 public class Man : IProc {
 	public string CommandName => "man";
 	public string Desc => "Read the manual for a given command";
@@ -31,7 +31,7 @@ USAGE
 
 		if (!Dispatch.IsInitialized) {
 			terminal.m_command.AddOutput("");
-			BshSystem.LogError("Man", "tried to get manual before Dispatch is initialized, this is impossible??");
+			Bsh.LogError("Man", "tried to get manual before Dispatch is initialized, this is impossible??");
 			throw new CmdRunException("manuals aren't loaded yet");
 		}
 
