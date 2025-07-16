@@ -7,10 +7,11 @@ public class BshIO {
 	public bool IsRaw = false;
 	private readonly Queue<string> stdinQueue = new();
 	private readonly StringBuilder lineBuffer = new();
-	private readonly BshPM pm = null;
-	private int fgPID = -1;
+	private BshPM? pm = null;
 
 	internal void Update(string inputString) {
+		if (IsRaw) return;
+
 		bool escape = false;
 		foreach (char c in inputString) {
 			if (escape) {
@@ -31,12 +32,27 @@ public class BshIO {
 	}
 
 	public bool ReadLine(int pid, out string? line) {
-		if (fgPID != pid || stdinQueue.Count == 0) {
+		if (pm.fgPID != pid || stdinQueue.Count == 0) {
 			line = null;
 			return false;
 		}
 
 		line = stdinQueue.Dequeue();
 		return true;
+	}
+
+	public bool ReadChar(int pid, out char? c) {
+		if (pm.fgPID != pid || lineBuffer.Length == 0) {
+			c = null;
+			return false;
+		}
+
+		c = lineBuffer.ToString()[0];
+		lineBuffer.Remove(0, 1);
+		return true;
+	}
+
+	internal void LinkPM(BshPM pm) {
+		this.pm = pm;
 	}
 }

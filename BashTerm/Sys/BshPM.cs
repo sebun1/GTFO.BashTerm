@@ -1,8 +1,13 @@
 ﻿namespace BashTerm.Sys;
 
 public class BshPM {
-	private readonly Dictionary<int, IProc> processes = new();
+	internal BshIO? io = null;
+	private readonly IProc? fgProcess; // current foreground process
+	private readonly List<IProc> bgProcesses = new(); // background processes
+	private readonly List<IProc> susProcesses = new(); // suspended processes
 	private readonly Dictionary<int, IService> services = new();
+
+	internal int fgPID = -1; // foreground process ID
 
 	public readonly int TerminalID;
 
@@ -18,5 +23,9 @@ public class BshPM {
 	public int Update() {
 		// TODO: Not implemented
 		return -1;
+	}
+
+	internal void LinkIO(BshIO io) {
+		this.io = io;
 	}
 }
