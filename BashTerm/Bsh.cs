@@ -55,17 +55,17 @@ public class Bsh {
 
 	public static void LogInfo(string src, string msg) {
 		_infoCount++;
-		BSHLogs.Add($"{Styles.Info}INFO[{src}] >> {msg}{Styles.CEnd}");
+		BSHLogs.Add($"{Styles.C_Info}INFO[{src}] >> {msg}{Styles.C_End}");
 	}
 
 	public static void LogWarn(string src, string msg) {
 		_warnCount++;
-		BSHLogs.Add($"{Styles.Warning}WARN[{src}] >> {msg}{Styles.CEnd}");
+		BSHLogs.Add($"{Styles.C_Warning}WARN[{src}] >> {msg}{Styles.C_End}");
 	}
 
 	public static void LogError(string src, string msg) {
 		_errorCount++;
-		BSHLogs.Add($"{Styles.Error}ERRR[{src}] >> {msg}{Styles.CEnd}");
+		BSHLogs.Add($"{Styles.C_Error}ERRR[{src}] >> {msg}{Styles.C_End}");
 	}
 
 
@@ -97,8 +97,8 @@ public class Bsh {
 	public static bool SyncPrint(string msg) {
 		if (!HasTerminal) return false;
 		var lines = Fmt.WrapList(msg, maxCols: InputLineMaxCol);
-		string bshSyncOutputStart = $"<bsh@7.1> {Styles.Info}[ BSH Synced IO >> ]{Styles.CEnd}";
-		string bshSyncOutputEnd = $"<7.1@bsh> {Styles.Info}[ BSH Synced IO << ]{Styles.CEnd}";
+		string bshSyncOutputStart = $"<bsh@7.1> {Styles.C_Info}[ BSH Synced IO >> ]{Styles.C_End}";
+		string bshSyncOutputEnd = $"<7.1@bsh> {Styles.C_Info}[ BSH Synced IO << ]{Styles.C_End}";
 
 
 		LG_ComputerTerminalManager.WantToSendTerminalCommand(_currentTerminal!.SyncID,

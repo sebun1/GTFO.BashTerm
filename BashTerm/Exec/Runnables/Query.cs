@@ -116,13 +116,13 @@ public class Query : IProc {
 	private void PrintQuerySummary(List<iTerminalItem> items, string sortFlag, LG_ComputerTerminal terminal) {
 		var lines = new Il2CppSystem.Collections.Generic.List<string>();
 		List<short> col = new List<short> { 0, 25, 35 };
-		terminal.m_command.AddOutput($"\n{Styles.Accent}<b>Query Summary</b>{Styles.CEnd} ", spacing: false);
-		terminal.m_command.AddOutput($"\n{Styles.Info}Sort=[{sortFlag}]{Styles.CEnd}", spacing: false);
+		terminal.m_command.AddOutput($"\n{Styles.C_Accent}<b>Query Summary</b>{Styles.C_End} ", spacing: false);
+		terminal.m_command.AddOutput($"\n{Styles.C_Info}Sort=[{sortFlag}]{Styles.C_End}", spacing: false);
 
 		string resHeader = "";
-		resHeader += $"{Styles.Pos(col[0])}ID {Styles.Info}[I]{Styles.CEnd}{Styles.EndPos}";
-		resHeader += $"{Styles.Pos(col[1])}CAPACITY {Styles.Info}[C]{Styles.CEnd}{Styles.EndPos}";
-		resHeader += $"{Styles.Pos(col[2])}LOCATION {Styles.Info}[Z/L]{Styles.CEnd}{Styles.EndPos}";
+		resHeader += $"{Styles.Pos(col[0])}ID {Styles.C_Info}[I]{Styles.C_End}{Styles.EndPos}";
+		resHeader += $"{Styles.Pos(col[1])}CAPACITY {Styles.C_Info}[C]{Styles.C_End}{Styles.EndPos}";
+		resHeader += $"{Styles.Pos(col[2])}LOCATION {Styles.C_Info}[Z/L]{Styles.C_End}{Styles.EndPos}";
 		lines.Add($"{resHeader}\n");
 
 		foreach (var item in items) {

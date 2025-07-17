@@ -13,3 +13,11 @@ public class BshSvcAttribute: Attribute{
 
 	public BshSvcAttribute(string name) { Name = name; }
 }
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+public class BshCompletionAttribute : Attribute{
+	public string Name { get; }
+
+	public BshCompletionAttribute(string name) { Name = name; }
+}
+

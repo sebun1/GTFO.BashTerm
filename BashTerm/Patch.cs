@@ -50,11 +50,11 @@ internal class Patch {
 			}
 		}
 		catch (BSHException e) {
-			__instance.m_terminal.m_command.AddOutput($"{Styles.Error}{e}{Styles.CEnd}");
+			__instance.m_terminal.m_command.AddOutput($"{Styles.C_Error}{e}{Styles.C_End}");
 			Logger.Error(e);
 		}
 		catch (Exception e) {
-			__instance.m_terminal.m_command.AddOutput($"{Styles.Error}{e}{Styles.CEnd}");
+			__instance.m_terminal.m_command.AddOutput($"{Styles.C_Error}{e}{Styles.C_End}");
 			Logger.Error(e);
 		}
 
@@ -86,7 +86,7 @@ internal class Patch {
 	)]
 	[HarmonyPostfix]
 	public static void NewLineStart(ref LG_ComputerTerminalCommandInterpreter __instance, ref string __result) {
-		string res = Styles.Bashterm;
+		string res = Styles.C_Bsh;
 
 		string termMode = BshSystem.UserRawMode ? "RAW" : "BSH " + Plugin.BSH_VERSION;
 		LG_NavInfo zoneNavInfo = __instance.m_terminal.SpawnNode.m_zone.m_navInfo;
@@ -101,7 +101,7 @@ internal class Patch {
 		}
 
 		res += " >> ";
-		res += Styles.CEnd;
+		res += Styles.C_End;
 		__result = res;
 	}
 
@@ -146,10 +146,10 @@ internal class Patch {
 		string zone = term.SpawnNode.m_zone.NavInfo.GetFormattedText(LG_NavInfoFormat.Full_And_Number_With_Underscore);
 		string playerName = __instance.m_terminal.m_localInteractionSource?.PlayerName;
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
-		__instance.AddOutput($"{Styles.Bashterm}BSH v{Plugin.BSH_VERSION}{Styles.CEnd}", spacing: false);
+		__instance.AddOutput($"{Styles.C_Bsh}BSH v{Plugin.BSH_VERSION}{Styles.C_End}", spacing: false);
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
-		__instance.AddOutput($"Hi {Styles.Bashterm}{playerName}{Styles.CEnd}, welcome back!");
-		__instance.AddOutput( $"Welcome to {Styles.Accent}{term.ItemKey}{Styles.CEnd} located in {Styles.Accent}{zone}{Styles.CEnd}");
+		__instance.AddOutput($"Hi {Styles.C_Bsh}{playerName}{Styles.C_End}, welcome back!");
+		__instance.AddOutput( $"Welcome to {Styles.C_Accent}{term.ItemKey}{Styles.C_End} located in {Styles.C_Accent}{zone}{Styles.C_End}");
 		string isOrAre = count > 1 ? "are" : "is";
 		string sOrNoS = count > 1 ? "s" : "";
 		__instance.AddOutput($"There {isOrAre} {count} log{sOrNoS} on this terminal", spacing: false);

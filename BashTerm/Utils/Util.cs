@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Il2CppSystem.Text.RegularExpressions;
 using Il2CppSystem.Xml.Schema;
 
 namespace BashTerm.Utils;
@@ -62,14 +63,14 @@ internal static class Util {
 		return input;
 	}
 
-	/// <summary>
-	/// Computes the effective display width excluding xml-like TextMeshPro tags
-	/// </summary>
-	/// <param name="txt">Text to be analyzed</param>
-	/// <returns>Effective width of the line given a single line, -1 otherwise</returns>
-	public static int GetRealLineWidth(string txt) {
-		// TODO
-		return -1;
+	public static bool IsValidColor(string input) {
+		var pat = @"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$";
+		return Regex.IsMatch(input, pat);
+	}
+
+	public static bool IsValidColorWithAlpha(string input) {
+		var pat = @"^#([0-9a-fA-F]{8})$";
+		return Regex.IsMatch(input, pat);
 	}
 
 	public static string RemoveAllNumbers(string input) =>

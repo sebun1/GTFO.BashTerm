@@ -1,8 +1,8 @@
 namespace BashTerm.Sys;
 
 public abstract class Screen {
-	public const int Cols = 150;
-	public const int Rows = 50;
+	public static readonly int Cols = 150;
+	public static readonly int Rows = 50;
 	public int ScreenID { get; }
 	public List<string> OutputHistory { get; }
 	protected Queue<string> _outputQueue;

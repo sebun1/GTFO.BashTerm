@@ -12,8 +12,7 @@ internal class BshSystem : MonoBehaviour {
 	private float updateTimer = 0f;
 	private const float updatePeriod = 0.1f;
 
-	internal static readonly Dictionary<string, Type> ProcTypes = new();
-	internal static readonly Dictionary<string, ProcManifest> ProcManifests = new();
+	internal static readonly Dictionary<string, ProcEntry> ProcEntries = new();
 
 	internal static readonly Dictionary<string, Type> SvcTypes = new();
 
@@ -37,7 +36,7 @@ internal class BshSystem : MonoBehaviour {
 	}
 
 	private static int RegisterTypes(out int handlerCount, out int serviceCount) {
-		ProcTypes.Clear();
+		ProcEntries.Clear();
 		SvcTypes.Clear();
 
 		int invalids = 0;
@@ -48,7 +47,7 @@ internal class BshSystem : MonoBehaviour {
 			if (typeof(IProc).IsAssignableFrom(type) && !type.IsAbstract) {
 				var attr = type.GetCustomAttribute<BshProcAttribute>();
 				if (attr != null) {
-					ProcTypes[attr.Name] = type;
+					ProcEntries[attr.Name] = type;
 					continue;
 				}
 			} else if (typeof(IService).IsAssignableFrom(type) && !type.IsAbstract) {
@@ -61,7 +60,7 @@ internal class BshSystem : MonoBehaviour {
 			invalids++;
 		}
 
-		handlerCount = ProcTypes.Count;
+		handlerCount = ProcEntries.Count;
 		serviceCount = SvcTypes.Count;
 		return invalids;
 	}
@@ -91,6 +90,14 @@ internal class BshSystem : MonoBehaviour {
 	}
 }
 
-public class BSHException : Exception {
-	public BSHException(string message) : base(message) {}
+internal class ProcEntry {
+	public readonly Type Type;
+	public readonly ProcManifest Manifest;
+	public readonly ICompletion? Completion;
+
+	public ProcEntry(Type t, ProcManifest m, ICompletion? comp) {
+		Type = t;
+		Manifest = m;
+		Completion = comp;
+	}
 }

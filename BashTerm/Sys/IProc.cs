@@ -22,14 +22,14 @@ public class ProcManifest {
 	public static string ProcName;
 	public static string Desc;
 	public static string Manual;
-	public static bool WantDedicatedScreen;
+	public static bool WantDiscreteOutputBuffer;
 	public static FlagSchema FSchema;
 
 	public ProcManifest(string name, string desc, string manual, bool wantScreen, FlagSchema fSchema) {
 		ProcName = name;
 		Desc = desc;
 		Manual = manual;
-		WantDedicatedScreen = wantScreen;
+		WantDiscreteOutputBuffer = wantScreen;
 		FSchema = fSchema;
 	}
 }
