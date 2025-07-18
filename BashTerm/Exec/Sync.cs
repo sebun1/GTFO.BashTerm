@@ -15,7 +15,7 @@ public static class Sync {
 	}
 
 	public static async Task WaitAsync(SyncSrc source, int timeoutMs) {
-		Logger.Debug($"Sync.WaitAsync: waiting on {source} with timeout={timeoutMs}ms");
+		Log.Debug($"Sync.WaitAsync: waiting on {source} with timeout={timeoutMs}ms");
 		var tcs = new TaskCompletionSource<bool>();
 		var q = GetQueue(source);
 		q.Enqueue(tcs);
@@ -31,12 +31,12 @@ public static class Sync {
 		} else {
 			await tcs.Task;
 		}
-		Logger.Debug($"Sync.WaitAsync: ({source}) done");
+		Log.Debug($"Sync.WaitAsync: ({source}) done");
 	}
 
 	public static bool Signal(SyncSrc source) {
 		var q = GetQueue(source);
-		Logger.Debug($"Sync.Signal: trying to signal to {source}");
+		Log.Debug($"Sync.Signal: trying to signal to {source}");
 		if (q.TryDequeue(out var tcs)) {
 			tcs.TrySetResult(true);
 			return true;

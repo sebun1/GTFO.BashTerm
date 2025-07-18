@@ -61,7 +61,7 @@ public class Query : IProc {
 				string timeCostStr = timeCost.ToString("N0");
 				// TODO: Make default configurable in config
 				string sortFlag = (opts["-s"] ?? "Z+I+C-").Trim().ToUpper();
-				Logger.Debug($"Query cost: {timeCostStr}, priority flag: {sortFlag}");
+				Log.Debug($"Query cost: {timeCostStr}, priority flag: {sortFlag}");
 
 				items.Sort(new TerminalItemComparator(sortFlag));
 

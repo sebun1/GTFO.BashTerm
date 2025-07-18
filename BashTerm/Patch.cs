@@ -1,13 +1,13 @@
 using BashTerm.Parsers;
 using BashTerm.Exec;
 using BashTerm.Sys;
+using BashTerm.Utils;
 using GameData;
 using HarmonyLib;
 using LevelGeneration;
 using TenCC.Utils;
 using UnityEngine;
 using UnityEngine.UI;
-using Logger = BashTerm.Utils.Logger;
 
 namespace BashTerm;
 
@@ -51,11 +51,11 @@ internal class Patch {
 		}
 		catch (BSHException e) {
 			__instance.m_terminal.m_command.AddOutput($"{Styles.C_Error}{e}{Styles.C_End}");
-			Logger.Error(e);
+			Log.Error(e);
 		}
 		catch (Exception e) {
 			__instance.m_terminal.m_command.AddOutput($"{Styles.C_Error}{e}{Styles.C_End}");
-			Logger.Error(e);
+			Log.Error(e);
 		}
 
 		__instance.m_terminal.m_currentLine = "";
@@ -123,12 +123,12 @@ internal class Patch {
 	)]
 	[HarmonyPostfix]
 	public static void ReceiveCmd(ref LG_ComputerTerminalCommandInterpreter __instance, TERM_Command cmd, string inputLine) {
-		Logger.Debug($"ReceiveCmd with cmd={cmd} inputLine={inputLine}");
+		Log.Debug($"ReceiveCmd with cmd={cmd} inputLine={inputLine}");
 		if (Sync.Signal(new SyncSrcOnReceiveCmd(__instance.m_terminal.m_serialNumber))) {
 			// TODO: correspond with managing in
-			Logger.Debug("Successfully signaled SyncSrcOnReceiveCmd");
+			Log.Debug("Successfully signaled SyncSrcOnReceiveCmd");
 		} else {
-			Logger.Debug("There was nothing to signal for SyncSrcOnReceiveCmd");
+			Log.Debug("There was nothing to signal for SyncSrcOnReceiveCmd");
 		}
 	}
 
@@ -184,22 +184,22 @@ internal class Patch {
 
 		if (Input.GetKeyDown(KeyCode.UpArrow)) {
 			// history prev
-			Logger.Debug("KEYDOWN: UpArrow");
+			Log.Debug("KEYDOWN: UpArrow");
 		} else if (Input.GetKeyDown(KeyCode.DownArrow)) {
 			// history next
-			Logger.Debug("KEYDOWN: DownArrow");
+			Log.Debug("KEYDOWN: DownArrow");
 		}
 
 		if (Input.GetKeyDown(KeyCode.LeftArrow)) {
 			// cursor left
-			Logger.Debug("KEYDOWN: LeftArrow");
+			Log.Debug("KEYDOWN: LeftArrow");
 		} else if (Input.GetKeyDown(KeyCode.RightArrow)) {
 			// cursor right
-			Logger.Debug("KEYDOWN: RightArrow");
+			Log.Debug("KEYDOWN: RightArrow");
 		}
 
 		if (!string.IsNullOrEmpty(Input.inputString))
-			Logger.Debug($"Input.inputString={Input.inputString}");
+			Log.Debug($"Input.inputString={Input.inputString}");
 
 		return true;
 		return false;
@@ -228,6 +228,7 @@ internal class Patch {
 	)]
 	[HarmonyPostfix]
 	public static void EnterTerminal(ref LG_TERM_PlayerInteracting __instance) {
+		Log.Debug($"Entered Terminal syncID={__instance.m_terminal.SyncID}, serialNumber={__instance.m_terminal.m_serialNumber}");
 	}
 
 	[HarmonyPatch(
@@ -235,6 +236,7 @@ internal class Patch {
 		nameof(LG_TERM_PlayerInteracting.Exit)
 	)]
 	[HarmonyPostfix]
-	public static void ExitTerminal() {
+	public static void ExitTerminal(ref LG_TERM_PlayerInteracting __instance) {
+		Log.Debug($"Exit Terminal syncID={__instance.m_terminal.SyncID}, serialNumber={__instance.m_terminal.m_serialNumber}");
 	}
 }

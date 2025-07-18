@@ -14,13 +14,13 @@ public class Plugin : BasePlugin {
 	public const string BSH_VERSION = "3.0a";
 
 	public override void Load() {
-		Logger.SetupFromInit(Log);
-		Logger.Info(NAME + " " + GUID + " " + VERSION);
-		Logger.Info("Patching...");
+		Utils.Log.SetupFromInit(Log);
+		Utils.Log.Info(NAME + " " + GUID + " " + VERSION);
+		Utils.Log.Info("Patching...");
 		int handlerCount = Dispatch.Initialize();
 		ConfigMgr.Init();
-		Logger.Debug($"{handlerCount} handlers registered");
+		Utils.Log.Debug($"{handlerCount} handlers registered");
 		Harmony.CreateAndPatchAll(typeof(Patch), GUID);
-		Logger.Info("Finished Patching");
+		Utils.Log.Info("Finished Patching");
 	}
 }

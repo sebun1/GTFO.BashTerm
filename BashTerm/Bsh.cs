@@ -19,7 +19,7 @@ public class Bsh {
 
 	public static LG_ComputerTerminal? CurrentTerminal {
 		get {
-			Logger.Debug($"Terminal is using SyncID={_currentTerminal?.SyncID}");
+			Log.Debug($"Terminal is using SyncID={_currentTerminal?.SyncID}");
 			return _currentTerminal;
 		}
 	}

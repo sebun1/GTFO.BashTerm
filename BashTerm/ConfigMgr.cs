@@ -8,6 +8,7 @@ using BashTerm.Parsers;
 using BashTerm.Utils;
 using Dissonance;
 using Il2CppSystem.Linq;
+using Log = BashTerm.Utils.Log;
 
 namespace BashTerm;
 
@@ -144,8 +145,8 @@ internal static class ConfigMgr {
 		override_count += LoadExpansionPairs(CustomCmdAliases.Value, ref CmdExpExact, ref CmdExpPrefix);
 		override_count += LoadExpansionPairs(CustomObjExpansions.Value, ref ObjExpExact, ref ObjExpPrefix);
 		int total_count = GetExpansionCount();
-		Logger.Info($"Aliases/Expansions Loaded: {default_count} Default ({override_count} Prefix Overrides) + {total_count - default_count} User = {total_count} Total");
-		Logger.Info("Config is Loaded");
+		Log.Info($"Aliases/Expansions Loaded: {default_count} Default ({override_count} Prefix Overrides) + {total_count - default_count} User = {total_count} Total");
+		Log.Info("Config is Loaded");
 	}
 
 	public static int GetExpansionCount() {
@@ -178,7 +179,7 @@ internal static class ConfigMgr {
 					if (existentIndex != -1) {
 						targetPrefix[existentIndex] = (term, expansion);
 						replaced++;
-						Logger.Debug("Overwriting Prefix Expansion: (" + term + " -> " + expansion + ")");
+						Log.Debug("Overwriting Prefix Expansion: (" + term + " -> " + expansion + ")");
 					} else {
 						targetPrefix.Add((term, expansion));
 					}

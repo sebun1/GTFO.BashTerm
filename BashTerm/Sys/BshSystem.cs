@@ -1,7 +1,7 @@
 using System.Reflection;
 using BashTerm.Exec;
+using BashTerm.Utils;
 using UnityEngine;
-using Logger = BashTerm.Utils.Logger;
 
 namespace BashTerm.Sys;
 
@@ -12,8 +12,9 @@ internal class BshSystem : MonoBehaviour {
 	private float updateTimer = 0f;
 	private const float updatePeriod = 0.1f;
 
+	internal static readonly Dictionary<string, Type> ProcTypes = new();
+	internal static readonly Dictionary<string, ICompletion> ProcCompletions = new();
 	internal static readonly Dictionary<string, ProcEntry> ProcEntries = new();
-
 	internal static readonly Dictionary<string, Type> SvcTypes = new();
 
 	internal static Dictionary<int, BshPM> PM = new();
@@ -30,9 +31,9 @@ internal class BshSystem : MonoBehaviour {
 		// Register Types for Processes and Services
 		int invalidCount = RegisterTypes(out var handlerCount, out var serviceCount);
 		if (invalidCount > 0) {
-			Logger.Warn($"BashTerm: {invalidCount} types were not registered due to missing attributes or not implementing the required interfaces.");
+			Log.Warn($"BashTerm: {invalidCount} types were not registered due to missing attributes or not implementing the required interfaces.");
 		}
-		Logger.Info($"BashTerm: Registered {handlerCount} handlers and {serviceCount} services.");
+		Log.Info($"BashTerm: Registered {handlerCount} handlers and {serviceCount} services.");
 	}
 
 	private static int RegisterTypes(out int handlerCount, out int serviceCount) {
@@ -43,21 +44,37 @@ internal class BshSystem : MonoBehaviour {
 
 		var types = System.Reflection.Assembly.GetExecutingAssembly().GetTypes();
 
+		Dictionary<string, Type> procTypes = new();
+		Dictionary<string, ICompletion> comps = new();
+
 		foreach (var type in types) {
 			if (typeof(IProc).IsAssignableFrom(type) && !type.IsAbstract) {
 				var attr = type.GetCustomAttribute<BshProcAttribute>();
 				if (attr != null) {
-					ProcEntries[attr.Name] = type;
+					procTypes[attr.Name] = type;
 					continue;
 				}
+				invalids++;
 			} else if (typeof(IService).IsAssignableFrom(type) && !type.IsAbstract) {
 				var attr = type.GetCustomAttribute<BshSvcAttribute>();
 				if (attr != null) {
 					SvcTypes[attr.Name] = type;
 					continue;
 				}
+				invalids++;
+			} else if (typeof(ICompletion).IsAssignableFrom(type) && !type.IsAbstract) {
+				var attr = type.GetCustomAttribute<BshCompletionAttribute>();
+				if (attr != null) {
+					ICompletion? comp = (ICompletion?)Activator.CreateInstance(type);
+					comps[attr.Name] = comp;
+					continue;
+				}
+				invalids++;
 			}
-			invalids++;
+		}
+
+		foreach (Type type in procTypes) {
+
 		}
 
 		handlerCount = ProcEntries.Count;

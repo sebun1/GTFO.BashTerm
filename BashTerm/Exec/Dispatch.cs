@@ -31,9 +31,9 @@ public static class Dispatch {
 			var attr = type.GetCustomAttribute<BshProcAttribute>();
 			if (attr != null && typeof(IProc).IsAssignableFrom(type)) {
 				if (Hook(attr.Name, type)) {
-					Logger.Debug($"{type.FullName} hooked with command name '{attr.Name}'");
+					Log.Debug($"{type.FullName} hooked with command name '{attr.Name}'");
 				} else {
-					Logger.Warn($"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
+					Log.Warn($"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
 					Bsh.LogWarn("dispatch", $"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
 				}
 			}
