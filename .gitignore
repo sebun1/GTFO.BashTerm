@@ -1,3 +1,28 @@
 .vs/
-R6MonoDlls/
+tests/
 BashTerm.zip
+
+# --- Rider / IntelliJ IDEA ---
+.idea/
+*.sln.iml
+
+# --- VS / Rider user-specific files ---
+*.user
+*.suo
+
+# --- System ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- Logs and crashes ---
+*.log
+*.stacktrace
+sysinfo.txt
+
+# --- Optional: NuGet packages (if using) ---
+*.nupkg
+*.snupkg
+packages/
+
