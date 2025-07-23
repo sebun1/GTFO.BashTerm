@@ -7,10 +7,10 @@ public class BshPM {
 	internal BshIO? io = null;
 
 	internal int fgPID = -1; // foreground process ID
-	private readonly IProc? fgProcess = null; // current foreground process
+	private readonly Proc? fgProcess = null; // current foreground process
 
-	private readonly Dictionary<int, IProc> bgProcesses = new(); // background processes
-	private readonly Dictionary<int, IProc> susProcesses = new(); // suspended processes
+	private readonly Dictionary<int, Proc> bgProcesses = new(); // background processes
+	private readonly Dictionary<int, Proc> susProcesses = new(); // suspended processes
 	private readonly Dictionary<int, IService> services = new();
 
 	public readonly int TerminalID;
@@ -18,14 +18,14 @@ public class BshPM {
 
 	public BshPM(int terminalID, LG_ComputerTerminal? terminal) {
 		if (terminal == null) {
-			throw new BSHException($"fatal: BshPM cannot initialize with a null terminal (terminalID={terminalID})");
+			throw new BshException($"fatal: BshPM cannot initialize with a null terminal (terminalID={terminalID})");
 		}
 		TerminalID = terminalID;
 		Terminal = terminal;
 	}
 
-	public bool CreateProcess(string name) {
-		// TODO: Not implemented
+	public bool Execute(string name) {
+
 		return true;
 	}
 

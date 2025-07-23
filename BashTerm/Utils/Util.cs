@@ -37,21 +37,21 @@ internal static class Util {
 	}
 
 	public static void printMaps() {
-		Log.Info("CmdExpExact:");
+		Logr.Info("CmdExpExact:");
 		foreach (var pair in ConfigMgr.CmdExpExact) {
-			Log.Info("\t" + pair.Key + " -> " + pair.Value);
+			Logr.Info("\t" + pair.Key + " -> " + pair.Value);
 		}
-		Log.Info("CmdExpPrefix:");
+		Logr.Info("CmdExpPrefix:");
 		foreach (var tup in ConfigMgr.CmdExpPrefix) {
-			Log.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
+			Logr.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
 		}
-		Log.Info("ObjExpExact:");
+		Logr.Info("ObjExpExact:");
 		foreach (var pair in ConfigMgr.ObjExpExact) {
-			Log.Info("\t" + pair.Key + " -> " + pair.Value);
+			Logr.Info("\t" + pair.Key + " -> " + pair.Value);
 		}
-		Log.Info("ObjExpPrefix:");
+		Logr.Info("ObjExpPrefix:");
 		foreach (var tup in ConfigMgr.ObjExpPrefix) {
-			Log.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
+			Logr.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
 		}
 	}
 

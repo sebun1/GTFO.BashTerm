@@ -6,7 +6,7 @@ using LevelGeneration;
 namespace BashTerm.Exec.Runnables;
 
 [BshProc("broadcast")]
-public class Broadcast : IProc {
+public class Broadcast : Proc {
 	public static string CommandName => "broadcast";
 	public static string Desc => "Broadcast a message to all users! Even non-BashTerm users!";
 

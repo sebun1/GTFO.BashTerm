@@ -1,7 +1,20 @@
 ﻿using BashTerm.Exec;
+using BashTerm.Parsers;
 using LevelGeneration;
 
 namespace BashTerm.Sys;
+
+public class StartPayload {
+	public readonly List<string> Args;
+	public readonly CmdOpts Opts;
+	public readonly PipedPayload Payload;
+
+	public StartPayload(List<string> args, CmdOpts opts, PipedPayload payload) {
+		Args = args;
+		Opts = opts;
+		Payload = payload;
+	}
+}
 
 public class UpdatePayload {
 	public bool HasPayload => Payload is not EmptyPayload;
@@ -23,13 +36,26 @@ public class UpdatePayload {
 }
 
 public class ExitPayload {
-	public int Code { get; }
-	public string Message { get; }
-	public PipedPayload Payload { get; }
+	public readonly int Code;
+	public readonly string Message;
+	public readonly PipedPayload Payload;
+
+	public ExitPayload() {
+		Code = 0;
+		Message = "";
+		Payload = new EmptyPayload();
+	}
+
+	public ExitPayload(PipedPayload? payload) {
+		Code = 0;
+		Message = "";
+		Payload = payload ?? new EmptyPayload();
+	}
 
 	public ExitPayload(int code, string message, PipedPayload? payload) {
 		Code = code;
 		Message = message;
 		Payload = payload ?? new EmptyPayload();
 	}
+
 }

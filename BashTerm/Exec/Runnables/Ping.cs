@@ -5,7 +5,7 @@ using LevelGeneration;
 namespace BashTerm.Exec.Runnables;
 
 //[CommandHandler("ping")]
-public class Ping : IProc {
+public class Ping : Proc {
 	public string CommandName => "ping";
 	public string Desc => "";
 	public static string Manual = new string("");

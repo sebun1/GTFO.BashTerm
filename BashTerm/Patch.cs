@@ -6,6 +6,7 @@ using GameData;
 using HarmonyLib;
 using LevelGeneration;
 using TenCC.Utils;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -49,13 +50,13 @@ internal class Patch {
 				if (ConfigMgr.DEBUG) __instance.m_terminal.m_command.AddOutput($"{cmd.FmtToString()}");
 			}
 		}
-		catch (BSHException e) {
+		catch (BshException e) {
 			__instance.m_terminal.m_command.AddOutput($"{Styles.C_Error}{e}{Styles.C_End}");
-			Log.Error(e);
+			Logr.Error(e);
 		}
 		catch (Exception e) {
 			__instance.m_terminal.m_command.AddOutput($"{Styles.C_Error}{e}{Styles.C_End}");
-			Log.Error(e);
+			Logr.Error(e);
 		}
 
 		__instance.m_terminal.m_currentLine = "";
@@ -122,14 +123,25 @@ internal class Patch {
 		nameof(LG_ComputerTerminalCommandInterpreter.ReceiveCommand)
 	)]
 	[HarmonyPostfix]
-	public static void ReceiveCmd(ref LG_ComputerTerminalCommandInterpreter __instance, TERM_Command cmd, string inputLine) {
-		Log.Debug($"ReceiveCmd with cmd={cmd} inputLine={inputLine}");
+	public static void ReceiveCmd(ref LG_ComputerTerminalCommandInterpreter __instance, TERM_Command cmd,
+		string inputLine) {
+		Logr.Debug($"ReceiveCmd with cmd={cmd} inputLine={inputLine}");
 		if (Sync.Signal(new SyncSrcOnReceiveCmd(__instance.m_terminal.m_serialNumber))) {
 			// TODO: correspond with managing in
-			Log.Debug("Successfully signaled SyncSrcOnReceiveCmd");
+			Logr.Debug("Successfully signaled SyncSrcOnReceiveCmd");
 		} else {
-			Log.Debug("There was nothing to signal for SyncSrcOnReceiveCmd");
+			Logr.Debug("There was nothing to signal for SyncSrcOnReceiveCmd");
 		}
+	}
+
+	[HarmonyPatch(
+		typeof(LG_ComputerTerminalCommandInterpreter),
+		nameof(LG_ComputerTerminalCommandInterpreter.AddOutput),
+		new Type[] { typeof(List<string>) }
+	)]
+	[HarmonyPrefix]
+	public static bool AddOutputList(LG_ComputerTerminalCommandInterpreter __instance, List<string> inputLine) {
+		return true;
 	}
 
 	[HarmonyPatch(
@@ -149,7 +161,8 @@ internal class Patch {
 		__instance.AddOutput($"{Styles.C_Bsh}BSH v{Plugin.BSH_VERSION}{Styles.C_End}", spacing: false);
 		__instance.AddOutput("---------------------------------------------------------------", spacing: false);
 		__instance.AddOutput($"Hi {Styles.C_Bsh}{playerName}{Styles.C_End}, welcome back!");
-		__instance.AddOutput( $"Welcome to {Styles.C_Accent}{term.ItemKey}{Styles.C_End} located in {Styles.C_Accent}{zone}{Styles.C_End}");
+		__instance.AddOutput(
+			$"Welcome to {Styles.C_Accent}{term.ItemKey}{Styles.C_End} located in {Styles.C_Accent}{zone}{Styles.C_End}");
 		string isOrAre = count > 1 ? "are" : "is";
 		string sOrNoS = count > 1 ? "s" : "";
 		__instance.AddOutput($"There {isOrAre} {count} log{sOrNoS} on this terminal", spacing: false);
@@ -184,22 +197,22 @@ internal class Patch {
 
 		if (Input.GetKeyDown(KeyCode.UpArrow)) {
 			// history prev
-			Log.Debug("KEYDOWN: UpArrow");
+			Logr.Debug("KEYDOWN: UpArrow");
 		} else if (Input.GetKeyDown(KeyCode.DownArrow)) {
 			// history next
-			Log.Debug("KEYDOWN: DownArrow");
+			Logr.Debug("KEYDOWN: DownArrow");
 		}
 
 		if (Input.GetKeyDown(KeyCode.LeftArrow)) {
 			// cursor left
-			Log.Debug("KEYDOWN: LeftArrow");
+			Logr.Debug("KEYDOWN: LeftArrow");
 		} else if (Input.GetKeyDown(KeyCode.RightArrow)) {
 			// cursor right
-			Log.Debug("KEYDOWN: RightArrow");
+			Logr.Debug("KEYDOWN: RightArrow");
 		}
 
 		if (!string.IsNullOrEmpty(Input.inputString))
-			Log.Debug($"Input.inputString={Input.inputString}");
+			Logr.Debug($"Input.inputString={Input.inputString}");
 
 		return true;
 		return false;
@@ -219,6 +232,8 @@ internal class Patch {
 		//__instance.m_text.text = "Test";
 
 		//return false;
+		TMP_Text txt = __instance.m_terminal.m_text;
+		Logr.Debug($"text enableWW={txt.enableWordWrapping}, overflowMode={txt.overflowMode}, ");
 		return true;
 	}
 
@@ -228,7 +243,8 @@ internal class Patch {
 	)]
 	[HarmonyPostfix]
 	public static void EnterTerminal(ref LG_TERM_PlayerInteracting __instance) {
-		Log.Debug($"Entered Terminal syncID={__instance.m_terminal.SyncID}, serialNumber={__instance.m_terminal.m_serialNumber}");
+		Logr.Debug(
+			$"Entered Terminal syncID={__instance.m_terminal.SyncID}, serialNumber={__instance.m_terminal.m_serialNumber}");
 	}
 
 	[HarmonyPatch(
@@ -237,6 +253,7 @@ internal class Patch {
 	)]
 	[HarmonyPostfix]
 	public static void ExitTerminal(ref LG_TERM_PlayerInteracting __instance) {
-		Log.Debug($"Exit Terminal syncID={__instance.m_terminal.SyncID}, serialNumber={__instance.m_terminal.m_serialNumber}");
+		Logr.Debug(
+			$"Exit Terminal syncID={__instance.m_terminal.SyncID}, serialNumber={__instance.m_terminal.m_serialNumber}");
 	}
 }

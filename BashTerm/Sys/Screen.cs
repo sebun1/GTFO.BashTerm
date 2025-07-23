@@ -1,8 +1,10 @@
+using TMPro;
+
 namespace BashTerm.Sys;
 
 public abstract class Screen {
-	public static readonly int Cols = 150;
-	public static readonly int Rows = 50;
+	public readonly int Cols = 150;
+	public readonly int Rows = 50;
 	public int ScreenID { get; }
 	public List<string> OutputHistory { get; }
 	protected Queue<string> _outputQueue;

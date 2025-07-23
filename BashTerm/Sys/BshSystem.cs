@@ -10,10 +10,10 @@ internal class BshSystem : MonoBehaviour {
 	private static bool _userRawMode;
 
 	private float updateTimer = 0f;
-	private const float updatePeriod = 0.1f;
+	private const float updatePeriod = 0.05f;
 
-	internal static readonly Dictionary<string, Type> ProcTypes = new();
-	internal static readonly Dictionary<string, ICompletion> ProcCompletions = new();
+	// internal static readonly Dictionary<string, Type> ProcTypes = new();
+	// internal static readonly Dictionary<string, ICompletion> ProcCompletions = new();
 	internal static readonly Dictionary<string, ProcEntry> ProcEntries = new();
 	internal static readonly Dictionary<string, Type> SvcTypes = new();
 
@@ -28,58 +28,84 @@ internal class BshSystem : MonoBehaviour {
 	public static void ToggleRawMode() { _userRawMode = !_userRawMode; }
 
 	public void Start() {
-		// Register Types for Processes and Services
-		int invalidCount = RegisterTypes(out var handlerCount, out var serviceCount);
+		int invalidCount = RegisterTypes(out var procCount, out var serviceCount);
 		if (invalidCount > 0) {
-			Log.Warn($"BashTerm: {invalidCount} types were not registered due to missing attributes or not implementing the required interfaces.");
+			Logr.Warn($"BshSystem: {invalidCount} types were not registered due to missing attributes or not implementing the required interfaces.");
 		}
-		Log.Info($"BashTerm: Registered {handlerCount} handlers and {serviceCount} services.");
+		Logr.Info($"BshSystem: Registered {procCount} processes and {serviceCount} services.");
 	}
 
-	private static int RegisterTypes(out int handlerCount, out int serviceCount) {
+	private static int RegisterTypes(out int procCount, out int serviceCount) {
 		ProcEntries.Clear();
 		SvcTypes.Clear();
 
-		int invalids = 0;
+		int errCount = 0;
 
-		var types = System.Reflection.Assembly.GetExecutingAssembly().GetTypes();
+		List<Type> allTypes = new();
+		var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-		Dictionary<string, Type> procTypes = new();
+		foreach (var assembly in loadedAssemblies) {
+			try {
+				allTypes.AddRange(assembly.GetTypes());
+			}
+			catch (ReflectionTypeLoadException) {
+				Logr.Warn($"BshSystem: Could not load types from assembly: {assembly.FullName}");
+			}
+		}
+
+		List<(string, Type)> procTypes = new();
 		Dictionary<string, ICompletion> comps = new();
 
-		foreach (var type in types) {
-			if (typeof(IProc).IsAssignableFrom(type) && !type.IsAbstract) {
+		foreach (var type in allTypes) {
+			if (typeof(Proc).IsAssignableFrom(type) && !type.IsAbstract) {
 				var attr = type.GetCustomAttribute<BshProcAttribute>();
 				if (attr != null) {
-					procTypes[attr.Name] = type;
-					continue;
+					procTypes.Add((attr.Name, type));
 				}
-				invalids++;
 			} else if (typeof(IService).IsAssignableFrom(type) && !type.IsAbstract) {
 				var attr = type.GetCustomAttribute<BshSvcAttribute>();
 				if (attr != null) {
 					SvcTypes[attr.Name] = type;
-					continue;
 				}
-				invalids++;
 			} else if (typeof(ICompletion).IsAssignableFrom(type) && !type.IsAbstract) {
 				var attr = type.GetCustomAttribute<BshCompletionAttribute>();
 				if (attr != null) {
 					ICompletion? comp = (ICompletion?)Activator.CreateInstance(type);
+					if (comp == null)
+						continue;
 					comps[attr.Name] = comp;
-					continue;
 				}
-				invalids++;
 			}
 		}
 
-		foreach (Type type in procTypes) {
+		foreach ((string procName, Type t) in procTypes) {
+			if (ProcEntries.ContainsKey(procName)) {
+				Type existent = ProcEntries[procName].Type;
+				Bsh.LogError("Sys", $"Process name <u>{procName}</u> is already registered to <u>{existent.FullName}</u>. Skipping registration for <u>{t.FullName}</u>.");
+				errCount++;
+				continue;
+			}
 
+			MethodInfo? getManifestMethod = t.GetMethod(
+				"GetManifest",
+				BindingFlags.Static | BindingFlags.Public,
+				null,
+				new Type[] {},
+				null
+			);
+			if (getManifestMethod == null || getManifestMethod.ReturnType != typeof(ProcManifest)) {
+				Bsh.LogError("Sys", $"Class <u>{t.FullName}</u> of name <u>{procName}</u> is trying to define a process but does not have a compliant <u>static ProcManifest GetManifest()</u> method.");
+				errCount++;
+				continue;
+			}
+			ProcManifest manifest = (ProcManifest)getManifestMethod.Invoke(null, null)!;
+			ProcEntry pe = new ProcEntry(t, manifest, comps.GetValueOrDefault(procName));
+			ProcEntries[procName] = pe;
 		}
 
-		handlerCount = ProcEntries.Count;
+		procCount = ProcEntries.Count;
 		serviceCount = SvcTypes.Count;
-		return invalids;
+		return errCount;
 	}
 
 	internal static int RequestPID() {

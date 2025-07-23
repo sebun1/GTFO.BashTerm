@@ -5,7 +5,7 @@ using LevelGeneration;
 namespace BashTerm.Exec.Runnables;
 
 [BshProc("raw")]
-public class Raw : IProc {
+public class Raw : Proc {
 	public string CommandName => "raw";
 	public string Desc => "Toggle between BashTerm interpreter and raw input (GTFO native interpreter)";
 	public string Manual => "Use this command to switch to GTFO native interpreter when BashTerm misbehaves, feel free to report any problems or bugs!";

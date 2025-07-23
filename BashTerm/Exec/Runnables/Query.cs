@@ -7,7 +7,7 @@ using BashTerm.Utils;
 namespace BashTerm.Exec.Runnables;
 
 [BshProc("query")]
-public class Query : IProc {
+public class Query : Proc {
 	private static readonly string ProcName = "query";
 	private static readonly string Desc = "Queries the location of a single item (or multiple through piping)";
 	private static readonly string Manual = @"
@@ -44,62 +44,70 @@ public class Query : IProc {
 		return fs;
 	}
 
-	// TODO: New standard for program classes -- GetManifest must return a ProcManifest object
 	public static ProcManifest GetManifest() {
 		return new ProcManifest(ProcName, Desc, Manual, WantDedicatedScreen, FSchema);
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
-		if (terminal == null) throw new NullTerminalInstanceException(ProcName);
+	//public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public override void Start(StartPayload payload, LG_ComputerTerminal term) {
+		if (term == null) throw new NullTerminalInstanceException(ProcName);
+		ExitPayload ePayload = new();
 
-		string input = Util.GetCommandString(cmd, args);
+		string input = Util.GetCommandString(ProcName, payload.Args);
 
-		switch (payload) {
+		switch (payload.Payload) {
 			case ItemList(List<iTerminalItem> items):
 				List<ItemQueryResult> results = new List<ItemQueryResult>();
 				float timeCost = GetAdjustedQueryCost(items.Count);
 				string timeCostStr = timeCost.ToString("N0");
 				// TODO: Make default configurable in config
-				string sortFlag = (opts["-s"] ?? "Z+I+C-").Trim().ToUpper();
-				Log.Debug($"Query cost: {timeCostStr}, priority flag: {sortFlag}");
+				string sortFlag = (payload.Opts["-s"] ?? "Z+I+C-").Trim().ToUpper();
+				Logr.Debug($"Query cost: {timeCostStr}, priority flag: {sortFlag}");
 
 				items.Sort(new TerminalItemComparator(sortFlag));
 
-				terminal.m_command.AddOutput(TerminalLineType.SpinningWaitDone,
+				term.m_command.AddOutput(TerminalLineType.SpinningWaitDone,
 					$"Querying {items.Count} items (ETA: {timeCostStr}s)", timeCost);
-				PrintQuerySummary(items, sortFlag, terminal);
+				PrintQuerySummary(items, sortFlag, term);
 				foreach (var item in items) {
 					results.Add(new ItemQueryResult(
 						true,
 						item.TerminalItemKey,
 						item.FloorItemLocation,
-						item.SpawnNode != null && terminal.SpawnNode != null &&
-						terminal.SpawnNode.m_zone == item.SpawnNode.m_zone,
+						item.SpawnNode != null && term.SpawnNode != null &&
+						term.SpawnNode.m_zone == item.SpawnNode.m_zone,
 						GetCapacity(item)
 					));
 				}
-				return new ItemQueryResults(results);
 
+				RaiseOnExit(new ExitPayload(new ItemQueryResults(results)));
+				return;
 			default:
-				if (args.Count == 0)
+				if (payload.Args.Count == 0)
 					throw new MissingArgumentException(ProcName, 0, 1);
-				string objName = string.Join('_', args);
-				LG_ComputerTerminalManager.WantToSendTerminalCommand(terminal.SyncID, TERM_Command.Query, input,
+				string objName = string.Join('_', payload.Args);
+				LG_ComputerTerminalManager.WantToSendTerminalCommand(term.SyncID, TERM_Command.Query, input,
 					objName, "");
 
-				if (LG_LevelInteractionManager.TryGetTerminalInterface(args[0].ToUpper(),
-					    terminal.SpawnNode.m_dimension.DimensionIndex, out var target)) {
-					return new ItemQueryResult(
+				if (LG_LevelInteractionManager.TryGetTerminalInterface(payload.Args[0].ToUpper(),
+					    term.SpawnNode.m_dimension.DimensionIndex, out var target)) {
+					RaiseOnExit(new ExitPayload(new ItemQueryResult(
 						true,
 						target.TerminalItemKey,
 						target.FloorItemLocation,
-						target.SpawnNode != null && terminal.SpawnNode != null &&
-						terminal.SpawnNode.m_zone == target.SpawnNode.m_zone,
+						target.SpawnNode != null && term.SpawnNode != null &&
+						term.SpawnNode.m_zone == target.SpawnNode.m_zone,
 						GetCapacity(target)
-					);
+					)));
+					return;
 				}
-				return new ItemQueryResult(false, "", "ZONE_???", false, 0);
+				RaiseOnExit(new ExitPayload(-1, "The item is not pingable", new ItemQueryResult(false, "", "ZONE_???", false, 0)));
+				return;
 		}
+	}
+
+	public override void Update(UpdatePayload _) {
+		RaiseOnExit(new ExitPayload());
 	}
 
 	internal static int GetCapacity(iTerminalItem item) {

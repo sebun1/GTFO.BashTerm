@@ -1,5 +1,5 @@
 namespace BashTerm.Sys;
 
-public class BSHException : Exception {
-	public BSHException(string message) : base(message) {}
+public class BshException : Exception {
+	public BshException(string message) : base(message) {}
 }

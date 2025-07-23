@@ -14,7 +14,7 @@ public class BshSvcAttribute: Attribute{
 	public BshSvcAttribute(string name) { Name = name; }
 }
 
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public class BshCompletionAttribute : Attribute{
 	public string Name { get; }
 

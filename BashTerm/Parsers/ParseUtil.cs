@@ -1,7 +1,6 @@
 using System.Text;
 using BashTerm.Utils;
 using Dissonance;
-using Log = BashTerm.Utils.Log;
 
 namespace BashTerm.Parsers;
 
@@ -35,27 +34,27 @@ internal static class ParseUtil {
 	};
 
 	public static bool TryExpandAlias(string input, out string expansion) {
-		Log.Debug($"ExpandCmd: Got '{input}'");
+		Logr.Debug($"ExpandCmd: Got '{input}'");
 		expansion = "";
 		if (string.IsNullOrWhiteSpace(input)) {
 			return false;
 		}
 
 		if (ConfigMgr.CmdExpExact.TryGetValue(input, out string? eps)) {
-			Log.Debug($"ExpandCmd: Returning (Alias) '{eps}'");
+			Logr.Debug($"ExpandCmd: Returning (Alias) '{eps}'");
 			expansion = eps;
 			return true;
 		}
 
 		foreach (var tup in ConfigMgr.CmdExpPrefix) {
 			if (input.StartsWith(tup.Prefix)) {
-				Log.Debug($"ExpandCmd: Returning (Alias) '{tup.Expansion}'");
+				Logr.Debug($"ExpandCmd: Returning (Alias) '{tup.Expansion}'");
 				expansion = tup.Expansion;
 				return true;
 			}
 		}
 
-		Log.Debug($"ExpandCmd: No change '{input}'");
+		Logr.Debug($"ExpandCmd: No change '{input}'");
 		expansion = input;
 		return false;
 	}

@@ -98,12 +98,12 @@ public class CmdOpts {
 	}
 }
 
-public class FlagException : BSHException {
+public class FlagException : BshException {
 	public FlagException(string message) : base($"[FlagError] >> {message}") {
 	}
 }
 
-public class CmdOptException : BSHException {
+public class CmdOptException : BshException {
 	public CmdOptException(string message) : base($"[CmdOptError] >> {message}") {
 	}
 }

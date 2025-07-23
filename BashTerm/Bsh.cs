@@ -19,7 +19,7 @@ public class Bsh {
 
 	public static LG_ComputerTerminal? CurrentTerminal {
 		get {
-			Log.Debug($"Terminal is using SyncID={_currentTerminal?.SyncID}");
+			Logr.Debug($"Terminal is using SyncID={_currentTerminal?.SyncID}");
 			return _currentTerminal;
 		}
 	}
@@ -56,16 +56,19 @@ public class Bsh {
 	public static void LogInfo(string src, string msg) {
 		_infoCount++;
 		BSHLogs.Add($"{Styles.C_Info}INFO[{src}] >> {msg}{Styles.C_End}");
+		Logr.Info($"Bsh.LogInfo [{src}] >> {msg}");
 	}
 
 	public static void LogWarn(string src, string msg) {
 		_warnCount++;
 		BSHLogs.Add($"{Styles.C_Warning}WARN[{src}] >> {msg}{Styles.C_End}");
+		Logr.Warn($"Bsh.LogWarn [{src}] >> {msg}");
 	}
 
 	public static void LogError(string src, string msg) {
 		_errorCount++;
 		BSHLogs.Add($"{Styles.C_Error}ERRR[{src}] >> {msg}{Styles.C_End}");
+		Logr.Error($"Bsh.LogERRR [{src}] >> {msg}");
 	}
 
 

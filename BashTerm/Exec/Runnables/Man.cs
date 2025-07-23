@@ -7,7 +7,7 @@ using LevelGeneration;
 namespace BashTerm.Exec.Runnables;
 
 [BshProc("man")]
-public class Man : IProc {
+public class Man : Proc {
 	public string CommandName => "man";
 	public string Desc => "Read the manual for a given command";
 

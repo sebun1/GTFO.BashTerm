@@ -9,10 +9,10 @@ using LevelGeneration;
 namespace BashTerm.Exec;
 
 public static class Dispatch {
-	internal static Dictionary<string, IProc> Handlers = new();
+	internal static Dictionary<string, Proc> Handlers = new();
 	internal static Dictionary<string, Type> HandlerTypes = new();
 	internal static bool IsInitialized = false;
-	internal static IProc? Fallback;
+	internal static Proc? Fallback;
 
 	public static int Initialize() {
 		Fallback = new FallbackCommand();
@@ -29,11 +29,11 @@ public static class Dispatch {
 
 		foreach (var type in types) {
 			var attr = type.GetCustomAttribute<BshProcAttribute>();
-			if (attr != null && typeof(IProc).IsAssignableFrom(type)) {
+			if (attr != null && typeof(Proc).IsAssignableFrom(type)) {
 				if (Hook(attr.Name, type)) {
-					Log.Debug($"{type.FullName} hooked with command name '{attr.Name}'");
+					Logr.Debug($"{type.FullName} hooked with command name '{attr.Name}'");
 				} else {
-					Log.Warn($"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
+					Logr.Warn($"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
 					Bsh.LogWarn("dispatch", $"{type.FullName} with handler name '{attr.Name}' was not hooked because a handler for that name already exists.");
 				}
 			}
@@ -46,7 +46,7 @@ public static class Dispatch {
 		cmd = cmd.Trim().ToLower();
 		if (Handlers.ContainsKey(cmd)) { return false; }
 		HandlerTypes[cmd] = handlerType;
-		Handlers[cmd] = (IProc)Activator.CreateInstance(handlerType);
+		Handlers[cmd] = (Proc)Activator.CreateInstance(handlerType);
 		return true;
 	}
 
@@ -66,7 +66,7 @@ public static class Dispatch {
 
 			case VarExecve(TokenWord wName, List<TokenWord> wArgs):
 				string name = Arg2Str(wName, term);
-				if (Handlers.TryGetValue(name, out IProc? handler) && HandlerTypes.TryGetValue(name, out Type handlerType)) {
+				if (Handlers.TryGetValue(name, out Proc? handler) && HandlerTypes.TryGetValue(name, out Type handlerType)) {
 					FieldInfo fSchemaField = handlerType.GetField("FSchema", BindingFlags.Public | BindingFlags.Static)!;
 					FlagSchema? schema = (FlagSchema?)fSchemaField.GetValue(null);
 					List<string> args = CtxArgs2Str(wArgs, term, handler);
@@ -116,7 +116,7 @@ public static class Dispatch {
 		return sb.ToString();
 	}
 
-	private static List<string> CtxArgs2Str(List<TokenWord> wArgs, LG_ComputerTerminal term, IProc handler) {
+	private static List<string> CtxArgs2Str(List<TokenWord> wArgs, LG_ComputerTerminal term, Proc handler) {
 		List<string> args = new();
 		foreach (TokenWord tw in wArgs) {
 			args.Add(CtxArg2Str(tw, term, handler));
@@ -124,7 +124,7 @@ public static class Dispatch {
 		return args;
 	}
 
-	private static string CtxArg2Str(TokenWord word, LG_ComputerTerminal term, IProc handler) {
+	private static string CtxArg2Str(TokenWord word, LG_ComputerTerminal term, Proc handler) {
 		VarProvider vp = new VarProvider(term);
 		StringBuilder sb = new();
 		foreach (WordPart part in word.parts) {

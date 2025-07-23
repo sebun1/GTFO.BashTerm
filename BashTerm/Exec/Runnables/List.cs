@@ -6,7 +6,7 @@ using LevelGeneration;
 namespace BashTerm.Exec.Runnables;
 
 [BshProc("list")]
-public class List : IProc {
+public class List : Proc {
 	public string CommandName => "list";
 	public string Desc => "";
 
