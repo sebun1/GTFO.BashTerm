@@ -1,7 +1,29 @@
 # Table of contents
 
-* [Welcome to BashTerm!](README.md)
+* [Welcome to Bsh!](README.md)
 
-## Group 1
+## Basics
 
-* [Tes](group-1/tes.md)
+* [Onboarding](basics/onboarding.md)
+* [Page](basics/page.md)
+
+## Builtin Programs
+
+* [ls / list](builtin-programs/ls-list.md)
+
+## Advanced
+
+* [The Framework](advanced/the-framework.md)
+
+***
+
+* [Creating Programs](creating-programs.md)
+
+## Development
+
+* [Source Code](development/source-code.md)
+* [Reporting Bugs](development/reporting-bugs.md)
+
+***
+
+* [Contributing](contributing.md)
