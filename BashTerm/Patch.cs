@@ -140,8 +140,34 @@ internal class Patch {
 		new Type[] { typeof(List<string>) }
 	)]
 	[HarmonyPrefix]
-	public static bool AddOutputList(LG_ComputerTerminalCommandInterpreter __instance, List<string> inputLine) {
+	public static bool AddOutputList(LG_ComputerTerminalCommandInterpreter __instance, List<string> lines) {
+		for (int i = 0; i < lines.Count; i++) {
+			Logr.Debug($"[AddOutput List]:[{i}]: \"{lines[i]}\"");
+		}
 		return true;
+	}
+
+	[HarmonyPatch(
+		typeof(LG_ComputerTerminalCommandInterpreter),
+		nameof(LG_ComputerTerminalCommandInterpreter.AddOutput),
+		new Type[] { typeof(string), typeof(bool) }
+	)]
+	[HarmonyPrefix]
+	public static bool AddOutputString(LG_ComputerTerminalCommandInterpreter __instance, string originalLine, bool spacing) {
+		Logr.Debug($"[AddOutput String]: \"{originalLine}\"");
+		return true;
+	}
+
+	[HarmonyPatch(
+		typeof(LG_ComputerTerminalCommandInterpreter),
+		nameof(LG_ComputerTerminalCommandInterpreter.AddOutput),
+		new Type[] { typeof(TerminalLineType), typeof(string), typeof(float), typeof(TerminalSoundType), typeof(TerminalSoundType) }
+	)]
+	[HarmonyPrefix]
+	public static bool AddOutputAdvanced(LG_ComputerTerminalCommandInterpreter __instance, TerminalLineType type, string line, float time) {
+		Logr.Debug($"[AddOutput Advanced]: \"{line}\"");
+		return true;
+
 	}
 
 	[HarmonyPatch(
