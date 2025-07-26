@@ -174,14 +174,15 @@ internal class Patch {
 	public static void UpdateTerminalScreen(ref LG_ComputerTerminalCommandInterpreter __instance, string currentLine, bool hasLocalPlayer) {
 		Logger.Debug($"currentLine='{currentLine}', hasLocalPlayer={hasLocalPlayer}");
 		string msg = "";
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < 100; i++) {
 			msg += $"<#F00>[{i:000}]</color>";
 			for (int j = 0; j < 135; j++) {
 				msg += $"{j % 10}";
 			}
 			msg += "\n";
 		}
-		__instance.m_text.SetCharArray(msg.ToCharArray());
+
+		__instance.m_text.text = msg;
 	}
 
 	[HarmonyPatch(
