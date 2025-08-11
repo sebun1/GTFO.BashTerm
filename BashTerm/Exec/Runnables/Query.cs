@@ -6,8 +6,8 @@ using BashTerm.Utils;
 
 namespace BashTerm.Exec.Runnables;
 
-[BshProc("query")]
-public class Query : Proc {
+[BshProgram("query")]
+public class Query : Program {
 	private static readonly string ProcName = "query";
 	private static readonly string Desc = "Queries the location of a single item (or multiple through piping)";
 	private static readonly string Manual = @"
@@ -44,8 +44,8 @@ public class Query : Proc {
 		return fs;
 	}
 
-	public static ProcManifest GetManifest() {
-		return new ProcManifest(ProcName, Desc, Manual, WantDedicatedScreen, FSchema);
+	public static ProgramManifest GetManifest() {
+		return new ProgramManifest(ProcName, Desc, Manual, WantDedicatedScreen, FSchema);
 	}
 
 	//public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {

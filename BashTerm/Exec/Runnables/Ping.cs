@@ -5,7 +5,7 @@ using LevelGeneration;
 namespace BashTerm.Exec.Runnables;
 
 //[CommandHandler("ping")]
-public class Ping : Proc {
+public class Ping : Program {
 	public string CommandName => "ping";
 	public string Desc => "";
 	public static string Manual = new string("");
@@ -17,8 +17,8 @@ public class Ping : Proc {
 		return fs;
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal? termInherit) {
-		return new EmptyPayload();
+	public PipeObject Run(string cmd, List<string> args, CmdOpts opts, PipeObject payload, LG_ComputerTerminal? termInherit) {
+		return new EmptyObject();
 	}
 
 	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {

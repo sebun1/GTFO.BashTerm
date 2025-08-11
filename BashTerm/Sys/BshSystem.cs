@@ -10,15 +10,12 @@ internal class BshSystem : MonoBehaviour {
 	private static bool _userRawMode;
 
 	private float updateTimer = 0f;
-	private const float updatePeriod = 0.05f;
+	private const float updatePeriod = 0.025f;
 
-	// internal static readonly Dictionary<string, Type> ProcTypes = new();
-	// internal static readonly Dictionary<string, ICompletion> ProcCompletions = new();
-	internal static readonly Dictionary<string, ProcEntry> ProcEntries = new();
+	internal static readonly Dictionary<string, ProgramEntry> ProgramEntries = new();
 	internal static readonly Dictionary<string, Type> SvcTypes = new();
 
 	internal static Dictionary<int, BshPM> PM = new();
-	internal static Dictionary<int, BshIO> IO = new();
 
 	public const int PidMaxLimit = 32768;
 	private static int nextPid = 1;
@@ -36,7 +33,7 @@ internal class BshSystem : MonoBehaviour {
 	}
 
 	private static int RegisterTypes(out int procCount, out int serviceCount) {
-		ProcEntries.Clear();
+		ProgramEntries.Clear();
 		SvcTypes.Clear();
 
 		int errCount = 0;
@@ -57,8 +54,8 @@ internal class BshSystem : MonoBehaviour {
 		Dictionary<string, ICompletion> comps = new();
 
 		foreach (var type in allTypes) {
-			if (typeof(Proc).IsAssignableFrom(type) && !type.IsAbstract) {
-				var attr = type.GetCustomAttribute<BshProcAttribute>();
+			if (typeof(Program).IsAssignableFrom(type) && !type.IsAbstract) {
+				var attr = type.GetCustomAttribute<BshProgramAttribute>();
 				if (attr != null) {
 					procTypes.Add((attr.Name, type));
 				}
@@ -79,8 +76,8 @@ internal class BshSystem : MonoBehaviour {
 		}
 
 		foreach ((string procName, Type t) in procTypes) {
-			if (ProcEntries.ContainsKey(procName)) {
-				Type existent = ProcEntries[procName].Type;
+			if (ProgramEntries.ContainsKey(procName)) {
+				Type existent = ProgramEntries[procName].Type;
 				Bsh.LogError("Sys", $"Process name <u>{procName}</u> is already registered to <u>{existent.FullName}</u>. Skipping registration for <u>{t.FullName}</u>.");
 				errCount++;
 				continue;
@@ -93,17 +90,17 @@ internal class BshSystem : MonoBehaviour {
 				new Type[] {},
 				null
 			);
-			if (getManifestMethod == null || getManifestMethod.ReturnType != typeof(ProcManifest)) {
+			if (getManifestMethod == null || getManifestMethod.ReturnType != typeof(ProgramManifest)) {
 				Bsh.LogError("Sys", $"Class <u>{t.FullName}</u> of name <u>{procName}</u> is trying to define a process but does not have a compliant <u>static ProcManifest GetManifest()</u> method.");
 				errCount++;
 				continue;
 			}
-			ProcManifest manifest = (ProcManifest)getManifestMethod.Invoke(null, null)!;
-			ProcEntry pe = new ProcEntry(t, manifest, comps.GetValueOrDefault(procName));
-			ProcEntries[procName] = pe;
+			ProgramManifest manifest = (ProgramManifest)getManifestMethod.Invoke(null, null)!;
+			ProgramEntry pe = new ProgramEntry(t, manifest, comps.GetValueOrDefault(procName));
+			ProgramEntries[procName] = pe;
 		}
 
-		procCount = ProcEntries.Count;
+		procCount = ProgramEntries.Count;
 		serviceCount = SvcTypes.Count;
 		return errCount;
 	}
@@ -133,12 +130,12 @@ internal class BshSystem : MonoBehaviour {
 	}
 }
 
-internal class ProcEntry {
+internal class ProgramEntry {
 	public readonly Type Type;
-	public readonly ProcManifest Manifest;
+	public readonly ProgramManifest Manifest;
 	public readonly ICompletion? Completion;
 
-	public ProcEntry(Type t, ProcManifest m, ICompletion? comp) {
+	public ProgramEntry(Type t, ProgramManifest m, ICompletion? comp) {
 		Type = t;
 		Manifest = m;
 		Completion = comp;

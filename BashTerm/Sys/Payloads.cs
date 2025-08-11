@@ -7,9 +7,9 @@ namespace BashTerm.Sys;
 public class StartPayload {
 	public readonly List<string> Args;
 	public readonly CmdOpts Opts;
-	public readonly PipedPayload Payload;
+	public readonly PipeObject Payload;
 
-	public StartPayload(List<string> args, CmdOpts opts, PipedPayload payload) {
+	public StartPayload(List<string> args, CmdOpts opts, PipeObject payload) {
 		Args = args;
 		Opts = opts;
 		Payload = payload;
@@ -17,8 +17,8 @@ public class StartPayload {
 }
 
 public class UpdatePayload {
-	public bool HasPayload => Payload is not EmptyPayload;
-	public PipedPayload Payload { get; }
+	public bool HasPayload => Payload is not EmptyObject;
+	public PipeObject Payload { get; }
 
 	public bool HasLine { get; }
 	public string Line { get; }
@@ -26,8 +26,8 @@ public class UpdatePayload {
 	public bool HasChar { get; }
 	public char Char { get; }
 
-	public UpdatePayload(PipedPayload? payload, string? line, char? c) {
-		Payload = payload ?? new EmptyPayload();
+	public UpdatePayload(PipeObject? payload, string? line, char? c) {
+		Payload = payload ?? new EmptyObject();
 		HasLine = line != null;
 		Line = line ?? "";
 		HasChar = c != null;
@@ -38,24 +38,24 @@ public class UpdatePayload {
 public class ExitPayload {
 	public readonly int Code;
 	public readonly string Message;
-	public readonly PipedPayload Payload;
+	public readonly PipeObject Payload;
 
 	public ExitPayload() {
 		Code = 0;
 		Message = "";
-		Payload = new EmptyPayload();
+		Payload = new EmptyObject();
 	}
 
-	public ExitPayload(PipedPayload? payload) {
+	public ExitPayload(PipeObject? payload) {
 		Code = 0;
 		Message = "";
-		Payload = payload ?? new EmptyPayload();
+		Payload = payload ?? new EmptyObject();
 	}
 
-	public ExitPayload(int code, string message, PipedPayload? payload) {
+	public ExitPayload(int code, string message, PipeObject? payload) {
 		Code = code;
 		Message = message;
-		Payload = payload ?? new EmptyPayload();
+		Payload = payload ?? new EmptyObject();
 	}
 
 }

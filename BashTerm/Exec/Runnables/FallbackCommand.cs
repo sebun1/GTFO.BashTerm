@@ -4,7 +4,7 @@ using LevelGeneration;
 
 namespace BashTerm.Exec.Runnables;
 
-public class FallbackCommand : Proc {
+public class FallbackCommand : Program {
 	public string CommandName => "FALLBACK";
 	public string Desc => "Fallback handler for simple, special, or unrecognized commands.";
 	public string Manual => "Executes commands through the GTFO interpreter, should never be called manually";
@@ -16,11 +16,11 @@ public class FallbackCommand : Proc {
 		return fs;
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public PipeObject Run(string cmd, List<string> args, CmdOpts opts, PipeObject payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 
 		terminal.m_command.EvaluateInput(String.Join(' ', new[]{ cmd }.Concat(args)).ToUpper());
-		return new EmptyPayload();
+		return new EmptyObject();
 	}
 
 	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {
