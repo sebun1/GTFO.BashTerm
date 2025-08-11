@@ -69,9 +69,8 @@ public class ShellScreen : Screen {
 	protected int LastPromptRow;
 	protected int CursorPosition;
 	private readonly BshPM pm;
-	private readonly BshIO io;
 
-	public ShellScreen(int sid, BshPM pm, BshIO io) : base(sid) {
+	public ShellScreen(int sid, BshPM pm) : base(sid) {
 		InputLine = "";
 		LastPromptRow = 0;
 		CursorPosition = 0;
