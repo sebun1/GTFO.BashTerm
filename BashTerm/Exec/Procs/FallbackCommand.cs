@@ -2,7 +2,7 @@
 using BashTerm.Sys;
 using LevelGeneration;
 
-namespace BashTerm.Exec.Runnables;
+namespace BashTerm.Exec.Procs;
 
 public class FallbackCommand : Proc {
 	public string CommandName => "FALLBACK";

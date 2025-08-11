@@ -30,9 +30,9 @@ public class BshCompletionResult{
 		return candidates[cIdx];
 	}
 
-	public string GetDisplay() {
+	public string GetDisplay(int cols) {
 		StringBuilder sb = new();
-		int cpr = Screen.Cols / columnWidth;
+		int cpr = cols / columnWidth;
 		for (int i = 0; i < candidates.Count; i++) {
 			sb.Append(FmtCandidate(candidates[i], i == cIdx));
 			if (i % cpr == cpr - 1) {

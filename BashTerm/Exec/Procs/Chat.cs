@@ -1,4 +1,4 @@
-﻿namespace BashTerm.Exec.Runnables;
+﻿namespace BashTerm.Exec.Procs;
 
 [BshProc("chat")]
 public class Chat {

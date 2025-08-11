@@ -1,16 +1,17 @@
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using LevelGeneration;
 using BashTerm.Parsers;
 using BashTerm.Sys;
 using BashTerm.Utils;
 
-namespace BashTerm.Exec.Runnables;
+namespace BashTerm.Exec.Procs;
 
 [BshProc("query")]
 public class Query : Proc {
-	private static readonly string ProcName = "query";
-	private static readonly string Desc = "Queries the location of a single item (or multiple through piping)";
-	private static readonly string Manual = @"
+	private const string Name = "query";
+	private const string Desc = "Queries the location of a items";
+	private const string Manual = @"
 <b>NAME</b>
 		query - tool for querying the locations of items throughout the complex
 
@@ -34,7 +35,7 @@ public class Query : Proc {
 			For example, the sorting string ""Z+I+C-"" asks query to sort by zone number first in ascending order, if that fails sort by the item ID in ascending order, then sort capacity in descending order (items with most capacity comes first). Taking default behavior into mind, this sorting string can also be equivalently written as ""ZIC-"".
 ";
 
-	private static readonly bool WantDedicatedScreen = false;
+	private static readonly bool RequestAlternateBuffer = false;
 
 	private static readonly FlagSchema FSchema = CreateFlagSchema();
 
@@ -45,15 +46,15 @@ public class Query : Proc {
 	}
 
 	public static ProcManifest GetManifest() {
-		return new ProcManifest(ProcName, Desc, Manual, WantDedicatedScreen, FSchema);
+		return new ProcManifest(Name, Desc, Manual, RequestAlternateBuffer, FSchema);
 	}
 
 	//public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
 	public override void Start(StartPayload payload, LG_ComputerTerminal term) {
-		if (term == null) throw new NullTerminalInstanceException(ProcName);
+		if (term == null) throw new NullTerminalInstanceException(Name);
 		ExitPayload ePayload = new();
 
-		string input = Util.GetCommandString(ProcName, payload.Args);
+		string input = Util.GetCommandString(Name, payload.Args);
 
 		switch (payload.Payload) {
 			case ItemList(List<iTerminalItem> items):
@@ -80,18 +81,18 @@ public class Query : Proc {
 					));
 				}
 
-				RaiseOnExit(new ExitPayload(new ItemQueryResults(results)));
+				Exit(new ExitPayload(new ItemQueryResults(results)));
 				return;
 			default:
 				if (payload.Args.Count == 0)
-					throw new MissingArgumentException(ProcName, 0, 1);
+					throw new MissingArgumentException(Name, 0, 1);
 				string objName = string.Join('_', payload.Args);
 				LG_ComputerTerminalManager.WantToSendTerminalCommand(term.SyncID, TERM_Command.Query, input,
 					objName, "");
 
 				if (LG_LevelInteractionManager.TryGetTerminalInterface(payload.Args[0].ToUpper(),
 					    term.SpawnNode.m_dimension.DimensionIndex, out var target)) {
-					RaiseOnExit(new ExitPayload(new ItemQueryResult(
+					Exit(new ExitPayload(new ItemQueryResult(
 						true,
 						target.TerminalItemKey,
 						target.FloorItemLocation,
@@ -101,13 +102,13 @@ public class Query : Proc {
 					)));
 					return;
 				}
-				RaiseOnExit(new ExitPayload(-1, "The item is not pingable", new ItemQueryResult(false, "", "ZONE_???", false, 0)));
+				Exit(new ExitPayload(-1, "The item is not pingable", new ItemQueryResult(false, "", "ZONE_???", false, 0)));
 				return;
 		}
 	}
 
 	public override void Update(UpdatePayload _) {
-		RaiseOnExit(new ExitPayload());
+		Exit(new ExitPayload());
 	}
 
 	internal static int GetCapacity(iTerminalItem item) {

@@ -305,5 +305,3 @@ internal enum TMPTagType {
 	VOffset,
 	Width
 }
-
-

@@ -3,7 +3,7 @@ using BashTerm.Sys;
 using BashTerm.Utils;
 using LevelGeneration;
 
-namespace BashTerm.Exec.Runnables;
+namespace BashTerm.Exec.Procs;
 
 [BshProc("broadcast")]
 public class Broadcast : Proc {

@@ -11,13 +11,13 @@ namespace BashTerm.Sys;
 /// All Proc children should implement a
 ///	<code>public static ProcManifest GetManifest()</code>
 /// function to be registered with BshSystem at startup. If
-/// unspecified, the process will not be register and not callable
+/// unspecified, the process will not be registered/callable
 /// </para>
 /// </summary>
 public abstract class Proc {
 	public event EventHandler<ExitPayload>? OnExit;
 
-	protected virtual void RaiseOnExit(ExitPayload payload) {
+	protected void Exit(ExitPayload payload) {
 		OnExit?.Invoke(this, payload);
 	}
 	public abstract void Start(StartPayload payload, LG_ComputerTerminal term);
@@ -35,17 +35,17 @@ public abstract class Proc {
 }
 
 public class ProcManifest {
-	public string ProcName;
+	public string Name;
 	public string Desc;
 	public string Manual;
-	public bool WantDiscreteOutputBuffer;
+	public bool RequestAlternateBuffer;
 	public FlagSchema FSchema;
 
-	public ProcManifest(string name, string desc, string manual, bool wantScreen, FlagSchema fSchema) {
-		ProcName = name;
+	public ProcManifest(string name, string desc, string manual, bool wantBuffer, FlagSchema fSchema) {
+		Name = name;
 		Desc = desc;
 		Manual = manual;
-		WantDiscreteOutputBuffer = wantScreen;
+		RequestAlternateBuffer = wantBuffer;
 		FSchema = fSchema;
 	}
 }

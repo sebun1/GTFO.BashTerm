@@ -4,7 +4,7 @@ using BashTerm.Sys;
 using BashTerm.Utils;
 using LevelGeneration;
 
-namespace BashTerm.Exec.Runnables;
+namespace BashTerm.Exec.Procs;
 
 [BshProc("man")]
 public class Man : Proc {
