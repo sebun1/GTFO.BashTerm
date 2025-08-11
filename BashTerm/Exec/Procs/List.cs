@@ -5,8 +5,8 @@ using LevelGeneration;
 
 namespace BashTerm.Exec.Procs;
 
-[BshProc("list")]
-public class List : Proc {
+[BshProgram("list")]
+public class List : Program {
 	public string CommandName => "list";
 	public string Desc => "";
 
@@ -24,7 +24,7 @@ Options:
 		return fs;
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public PipeObject Run(string cmd, List<string> args, CmdOpts opts, PipeObject payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 		string input = Util.GetCommandString(cmd, args);
 

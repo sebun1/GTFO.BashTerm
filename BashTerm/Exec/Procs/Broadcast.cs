@@ -5,8 +5,8 @@ using LevelGeneration;
 
 namespace BashTerm.Exec.Procs;
 
-[BshProc("broadcast")]
-public class Broadcast : Proc {
+[BshProgram("broadcast")]
+public class Broadcast : Program {
 	public static string CommandName => "broadcast";
 	public static string Desc => "Broadcast a message to all users! Even non-BashTerm users!";
 
@@ -31,7 +31,7 @@ OPTIONS
 		return fs;
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public PipeObject Run(string cmd, List<string> args, CmdOpts opts, PipeObject payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 		if (opts["-m"] != null) {
 			terminal.m_command.AddOutput(_manifesto);
@@ -42,7 +42,7 @@ OPTIONS
 			Bsh.SyncPrint(output);
 		}
 
-		return new EmptyPayload();
+		return new EmptyObject();
 	}
 
 	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {

@@ -4,13 +4,11 @@ using UnityEngine;
 namespace BashTerm.Sys;
 
 public class BshPM {
-	internal BshIO? io = null;
-
 	internal int fgPID = -1; // foreground process ID
-	private readonly Proc? fgProcess = null; // current foreground process
+	private readonly Program? fgProcess = null; // current foreground process
 
-	private readonly Dictionary<int, Proc> bgProcesses = new(); // background processes
-	private readonly Dictionary<int, Proc> susProcesses = new(); // suspended processes
+	private readonly Dictionary<int, Program> bgProcesses = new(); // background processes
+	private readonly Dictionary<int, Program> susProcesses = new(); // suspended processes
 	private readonly Dictionary<int, IService> services = new();
 
 	public readonly int TerminalID;
@@ -34,9 +32,5 @@ public class BshPM {
 			//
 		}
 		return -1;
-	}
-
-	internal void LinkIO(BshIO io) {
-		this.io = io;
 	}
 }

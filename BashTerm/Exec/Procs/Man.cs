@@ -6,8 +6,8 @@ using LevelGeneration;
 
 namespace BashTerm.Exec.Procs;
 
-[BshProc("man")]
-public class Man : Proc {
+[BshProgram("man")]
+public class Man : Program {
 	public string CommandName => "man";
 	public string Desc => "Read the manual for a given command";
 
@@ -26,7 +26,7 @@ USAGE
 		return fs;
 	}
 
-	public PipedPayload Run(string cmd, List<string> args, CmdOpts opts, PipedPayload payload, LG_ComputerTerminal terminal) {
+	public PipeObject Run(string cmd, List<string> args, CmdOpts opts, PipeObject payload, LG_ComputerTerminal terminal) {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 
 		if (!Dispatch.IsInitialized) {
@@ -45,7 +45,7 @@ USAGE
 			terminal.m_command.AddOutput(Fmt.Wrap(man));
 		}
 
-		return new EmptyPayload();
+		return new EmptyObject();
 	}
 
 	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {

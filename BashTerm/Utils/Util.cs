@@ -1,6 +1,5 @@
-using System.Collections.Generic;
-using Il2CppSystem.Text.RegularExpressions;
-using Il2CppSystem.Xml.Schema;
+using UnityEngine;
+using Regex = System.Text.RegularExpressions.Regex;
 
 namespace BashTerm.Utils;
 
@@ -75,4 +74,11 @@ internal static class Util {
 
 	public static string RemoveAllNumbers(string input) =>
 		System.Text.RegularExpressions.Regex.Replace(input, @"\d", "");
+
+	public static bool GetKeybindDown(KeyCode key, bool shift = false, bool ctrl = false, bool alt = false) {
+		return Input.GetKeyDown(key) &&
+		       shift == (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) &&
+		       ctrl == (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl)) &&
+		       alt == (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt));
+	}
 }

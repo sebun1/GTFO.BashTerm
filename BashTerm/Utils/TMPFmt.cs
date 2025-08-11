@@ -10,15 +10,14 @@ public class TMPLineParser {
 		this.cols = cols;
 	}
 
+	/*
 	public List<string> GetLines(string text) {
 		List<string> linesByCR = text.Split('\n').ToList();
 		foreach (string line in linesByCR) {
 
 		}
 	}
-
-
-	private
+	*/
 }
 
 internal class TMPFmt {
@@ -213,6 +212,8 @@ internal record TMPTag(TMPTagType type, string value) {
 			case TMPTagType.VOffset:
 			case TMPTagType.Width:
 				return $"<width={value}>";
+			default:
+				return "";
 		}
 	}
 

@@ -24,7 +24,7 @@
 	<Target Name="Package" AfterTargets="Build">
 		<PropertyGroup>
 			<PkgFolder>$(MSBuildProjectDirectory)\pkg\</PkgFolder>
-			<ZipFile>$(SolutionDir)BashTerm.zip</ZipFile>
+			<ZipFile>$(SolutionDir)$(SolutionName).zip</ZipFile>
 		</PropertyGroup>
 		<MakeDir Directories="$(PkgFolder)" />
 		<Copy SourceFiles="$(OutputPath)/$(AssemblyName).dll" DestinationFolder="$(PkgFolder)" />

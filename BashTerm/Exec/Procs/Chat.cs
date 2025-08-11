@@ -1,11 +1,11 @@
 ﻿namespace BashTerm.Exec.Procs;
 
-[BshProc("chat")]
+[BshProgram("chat")]
 public class Chat {
 
 }
 
-[BshProc("say")]
+[BshProgram("say")]
 public class Say {
 
 }
