@@ -5,53 +5,48 @@ using UnityEngine;
 namespace BashTerm.Sys;
 
 public abstract class Screen {
+	public enum ScreenType {
+		Shell,
+		Discrete,
+	}
+
 	public readonly int Cols = 150;
 	public readonly int Rows = 52;
 	public readonly int ScreenID;
 	public readonly List<string> History;
-	protected Queue<string> OutputQueue;
 
+	private string InputLine;
+	private int LastPromptRow;
+	private int CursorPosition;
+
+	public readonly ScreenType Type;
+
+	private PipeStream _stream;
+
+	private string Buffer_;
 	public string Buffer {
 		get { return Buffer_; }
 	}
-	protected string Buffer_;
 
-	protected int Position;
-	protected int CursorRow = 0;
-	protected int CursorCol = 0;
-	protected bool CursorVisible = true;
-	protected bool CursorBlinking = false;
+	private int Position;
 
-	public enum CursorStyle {
-		Block,
-		Underline,
-	}
-
-	protected CursorStyle cursorStyle = CursorStyle.Block;
-
-	public Screen(int screenID) {
+	public Screen(int screenID, ScreenType type, PipeStream stream) {
 		ScreenID = screenID;
-		History = new List<string>();
-		OutputQueue = new Queue<string>();
+		Type = type;
+		_stream = stream;
+		History = new();
 		Buffer_ = "";
 		Position = 0;
+		_stream.SetReadingScreen(this);
 	}
 
-	public void Print(string txt) {
-		OutputQueue.Enqueue(txt);
-	}
+	public bool SetBuffer(string text) {
+		if (Type == ScreenType.Discrete) {
+			Buffer_ = text;
+			return true;
+		}
 
-	public void Println(string txt) {
-		Print(txt + '\n');
-	}
-
-	public void Println(List<string> lines) {
-		foreach (var line in lines)
-			OutputQueue.Enqueue(line + '\n');
-	}
-
-	public virtual bool SetBuffer(string text) {
-
+		return false;
 	}
 
 	internal void Seek(int step) {
@@ -62,6 +57,105 @@ public abstract class Screen {
 		Buffer_ = string.Join('\n', History.ToArray(), start, end - start + 1);
 	}
 
+
+	internal void Insert(char c) {
+		InputLine = InputLine.Insert(CursorPosition, c.ToString());
+		CursorPosition++;
+		ValidateStates();
+	}
+
+	internal void Insert(string str) {
+		InputLine = InputLine.Insert(CursorPosition, str);
+		CursorPosition += str.Length;
+		ValidateStates();
+	}
+
+	internal enum Action {
+		Move,
+		Delete,
+	}
+
+	internal enum Motion {
+		WordBack,
+		WordForward,
+		CharBack,
+		CharForward,
+		LineBack,
+		LineForward,
+	}
+
+	internal bool Do(Action act, Motion motion) {
+		if (Type != ScreenType.Shell) {
+			Debug.LogWarning("Do() is only applicable for Shell screens.");
+			return false;
+		}
+
+		int delta = GetCursorDelta(motion);
+		switch (act) {
+			case Action.Move:
+				CursorPosition += delta;
+				break;
+			case Action.Delete:
+				InputLine = InputLine.Remove(delta < 0 ? CursorPosition + delta : CursorPosition, Mathf.Abs(delta));
+				if (delta < 0)
+					CursorPosition += delta;
+				break;
+		}
+		ValidateStates();
+		return true;
+	}
+
+	private int GetCursorDelta(Motion m) {
+		return m switch {
+			Motion.CharBack => CursorPosition == 0 ? 0 : -1,
+			Motion.CharForward => CursorPosition == InputLine.Length ? 0 : 1,
+			Motion.WordBack => GetWordBackDeltaSimple(),
+			Motion.WordForward => GetWordForwardDeltaSimple(),
+			Motion.LineBack => -CursorPosition,
+			Motion.LineForward => InputLine.Length - CursorPosition,
+			_ => 0
+		};
+	}
+
+	private int GetWordBackDeltaSimple() {
+		if (CursorPosition == 0) return 0;
+		int lastSpaceIndex = InputLine.Substring(0, CursorPosition).LastIndexOf(' ');
+		if (lastSpaceIndex == -1)
+			return -CursorPosition;
+		return -(CursorPosition - lastSpaceIndex);
+	}
+
+	private int GetWordForwardDeltaSimple() {
+		if (CursorPosition >= InputLine.Length) return 0;
+		int firstSpaceIndex = InputLine.IndexOf(' ', CursorPosition + 1);
+		if (firstSpaceIndex == -1)
+			return InputLine.Length - CursorPosition;
+		return firstSpaceIndex - CursorPosition;
+	}
+
+	private void ValidateStates() {
+		CursorPosition = Mathf.Clamp(CursorPosition, 0, InputLine.Length);
+	}
+
+	/// <summary>
+	/// Clears the output of the current process
+	/// </summary>
+	public void ClearOutput() {
+		if (History.Count <= LastPromptRow + 1) return;
+		History.RemoveRange(LastPromptRow, History.Count - LastPromptRow);
+	}
+
+	/// <summary>
+	/// Clear everything in the shell history, internal use only
+	/// </summary>
+	internal void ClearAll() {
+		// Not implemented
+	}
+
+	public void ClearInput() {
+		InputLine = "";
+		CursorPosition = 0;
+	}
 }
 
 public class ShellScreen : Screen {
@@ -167,14 +261,5 @@ public class ShellScreen : Screen {
 	public void ClearInput() {
 		InputLine = "";
 		CursorPosition = 0;
-	}
-}
-
-public class ProgramScreen : Screen {
-
-	public ProgramScreen(int screenID) : base(screenID) {}
-
-	public void Clear() {
-
 	}
 }

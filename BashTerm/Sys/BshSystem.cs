@@ -17,9 +17,15 @@ internal class BshSystem : MonoBehaviour {
 
 	internal static Dictionary<int, BshPM> PM = new();
 
-	public const int PidMaxLimit = 32768;
-	private static int nextPid = 1;
-	internal static HashSet<int> ActivePIDs = new();
+	public const int IdMaxLimit = 32768;
+	private static int nextPID = 1;
+	private static int nextSID = 1;
+	private static int nextScID = 1;
+	internal static HashSet<int> ActivePIDs = new(); // Process/Service IDs
+	internal static HashSet<int> ActiveSIDs = new(); // Stream IDs aka FD
+	internal static HashSet<int> ActiveScIDs = new(); // Screen IDs aka TTY
+
+	// TODO: Probably add structured listeners for major events e.g. enter/exit, on exit/enter level, etc.
 
 	public static bool UserRawMode { get { return _userRawMode; } }
 	public static void ToggleRawMode() { _userRawMode = !_userRawMode; }
@@ -106,26 +112,60 @@ internal class BshSystem : MonoBehaviour {
 	}
 
 	internal static int RequestPID() {
-		if (nextPid > PidMaxLimit || ActivePIDs.Contains(nextPid)) {
-			nextPid = 1;
-			while (ActivePIDs.Contains(nextPid)) {
-				nextPid++;
+		if (nextPID > IdMaxLimit || ActivePIDs.Contains(nextPID)) {
+			nextPID = 1;
+			while (ActivePIDs.Contains(nextPID)) {
+				nextPID++;
 			}
 		}
 
-		ActivePIDs.Add(nextPid);
-		return nextPid++;
+		ActivePIDs.Add(nextPID);
+		return nextPID++;
 	}
 
 	internal static bool ReleasePID(int pid) {
 		return ActivePIDs.Remove(pid);
 	}
 
+	internal static int RequestSID() {
+		if (nextSID > IdMaxLimit || ActiveSIDs.Contains(nextSID)) {
+			nextSID = 1;
+			while (ActiveSIDs.Contains(nextSID)) {
+				nextSID++;
+			}
+		}
+
+		ActiveSIDs.Add(nextSID);
+		return nextSID++;
+	}
+
+	internal static bool ReleaseSID(int sid) {
+		return ActiveSIDs.Remove(sid);
+	}
+
+	internal static int RequestScID() {
+		if (nextScID > IdMaxLimit || ActiveScIDs.Contains(nextScID)) {
+			nextScID = 1;
+			while (ActiveScIDs.Contains(nextScID)) {
+				nextScID++;
+			}
+		}
+
+		ActiveScIDs.Add(nextScID);
+		return nextScID++;
+	}
+
+	internal static bool ReleaseScID(int scid) {
+		return ActiveScIDs.Remove(scid);
+	}
+
 	public void Update() {
 		updateTimer += Time.deltaTime;
 		if (updateTimer > updatePeriod) {
 			updateTimer = 0f;
-			// Do stuff
+			foreach (var kvp in PM) {
+				kvp.Value.Update();
+			}
 		}
 	}
 }

@@ -16,11 +16,22 @@ public class PipeStream {
 	private readonly char[] _whitespaceChars = new[] { ' ', '\t', '\n', '\r' };
 	private readonly char[] _newlineChars = new[] { '\n', '\r' };
 	public bool IsClosedForWriting { get; private set; }
+	public bool IsScreen {
+		get {
+			return ReadingScreen != null;
+		}
+	}
+	public Screen? ReadingScreen { get; private set; }
 
 	public PipeStream(int streamId) {
 		StreamId = streamId;
 		_readCache = string.Empty;
 		IsClosedForWriting = false;
+		ReadingScreen = null;
+	}
+
+	public void SetReadingScreen(Screen? readingScreen) {
+		ReadingScreen = readingScreen;
 	}
 
 	public bool HasReferences {
