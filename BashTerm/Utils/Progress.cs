@@ -5,6 +5,7 @@ using UnityEngine;
 namespace BashTerm.Utils;
 
 public abstract class Progress {
+	private const int NON_SCREEN_PROGRESS_LENGTH = 40;
 	public enum eProgressType {
 		Timed,
 		Manual,
@@ -108,7 +109,9 @@ public abstract class Progress {
 	protected int CalculateProgressLength(string start, string end) {
 		int lastNewlineIndex = start.LastIndexOf('\n');
 		int effectiveStartLength = lastNewlineIndex >= 0 ? start.Length - lastNewlineIndex - 1 : start.Length;
-		return Stream.Cols - effectiveStartLength - end.Length;
+		int usedLength = effectiveStartLength + end.Length;
+		if (!Stream.IsScreen) return NON_SCREEN_PROGRESS_LENGTH - usedLength;
+		return Stream.ReadingScreen!.Cols - usedLength;
 	}
 
 	public abstract void Flush();

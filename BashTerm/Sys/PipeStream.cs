@@ -30,8 +30,8 @@ public class PipeStream {
 		ReadingScreen = null;
 	}
 
-	public void SetReadingScreen(Screen? readingScreen) {
-		ReadingScreen = readingScreen;
+	public void SetReadingScreen(Screen? sc) {
+		ReadingScreen = sc;
 	}
 
 	public bool HasReferences {
@@ -52,10 +52,10 @@ public class PipeStream {
 
 	// Write
 
-	public void Write(string data) {
+	public bool Write(string data) {
 		if (IsClosedForWriting) {
 			Logr.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (str segment): {data}");
-			return;
+			return false;
 		}
 		if (_writeCache.Length > 0) {
 			_writeCache.Append(data);
@@ -63,6 +63,7 @@ public class PipeStream {
 			_writeCache.Clear();
 		}
 		_stringBuffer.Enqueue(data);
+		return true;
 	}
 
 	public void Write(PipeObject obj) {
@@ -73,20 +74,22 @@ public class PipeStream {
 		_objectBuffer.Enqueue(obj);
 	}
 
-	public void Print(string data) {
+	public bool Print(string data) {
 		if (IsClosedForWriting) {
 			Logr.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (print): {data}");
-			return;
+			return false;
 		}
 		_writeCache.Append(data);
+		return true;
 	}
 
-	public void Println(string data) {
+	public bool Println(string data) {
 		if (IsClosedForWriting) {
 			Logr.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (println): {data}");
-			return;
+			return false;
 		}
 		_writeCache.Append(data + '\n');
+		return true;
 	}
 
 	public void Flush() {
@@ -236,7 +239,6 @@ public class PipeStream {
 		_readCache = "";
 		_readHead = 0;
 	}
-
 
 	// Close
 	public void Close() {

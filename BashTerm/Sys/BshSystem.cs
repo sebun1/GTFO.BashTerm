@@ -17,7 +17,7 @@ internal class BshSystem : MonoBehaviour {
 
 	internal static Dictionary<int, BshPM> PM = new();
 
-	public const int IdMaxLimit = 32768;
+	private const int IdMaxLimit = 32768;
 	private static int nextPID = 1;
 	private static int nextSID = 1;
 	private static int nextScID = 1;

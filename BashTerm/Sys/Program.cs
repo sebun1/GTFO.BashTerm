@@ -4,23 +4,6 @@ using LevelGeneration;
 
 namespace BashTerm.Sys;
 
-public class ProcessContext {
-	public LG_ComputerTerminal Terminal { get; private set; }
-	public List<string> Args { get; private set; }
-	public CmdOpts Opts { get; private set; }
-	public PipeStream StdIn { get; private set; }
-	public PipeStream StdOut { get; private set; }
-	public PipeStream StdErr { get; private set; }
-
-	public ProcessContext(LG_ComputerTerminal term, List<string> args, CmdOpts opts,
-		PipeStream stdIn, PipeStream stdOut, PipeStream stdErr) {
-		Terminal = term;
-		StdIn = stdIn;
-		StdOut = stdOut;
-		StdErr = stdErr;
-	}
-}
-
 /// <summary>
 ///
 /// <c>Proc</c> - Defines a base process for all Bsh processes.
@@ -32,12 +15,12 @@ public class ProcessContext {
 /// </para>
 /// </summary>
 public abstract class Program {
-	public event EventHandler<ExitPayload>? OnExit;
+	public event EventHandler? OnExit;
 
-	protected virtual void RaiseOnExit(ExitPayload payload) {
-		OnExit?.Invoke(this, payload);
+	protected void RaiseOnExit() {
+		OnExit?.Invoke(this, EventArgs.Empty);
 	}
-	public abstract void Start(ProcessContext context);
+	public abstract void Start(ProgramContext context);
 	public abstract void Update();
 
 	public virtual void OnSigInt() {

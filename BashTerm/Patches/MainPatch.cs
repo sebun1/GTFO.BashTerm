@@ -10,10 +10,10 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace BashTerm;
+namespace BashTerm.Patches;
 
 [HarmonyPatch]
-internal class Patch {
+internal class MainPatch {
 	[HarmonyPatch(
 		typeof(LG_TERM_PlayerInteracting),
 		nameof(LG_TERM_PlayerInteracting.OnReturn)
@@ -64,23 +64,6 @@ internal class Patch {
 		return false;
 	}
 
-	/*
-	[HarmonyPatch(
-		typeof(LG_TERM_PlayerInteracting),
-		nameof(LG_TERM_PlayerInteracting.ParseInput)
-	)]
-	[HarmonyPrefix]
-	public static bool ParseInput(ref LG_TERM_PlayerInteracting __instance) {
-		// TODO
-
-		InputMapper.GetButtonDownKeyMouseGamepad(InputAction.TerminalDel, eFocusState.ComputerTerminal);
-
-		// Input.inputString =
-
-		return false;
-	}
-	*/
-
 	[HarmonyPatch(
 		typeof(LG_ComputerTerminalCommandInterpreter),
 		nameof(LG_ComputerTerminalCommandInterpreter.NewLineStart)
@@ -125,49 +108,7 @@ internal class Patch {
 	[HarmonyPostfix]
 	public static void ReceiveCmd(ref LG_ComputerTerminalCommandInterpreter __instance, TERM_Command cmd,
 		string inputLine) {
-		Logr.Debug($"ReceiveCmd with cmd={cmd} inputLine={inputLine}");
-		if (Sync.Signal(new SyncSrcOnReceiveCmd(__instance.m_terminal.m_serialNumber))) {
-			// TODO: correspond with managing in
-			Logr.Debug("Successfully signaled SyncSrcOnReceiveCmd");
-		} else {
-			Logr.Debug("There was nothing to signal for SyncSrcOnReceiveCmd");
-		}
-	}
-
-	[HarmonyPatch(
-		typeof(LG_ComputerTerminalCommandInterpreter),
-		nameof(LG_ComputerTerminalCommandInterpreter.AddOutput),
-		new Type[] { typeof(List<string>) }
-	)]
-	[HarmonyPrefix]
-	public static bool AddOutputList(LG_ComputerTerminalCommandInterpreter __instance, List<string> lines) {
-		for (int i = 0; i < lines.Count; i++) {
-			Logr.Debug($"[AddOutput List]:[{i}]: \"{lines[i]}\"");
-		}
-		return true;
-	}
-
-	[HarmonyPatch(
-		typeof(LG_ComputerTerminalCommandInterpreter),
-		nameof(LG_ComputerTerminalCommandInterpreter.AddOutput),
-		new Type[] { typeof(string), typeof(bool) }
-	)]
-	[HarmonyPrefix]
-	public static bool AddOutputString(LG_ComputerTerminalCommandInterpreter __instance, string originalLine, bool spacing) {
-		Logr.Debug($"[AddOutput String]: \"{originalLine}\"");
-		return true;
-	}
-
-	[HarmonyPatch(
-		typeof(LG_ComputerTerminalCommandInterpreter),
-		nameof(LG_ComputerTerminalCommandInterpreter.AddOutput),
-		new Type[] { typeof(TerminalLineType), typeof(string), typeof(float), typeof(TerminalSoundType), typeof(TerminalSoundType) }
-	)]
-	[HarmonyPrefix]
-	public static bool AddOutputAdvanced(LG_ComputerTerminalCommandInterpreter __instance, TerminalLineType type, string line, float time) {
-		Logr.Debug($"[AddOutput Advanced]: \"{line}\"");
-		return true;
-
+		Logr.Debug($"[ReceiveCommand]: cmd={cmd}, inputLine=\"{inputLine}\"");
 	}
 
 	[HarmonyPatch(
@@ -257,10 +198,15 @@ internal class Patch {
 		//__instance.m_text.SetCharArray();
 		//__instance.m_text.text = "Test";
 
+		// __instance.m_terminal.m_serialNumber
+
 		//return false;
 		TMP_Text txt = __instance.m_terminal.m_text;
 		Logr.Debug($"text enableWW={txt.enableWordWrapping}, overflowMode={txt.overflowMode}, ");
 		return true;
+
+		// TODO: A few things need to be done:
+		// 1. Invoke EndOfQueue callbacks if output is empty
 	}
 
 	[HarmonyPatch(

@@ -20,10 +20,9 @@ public class Plugin : BasePlugin {
 		Logr.Info(NAME + " " + GUID + " " + VERSION);
 		Logr.Info("Patching...");
 		var h = new Harmony(GUID);
-		//int handlerCount = Dispatch.Initialize();
 		AddComponent<BshSystem>();
 		ConfigMgr.Init();
-		h.PatchAll(typeof(Patch));
+		h.PatchAll(typeof(Patches.MainPatch));
 		h.PatchAll(typeof(Patches.ScreenPatch));
 		Logr.Info("Finished Patching");
 	}

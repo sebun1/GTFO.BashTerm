@@ -66,8 +66,8 @@ public class CmdOpts {
 
 	public CmdOpts(Dictionary<FlagSpec, string> flags) {
 		foreach (var (spec, val) in flags) {
-			_posix[spec.POSIXName] = val;
-			if (spec.GNUName != null) _gnu[spec.GNUName] = val;
+			_posix[spec.Posix] = val;
+			if (spec.Gnu != null) _gnu[spec.Gnu] = val;
 		}
 	}
 

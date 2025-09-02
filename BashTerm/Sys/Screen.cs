@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BashTerm.Sys;
 
-public abstract class Screen {
+public class Screen {
 	public enum ScreenType {
 		Shell,
 		Discrete,
@@ -30,7 +30,7 @@ public abstract class Screen {
 
 	private int Position;
 
-	public Screen(int screenID, ScreenType type, PipeStream stream) {
+	internal Screen(int screenID, ScreenType type, PipeStream stream) {
 		ScreenID = screenID;
 		Type = type;
 		_stream = stream;
@@ -106,112 +106,6 @@ public abstract class Screen {
 	}
 
 	private int GetCursorDelta(Motion m) {
-		return m switch {
-			Motion.CharBack => CursorPosition == 0 ? 0 : -1,
-			Motion.CharForward => CursorPosition == InputLine.Length ? 0 : 1,
-			Motion.WordBack => GetWordBackDeltaSimple(),
-			Motion.WordForward => GetWordForwardDeltaSimple(),
-			Motion.LineBack => -CursorPosition,
-			Motion.LineForward => InputLine.Length - CursorPosition,
-			_ => 0
-		};
-	}
-
-	private int GetWordBackDeltaSimple() {
-		if (CursorPosition == 0) return 0;
-		int lastSpaceIndex = InputLine.Substring(0, CursorPosition).LastIndexOf(' ');
-		if (lastSpaceIndex == -1)
-			return -CursorPosition;
-		return -(CursorPosition - lastSpaceIndex);
-	}
-
-	private int GetWordForwardDeltaSimple() {
-		if (CursorPosition >= InputLine.Length) return 0;
-		int firstSpaceIndex = InputLine.IndexOf(' ', CursorPosition + 1);
-		if (firstSpaceIndex == -1)
-			return InputLine.Length - CursorPosition;
-		return firstSpaceIndex - CursorPosition;
-	}
-
-	private void ValidateStates() {
-		CursorPosition = Mathf.Clamp(CursorPosition, 0, InputLine.Length);
-	}
-
-	/// <summary>
-	/// Clears the output of the current process
-	/// </summary>
-	public void ClearOutput() {
-		if (History.Count <= LastPromptRow + 1) return;
-		History.RemoveRange(LastPromptRow, History.Count - LastPromptRow);
-	}
-
-	/// <summary>
-	/// Clear everything in the shell history, internal use only
-	/// </summary>
-	internal void ClearAll() {
-		// Not implemented
-	}
-
-	public void ClearInput() {
-		InputLine = "";
-		CursorPosition = 0;
-	}
-}
-
-public class ShellScreen : Screen {
-	protected string InputLine;
-	protected int LastPromptRow;
-	protected int CursorPosition;
-	private readonly BshPM pm;
-
-	public ShellScreen(int sid, BshPM pm) : base(sid) {
-		InputLine = "";
-		LastPromptRow = 0;
-		CursorPosition = 0;
-	}
-
-	public void Insert(char c) {
-		InputLine = InputLine.Insert(CursorPosition, c.ToString());
-		CursorPosition++;
-		ValidateStates();
-	}
-
-	public void Insert(string str) {
-		InputLine = InputLine.Insert(CursorPosition, str);
-		CursorPosition += str.Length;
-		ValidateStates();
-	}
-
-	public enum Action {
-		Move,
-		Delete,
-	}
-
-	public enum Motion {
-		WordBack,
-		WordForward,
-		CharBack,
-		CharForward,
-		LineBack,
-		LineForward,
-	}
-
-	public void Do(Action act, Motion motion) {
-		int delta = GetCursorDelta(motion);
-		switch (act) {
-			case Action.Move:
-				CursorPosition += delta;
-				break;
-			case Action.Delete:
-				InputLine = InputLine.Remove(delta < 0 ? CursorPosition + delta : CursorPosition, Mathf.Abs(delta));
-				if (delta < 0)
-					CursorPosition += delta;
-				break;
-		}
-		ValidateStates();
-	}
-
-	public int GetCursorDelta(Motion m) {
 		return m switch {
 			Motion.CharBack => CursorPosition == 0 ? 0 : -1,
 			Motion.CharForward => CursorPosition == InputLine.Length ? 0 : 1,
