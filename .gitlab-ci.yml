@@ -6,7 +6,7 @@ variables:
     BUILD_OUTPUT: "$CI_PROJECT_DIR/build"
     PACKAGE_OUTPUT: "$CI_PROJECT_DIR/BashTerm/pkg"
     SOLUTION_NAME: "BashTerm"
-    GTFO_DEP_URL: "https://s3.jector.io/assets/GTFO/GTFOBepInDep.zip"
+    GTFO_DEP_URL: "https://git.takina.io/api/v4/projects/6/packages/generic/gtfobepindep/2025.10.18/GTFOBepInDep.zip"
     GTFO_DEP_DIR: "$CI_PROJECT_DIR/GTFOBepInDep"
 
 before_script:

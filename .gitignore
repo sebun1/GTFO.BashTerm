@@ -1,6 +1,7 @@
 .vs/
 tests/
 BashTerm.zip
+manifest.json
 
 # --- Rider / IntelliJ IDEA ---
 .idea/
