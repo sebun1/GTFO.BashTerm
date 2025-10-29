@@ -1,130 +1,282 @@
-/*
+﻿using System.Text;
+using BashTerm.Utils;
+
 namespace BashTerm.Parsers;
 
-internal class Lexer {
-	enum CharClass {
-		White, // whitespace
-		WordChar, // alphabetical character & word
-		Pipe, // "|"
-		Semicolon, // ";"
-		Eof // end-of-file / end-of-line
-	}
-
-	enum LexState {
-		Start,
-		SeenWord, // Saw a word token
-		DoneWord,
-		DonePipe, // Saw a "|"
-		DoneSemicolon, // Saw a ";"
-		DoneEof, // Saw end-of-file/line
-	}
-
-	readonly Dictionary<(LexState, CharClass), LexState> _transitions = new Dictionary<(LexState, CharClass), LexState> {
-		{ (LexState.Start, CharClass.White), LexState.Start },
-		{ (LexState.Start, CharClass.WordChar), LexState.SeenWord },
-		{ (LexState.SeenWord, CharClass.WordChar), LexState.SeenWord },
-		{ (LexState.SeenWord, CharClass.White), LexState.DoneWord },
-		{ (LexState.SeenWord, CharClass.Pipe), LexState.DoneWord },
-		{ (LexState.SeenWord, CharClass.Semicolon), LexState.DoneWord },
-		{ (LexState.SeenWord, CharClass.Eof), LexState.DoneWord },
-		{ (LexState.Start, CharClass.Pipe), LexState.DonePipe },
-		{ (LexState.Start, CharClass.Semicolon), LexState.DoneSemicolon },
-		{ (LexState.Start, CharClass.Eof), LexState.DoneEof }
-	};
-
-	private int position;
-	private string input;
-	private Token token;
+public class Lexer {
+	private int pos;
+	private char[] input;
+	private List<Token> tokens = new();
+	private List<WordPart> wordPartCache = new();
+	private StringBuilder wpb = new();
+	private bool inDoubleQuote = false;
+	private bool inSingleQuote = false;
+	private bool wantVar = false;
+	private bool escape = false;
 
 	public Lexer(string input) {
-		this.position = 0;
-		this.input = input;
-		this.token = Next();
+		this.input = input.ToCharArray();
+		Tokenize();
 	}
 
-	private Token Next() {
-		int pos0 = position;
-
-		LexState state = LexState.Start;
-
+	private void Tokenize() {
 		while (true) {
-			var c = classify(input, position++);
-			state = _transitions[(state, c)];
+			var (c, cc) = Classify(pos++);
 
-			if (isFinished(state)) {
-				// NOOOOOOO MICROCHIPS, YOU HAD A BUG IN THE CODE ;-; ;-; ;-;
-				// TODO: Fix Lexer elegantly, below is temporary fix
-				Token newTok = convertToken(state, input, pos0, position - 1);
-				if (state == LexState.DoneWord &&
-				    (c == CharClass.Pipe || c == CharClass.Semicolon)) {
-					position--; // rewind one char
+			if (cc == CharClass.Eof) {
+				CtxState cs = getContextState();
+				if (cs != CtxState.CLEAN)
+					switch (cs) {
+						case CtxState.ESC:
+							throw new LexerException("Unexpected EOF: incomplete escape sequence");
+						case CtxState.IDQ:
+							throw new LexerException("Unexpected EOF: unclosed double quote");
+						case CtxState.ISQ:
+							throw new LexerException("Unexpected EOF: unclosed single quote");
+						case CtxState.VAR:
+							throw new LexerException("Unexpected EOF: variable expression expected");
+					}
+
+				FlushWord();
+				tokens.Add(new TokenEof());
+				break;
+			}
+
+			if (cc == CharClass.White && !inDoubleQuote && !inSingleQuote) {
+				FlushWord();
+				continue;
+			}
+
+			if (cc == CharClass.Semicolon && !inDoubleQuote && !inSingleQuote) {
+				FlushWord();
+				tokens.Add(new TokenSemicolon());
+				continue;
+			}
+
+			if (cc == CharClass.Pipe && !inDoubleQuote && !inSingleQuote) {
+				FlushWord();
+				tokens.Add(new TokenPipe());
+				continue;
+			}
+
+			if (cc == CharClass.DoubleQuote && !inSingleQuote) {
+				inDoubleQuote = !inDoubleQuote;
+				continue;
+			}
+
+			if (cc == CharClass.SingleQuote && !inDoubleQuote) {
+				inSingleQuote = !inSingleQuote;
+				continue;
+			}
+
+			if (cc == CharClass.Backslash && !inSingleQuote) {
+				escape = true;
+				continue;
+			}
+
+			if (cc == CharClass.Dollar && !inSingleQuote) {
+				FlushWpbToText();
+				wantVar = true;
+				ParseVariableExpansion();
+				continue;
+			}
+
+			wpb.Append(c);
+		}
+	}
+
+	private void FlushWpbToText() {
+		if (wpb.Length > 0) {
+			wordPartCache.Add(new WordText(wpb.ToString()));
+			wpb.Clear();
+		}
+	}
+
+	private void FlushWord() {
+		FlushWpbToText();
+		if (wordPartCache.Count > 0) {
+			tokens.Add(new TokenWord(wordPartCache.ToArray()));
+			wordPartCache.Clear();
+		}
+	}
+
+	private void ParseVariableExpansion() {
+		var varName = new StringBuilder();
+
+		if (pos < input.Length && input[pos] == '{') {
+			pos++; // skip '{'
+			while (pos < input.Length) {
+				var (c, cc) = Classify(pos++);
+				if (cc == CharClass.CloseBrace) break;
+				if (cc == CharClass.Eof) throw new LexerException("unclosed variable expansion");
+				if (!IsValidVarChar(c)) throw new LexerException($"bad substitution: char '{c}'");
+				varName.Append(c);
+			}
+		} else {
+			var (c, cc) = Classify(pos++);
+			if (!IsValidVarChar(c)) throw new LexerException($"bad substitution: char '{c}'");
+			varName.Append(c);
+			if (!char.IsDigit(c)) {
+				while (pos < input.Length) {
+					var (next, _) = Classify(pos);
+					if (!IsValidVarChar(next)) break;
+					varName.Append(next);
+					pos++;
 				}
-				return newTok;
-			}
-
-			if (state == LexState.Start) {
-				pos0 = position;
 			}
 		}
+
+		wordPartCache.Add(new WordVar(varName.ToString()));
+		wantVar = false;
 	}
 
-	public void Consume() {
-		this.token = Next();
+	private (char, CharClass) Classify(int position) {
+		if (position >= input.Length) return ((char)0, CharClass.Eof);
+
+		char c = input[position];
+
+		if (escape) {
+			escape = false;
+			return (c, CharClass.WordChar);
+		}
+
+		switch (c) {
+			case '"': return (c, CharClass.DoubleQuote);
+			case '\'': return (c, CharClass.SingleQuote);
+			case '\\': return (c, CharClass.Backslash);
+			case '|': return (c, CharClass.Pipe);
+			case ';': return (c, CharClass.Semicolon);
+			case '$': return (c, CharClass.Dollar);
+			case '{': return (c, CharClass.OpenBrace);
+			case '}': return (c, CharClass.CloseBrace);
+		}
+
+		if (char.IsWhiteSpace(c)) return (c, CharClass.White);
+		return (c, CharClass.WordChar);
 	}
 
-	public Token Peek() {
-		return this.token;
-	}
-
-	private static bool isFinished(LexState state) =>
-		state switch {
-			LexState.DoneWord => true,
-			LexState.DonePipe => true,
-			LexState.DoneSemicolon => true,
-			LexState.DoneEof => true,
-			_ => false
-		};
-
-	private static bool isWordChar(char c) =>
-		Char.IsLetterOrDigit(c) || "_-./:=+@%~*()[]".Contains(c); //{} is for variable
-
-	private static Token convertToken(LexState state, string input, int start, int end) =>
-		state switch {
-			LexState.DoneWord => new TokenWord(input.Substring(start, end - start)),
-			LexState.DonePipe => new TokenPipe(),
-			LexState.DoneSemicolon => new TokenSemicolon(),
-			LexState.DoneEof => new TokenEof(),
-			_ => throw new LexerException("impossible")
-		};
-
-	private CharClass classify(string input, int position) {
+	/*
+	private (char, CharClass) classify(int position) {
 		if (position >= input.Length) {
-			return CharClass.Eof;
+			return ((char)0, CharClass.Eof);
 		}
 
-		var c = input[position];
+		char c = input[position];
 
-		if (Char.IsWhiteSpace(c)) {
-			return CharClass.White;
+		if (escape) {
+			escape = false;
+			return (c, CharClass.WordChar);
 		}
 
-		if (isWordChar(c))
-			return CharClass.WordChar;
-		if (c == '|')
-			return CharClass.Pipe;
-		if (c == ';')
-			return CharClass.Semicolon;
-		throw new LexerException($"illegal character / cannot classify: '{c}'");
+		if (Char.IsWhiteSpace(c) && !inDoubleQuote && !inSingleQuote) {
+			return (c, CharClass.White);
+		}
+
+		switch (c) {
+			case '"':
+				if (!inSingleQuote) return (c, CharClass.DoubleQuote);
+				break;
+			case '\'':
+				if (!inDoubleQuote) return (c, CharClass.SingleQuote);
+				break;
+			case '\\':
+				if (!inSingleQuote) return (c, CharClass.Backslash);
+				break;
+			case '|':
+				if (!inDoubleQuote && !inSingleQuote) return (c, CharClass.Pipe);
+				break;
+			case ';':
+				if (!inDoubleQuote && !inSingleQuote) return (c, CharClass.Semicolon);
+				break;
+			case '$':
+				if (!inSingleQuote) return (c, CharClass.Dollar);
+				break;
+			case '{':
+				if (!inSingleQuote) return (c, CharClass.OpenBrace);
+				break;
+			case '}':
+				if (!inSingleQuote) return (c, CharClass.CloseBrace);
+				break;
+		}
+
+		return (c, CharClass.WordChar);
+	}
+	*/
+
+
+	private bool IsValidVarChar(char c) => char.IsLetterOrDigit(c) || c == '_';
+
+	private enum CtxState {
+		CLEAN,
+		ESC,
+		ISQ,
+		IDQ,
+		VAR,
+	}
+
+	private CtxState getContextState() {
+		if (escape) return CtxState.ESC;
+		if (inSingleQuote) return CtxState.ISQ;
+		if (inDoubleQuote) return CtxState.IDQ;
+		if (wantVar) return CtxState.VAR;
+		return CtxState.CLEAN;
+	}
+
+	public List<Token> GetTokens() => tokens;
+
+	private enum CharClass {
+		White,
+		WordChar,
+		Pipe,
+		Semicolon,
+		DoubleQuote,
+		SingleQuote,
+		Dollar,
+		OpenBrace,
+		CloseBrace,
+		Backslash,
+		Eof
 	}
 }
 
-abstract record Token;
+public abstract record Token;
 
-record TokenWord(string word) : Token; // "word"
+public record TokenWord(WordPart[] parts) : Token, IFmtToStringable {
+	public override string ToString() {
+		return $"\"{string.Join<WordPart>("", parts)}\"";
+	}
 
-record TokenPipe() : Token; // "|"
+	public string FmtToString() {
+		if (parts.Length == 0) return "";
+		if (parts.Length == 1) return parts[0].FmtToString();
+		string formattedParts = string.Join("", parts.Select(p => p.FmtToString()));
+		return $"\"{formattedParts}\"";
+	}
+};
 
-record TokenSemicolon() : Token; // ";"
+public abstract record WordPart : IFmtToStringable {
+	public abstract string FmtToString();
+};
 
-record TokenEof() : Token;
-*/
+public record WordText(string text) : WordPart {
+	public override string ToString() => $"{text}";
+
+	public override string FmtToString() => $"{text}";
+};
+
+public record WordVar(string varName) : WordPart {
+	public override string ToString() => $"${{{varName}}}";
+	public override string FmtToString() => $"<#66D9EF>${varName}</color>";
+};
+
+public record TokenPipe() : Token {
+	public override string ToString() => "Token[|]";
+};
+
+public record TokenSemicolon() : Token {
+	public override string ToString() => "Token[;]";
+};
+
+public record TokenEof() : Token {
+	public override string ToString() => "Token[EOF]";
+};

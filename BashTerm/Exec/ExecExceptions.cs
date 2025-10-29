@@ -1,8 +1,8 @@
-﻿using BashTerm.Runtime;
+﻿using BashTerm.Sys;
 
 namespace BashTerm.Exec;
 
-public class ExecException : BSHException {
+public class ExecException : BshException {
 
 	public ExecException(string cause) : base(cause) {}
 

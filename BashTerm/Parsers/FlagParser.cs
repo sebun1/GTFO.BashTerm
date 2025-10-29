@@ -1,4 +1,4 @@
-﻿using BashTerm.Runtime;
+﻿using BashTerm.Sys;
 
 namespace BashTerm.Parsers;
 
@@ -14,6 +14,7 @@ public class FlagParser {
 				for (int j = i + 1; j < args.Count; j++) {
 					Positionals.Add(args[j]);
 				}
+
 				break;
 			}
 
@@ -66,15 +67,27 @@ public class CmdOpts {
 
 	public CmdOpts(Dictionary<FlagSpec, string> flags) {
 		foreach (var (spec, val) in flags) {
-			_posix[spec.POSIXName] = val;
-			if (spec.GNUName != null) _gnu[spec.GNUName] = val;
+			_posix[spec.Posix] = val;
+			if (spec.Gnu != null) _gnu[spec.Gnu] = val;
 		}
 	}
 
+	/// <summary>
+	/// Tries to get posix style (--option) flag value
+	/// </summary>
+	/// <param name="flag">posix style flag to be queried</param>
+	/// <param name="val">string of the flag if defined</param>
+	/// <returns>whether the flag is defined</returns>
 	public bool TryGetPosix(string flag, out string? val) {
 		return _posix.TryGetValue(flag, out val);
 	}
 
+	/// <summary>
+	/// Tries to get posix style (-o) flag value
+	/// </summary>
+	/// <param name="flag">gnu style flag to be queried</param>
+	/// <param name="val">string of the flag if defined</param>
+	/// <returns>whether the flag is defined</returns>
 	public bool TryGetGnu(string flag, out string? val) {
 		return _gnu.TryGetValue(flag, out val);
 	}
@@ -94,16 +107,16 @@ public class CmdOpts {
 	}
 
 	public static CmdOpts EmptyOpts() {
-		return new CmdOpts(new  Dictionary<FlagSpec, string>());
+		return new CmdOpts(new Dictionary<FlagSpec, string>());
 	}
 }
 
-public class FlagException : BSHException {
+public class FlagException : BshException {
 	public FlagException(string message) : base($"[FlagError] >> {message}") {
 	}
 }
 
-public class CmdOptException : BSHException {
+public class CmdOptException : BshException {
 	public CmdOptException(string message) : base($"[CmdOptError] >> {message}") {
 	}
 }

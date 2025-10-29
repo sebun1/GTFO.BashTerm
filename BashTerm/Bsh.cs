@@ -1,3 +1,4 @@
+using BashTerm.Sys;
 using BashTerm.Utils;
 using Il2CppSystem.Text.RegularExpressions;
 using LevelGeneration;
@@ -5,16 +6,34 @@ using LevelGeneration;
 namespace BashTerm;
 
 public class Bsh {
-	public static bool Callable = false;
+	public static bool HasTerminal = false;
 
-	public static LG_ComputerTerminal? Terminal {
+	internal static List<string> BSHLogs = new List<string>();
+
+	public static int LogInfoCount {
+		get { return _infoCount; }
+	}
+
+	public static int LogWarnCount {
+		get { return _warnCount; }
+	}
+
+	public static int LogErrorCount {
+		get { return _errorCount; }
+	}
+
+	private static int _infoCount;
+	private static int _warnCount;
+	private static int _errorCount;
+
+	public static LG_ComputerTerminal? CurrentTerminal {
 		get {
-			Logger.Debug($"Terminal is using SyncID={_terminal?.SyncID}");
-			return _terminal;
+			BshLogger.Debug($"Terminal is using SyncID={_currentTerminal?.SyncID}");
+			return _currentTerminal;
 		}
 	}
 
-	public static LG_ComputerTerminal? _terminal;
+	public static LG_ComputerTerminal? _currentTerminal;
 	private static bool _isReceivingBSHSyncIO = false;
 	private const int InputLineMaxCol = 50;
 
@@ -25,13 +44,13 @@ public class Bsh {
 	/// <returns></returns>
 	internal static bool Renew(LG_ComputerTerminal term) {
 		if (term != null) {
-			_terminal = term;
-			Callable = true;
+			_currentTerminal = term;
+			HasTerminal = true;
 			return true;
 		}
 
-		_terminal = null;
-		Callable = false;
+		_currentTerminal = null;
+		HasTerminal = false;
 		return false;
 	}
 
@@ -39,24 +58,31 @@ public class Bsh {
 	/// Expires the BSH validity, makes not Callable
 	/// </summary>
 	internal static void Expire() {
-		_terminal = null;
-		Callable = false;
+		_currentTerminal = null;
+		HasTerminal = false;
 	}
 
-	public static bool Println(string msg) {
-		if (!Callable) return false;
-
-		return true;
+	public static void LogInfo(string src, string msg) {
+		_infoCount++;
+		BSHLogs.Add($"{Styles.C_Info}INFO[{src}] >> {msg}{Styles.C_End}");
+		BshLogger.Info($"Bsh.LogInfo [{src}] >> {msg}");
 	}
 
-	public static bool Print(string msg) {
-		if (!Callable) return false;
-
-		return true;
+	public static void LogWarn(string src, string msg) {
+		_warnCount++;
+		BSHLogs.Add($"{Styles.C_Warning}WARN[{src}] >> {msg}{Styles.C_End}");
+		BshLogger.Warn($"Bsh.LogWarn [{src}] >> {msg}");
 	}
+
+	public static void LogError(string src, string msg) {
+		_errorCount++;
+		BSHLogs.Add($"{Styles.C_Error}ERRR[{src}] >> {msg}{Styles.C_End}");
+		BshLogger.Error($"Bsh.LogERRR [{src}] >> {msg}");
+	}
+
 
 	public static bool PrintScreen(List<string> screen) {
-		if (!Callable) return false;
+		if (!HasTerminal) return false;
 
 		//StringTools.ConvertScreenBufferToCharBuffer();
 		return true;
@@ -80,31 +106,27 @@ public class Bsh {
 		}
 	}
 
-	public static bool IsSyncIOEnd(string line) {
-		var pattern = @"^<7\.1@bsh>";
-		return Regex.IsMatch(line, pattern);
-	}
-
 	public static bool SyncPrint(string msg) {
-		if (!Callable) return false;
+		if (!HasTerminal) return false;
 		var lines = Fmt.WrapList(msg, maxCols: InputLineMaxCol);
-		string bshSyncOutputStart = $"<bsh@7.1> {Styles.Info}[ BSH Synced IO >> ]{Styles.CEnd}";
-		string bshSyncOutputEnd = $"<7.1@bsh> {Styles.Info}[ BSH Synced IO << ]{Styles.CEnd}";
+		string bshSyncOutputStart = $"<bsh@7.1> {Styles.C_Info}[ BSH Synced IO >> ]{Styles.C_End}";
+		string bshSyncOutputEnd = $"<7.1@bsh> {Styles.C_Info}[ BSH Synced IO << ]{Styles.C_End}";
 
 
-		LG_ComputerTerminalManager.WantToSendTerminalCommand(_terminal!.SyncID,
+		LG_ComputerTerminalManager.WantToSendTerminalCommand(_currentTerminal!.SyncID,
 			TERM_Command.EmptyLine, bshSyncOutputStart, "", "");
 		foreach (var line in lines) {
-			LG_ComputerTerminalManager.WantToSendTerminalCommand(_terminal!.SyncID,
+			LG_ComputerTerminalManager.WantToSendTerminalCommand(_currentTerminal!.SyncID,
 				TERM_Command.EmptyLine, line, "", "");
 		}
-		LG_ComputerTerminalManager.WantToSendTerminalCommand(_terminal!.SyncID,
+
+		LG_ComputerTerminalManager.WantToSendTerminalCommand(_currentTerminal!.SyncID,
 			TERM_Command.EmptyLine, bshSyncOutputEnd, "", "");
 		return true;
 	}
 
 	public static bool ReadLine(out string line) {
-		if (!Callable) {
+		if (!HasTerminal) {
 			line = "";
 			return false;
 		}
