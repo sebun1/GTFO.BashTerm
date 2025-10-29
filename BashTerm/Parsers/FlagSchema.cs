@@ -5,7 +5,7 @@ public enum FlagType {
 	Value
 }
 
-public record FlagSpec(string POSIXName, string? GNUName, FlagType Type);
+public record FlagSpec(string Posix, string? Gnu, FlagType Type);
 
 public class FlagSchema {
 	private readonly Dictionary<string, FlagSpec> _gnu = new();

@@ -1,12 +1,9 @@
-﻿using BashTerm.Runtime;
+﻿using BashTerm.Sys;
 
 namespace BashTerm.Parsers;
 
-public class ParserException : BSHException {
-
-	public ParserException(string cause) : base(cause) {}
-
-	public override string ToString() => $"[ParseError] >> {Message}";
+public class ParserException : BshException {
+	public ParserException(string cause) : base($"[ParseError] >> {cause}") {}
 }
 
 public class UnexpectedTokenException : ParserException {
@@ -14,9 +11,7 @@ public class UnexpectedTokenException : ParserException {
 }
 
 public class LexerException : ParserException {
-	public LexerException(string cause) : base(cause) {}
-
-	public override string ToString() => $"[LexerError] >> {Message}";
+	public LexerException(string cause) : base($"[LexerError] >> {cause}") {}
 }
 
 
