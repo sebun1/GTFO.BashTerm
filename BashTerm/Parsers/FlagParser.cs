@@ -14,6 +14,7 @@ public class FlagParser {
 				for (int j = i + 1; j < args.Count; j++) {
 					Positionals.Add(args[j]);
 				}
+
 				break;
 			}
 
@@ -71,10 +72,22 @@ public class CmdOpts {
 		}
 	}
 
+	/// <summary>
+	/// Tries to get posix style (--option) flag value
+	/// </summary>
+	/// <param name="flag">posix style flag to be queried</param>
+	/// <param name="val">string of the flag if defined</param>
+	/// <returns>whether the flag is defined</returns>
 	public bool TryGetPosix(string flag, out string? val) {
 		return _posix.TryGetValue(flag, out val);
 	}
 
+	/// <summary>
+	/// Tries to get posix style (-o) flag value
+	/// </summary>
+	/// <param name="flag">gnu style flag to be queried</param>
+	/// <param name="val">string of the flag if defined</param>
+	/// <returns>whether the flag is defined</returns>
 	public bool TryGetGnu(string flag, out string? val) {
 		return _gnu.TryGetValue(flag, out val);
 	}
@@ -94,7 +107,7 @@ public class CmdOpts {
 	}
 
 	public static CmdOpts EmptyOpts() {
-		return new CmdOpts(new  Dictionary<FlagSpec, string>());
+		return new CmdOpts(new Dictionary<FlagSpec, string>());
 	}
 }
 

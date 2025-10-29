@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using BashTerm.Exec;
+using BashTerm.Sys;
 using BashTerm.Utils;
 
 namespace BashTerm.Parsers;
@@ -22,7 +23,7 @@ internal class Parser {
 	private Queue<Token> _tokens;
 
 	public Parser(string input) {
-		LexerB lexer = new LexerB(input);
+		Lexer lexer = new Lexer(input);
 		_tokens = new();
 		bool firstWord = true;
 		var tokens = lexer.GetTokens();
@@ -31,7 +32,7 @@ internal class Parser {
 				case TokenWord word:
 					if (firstWord && word.parts.Length == 1 && word.parts[0] is WordText wt &&
 					    ParseUtil.TryExpandAlias(wt.text, out var expansion)) {
-						var expLexer = new LexerB(expansion);
+						var expLexer = new Lexer(expansion);
 						var expTokens = expLexer.GetTokens();
 						foreach (Token expTk in expTokens) {
 							if (expTk is TokenEof) break;
@@ -40,6 +41,7 @@ internal class Parser {
 					} else {
 						_tokens.Enqueue(tk);
 					}
+
 					firstWord = false;
 					break;
 
@@ -55,9 +57,9 @@ internal class Parser {
 			}
 		}
 
-		if (ConfigMgr.DEBUG) {
+		if (Config.DEBUG) {
 			foreach (var token in this._tokens) {
-				Logr.Debug(token.ToString());
+				BshLogger.Debug(token.ToString());
 			}
 		}
 	}

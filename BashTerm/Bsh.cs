@@ -1,3 +1,4 @@
+using BashTerm.Sys;
 using BashTerm.Utils;
 using Il2CppSystem.Text.RegularExpressions;
 using LevelGeneration;
@@ -9,9 +10,17 @@ public class Bsh {
 
 	internal static List<string> BSHLogs = new List<string>();
 
-	public static int LogInfoCount { get { return _infoCount; } }
-	public static int LogWarnCount { get { return _warnCount; } }
-	public static int LogErrorCount { get { return _errorCount; } }
+	public static int LogInfoCount {
+		get { return _infoCount; }
+	}
+
+	public static int LogWarnCount {
+		get { return _warnCount; }
+	}
+
+	public static int LogErrorCount {
+		get { return _errorCount; }
+	}
 
 	private static int _infoCount;
 	private static int _warnCount;
@@ -19,7 +28,7 @@ public class Bsh {
 
 	public static LG_ComputerTerminal? CurrentTerminal {
 		get {
-			Logr.Debug($"Terminal is using SyncID={_currentTerminal?.SyncID}");
+			BshLogger.Debug($"Terminal is using SyncID={_currentTerminal?.SyncID}");
 			return _currentTerminal;
 		}
 	}
@@ -56,19 +65,19 @@ public class Bsh {
 	public static void LogInfo(string src, string msg) {
 		_infoCount++;
 		BSHLogs.Add($"{Styles.C_Info}INFO[{src}] >> {msg}{Styles.C_End}");
-		Logr.Info($"Bsh.LogInfo [{src}] >> {msg}");
+		BshLogger.Info($"Bsh.LogInfo [{src}] >> {msg}");
 	}
 
 	public static void LogWarn(string src, string msg) {
 		_warnCount++;
 		BSHLogs.Add($"{Styles.C_Warning}WARN[{src}] >> {msg}{Styles.C_End}");
-		Logr.Warn($"Bsh.LogWarn [{src}] >> {msg}");
+		BshLogger.Warn($"Bsh.LogWarn [{src}] >> {msg}");
 	}
 
 	public static void LogError(string src, string msg) {
 		_errorCount++;
 		BSHLogs.Add($"{Styles.C_Error}ERRR[{src}] >> {msg}{Styles.C_End}");
-		Logr.Error($"Bsh.LogERRR [{src}] >> {msg}");
+		BshLogger.Error($"Bsh.LogERRR [{src}] >> {msg}");
 	}
 
 
@@ -110,6 +119,7 @@ public class Bsh {
 			LG_ComputerTerminalManager.WantToSendTerminalCommand(_currentTerminal!.SyncID,
 				TERM_Command.EmptyLine, line, "", "");
 		}
+
 		LG_ComputerTerminalManager.WantToSendTerminalCommand(_currentTerminal!.SyncID,
 			TERM_Command.EmptyLine, bshSyncOutputEnd, "", "");
 		return true;

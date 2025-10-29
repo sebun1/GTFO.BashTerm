@@ -22,6 +22,10 @@ Desktop.ini
 *.stacktrace
 sysinfo.txt
 
+# -- DotNet --
+*.csproj.DotSettings
+*.csproj.DotSettings.user
+
 # --- Optional: NuGet packages (if using) ---
 *.nupkg
 *.snupkg

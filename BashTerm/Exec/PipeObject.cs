@@ -4,9 +4,7 @@ namespace BashTerm.Exec;
 
 public abstract record PipeObject;
 
-public record EmptyObject() : PipeObject;
-
-public record StringOutput(string String) : PipeObject;
+public record NullObject() : PipeObject;
 
 public record ItemList(List<iTerminalItem> items) : PipeObject;
 

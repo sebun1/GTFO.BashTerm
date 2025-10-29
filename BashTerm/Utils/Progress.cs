@@ -6,6 +6,7 @@ namespace BashTerm.Utils;
 
 public abstract class Progress {
 	private const int NON_SCREEN_PROGRESS_LENGTH = 40;
+
 	public enum eProgressType {
 		Timed,
 		Manual,
@@ -23,9 +24,9 @@ public abstract class Progress {
 	protected bool ShowTime = true;
 
 	protected Progress(eProgressType type, PipeStream stream, string desc) {
-		this.Type = type;
-		this.Stream = stream;
-		this.Description = desc;
+		Type = type;
+		Stream = stream;
+		Description = desc;
 	}
 
 	public void SetStyle(ProgStyle style) {
@@ -154,19 +155,19 @@ public class ProgStyle {
 }
 
 public class ProgressTimed : Progress {
-	private readonly float duration;
-	private float elapsed;
-	private readonly int count;
+	private readonly float _duration;
+	private float _elapsed;
+	private readonly int _count;
 
 	public ProgressTimed(PipeStream stream, string desc, float duration, int count = -1) :
 		base(eProgressType.Timed, stream, desc) {
-		this.duration = duration;
-		this.elapsed = 0f;
-		this.count = count;
+		_duration = duration;
+		_elapsed = 0f;
+		_count = count;
 	}
 
 	public void SetDelta(float deltaTime) {
-		elapsed += deltaTime;
+		_elapsed += deltaTime;
 	}
 
 	public void UpdateDelta(float deltaTime) {
@@ -176,41 +177,41 @@ public class ProgressTimed : Progress {
 	}
 
 	public override bool IsDone() {
-		return elapsed >= duration;
+		return _elapsed >= _duration;
 	}
 
 	public sealed override void Flush() {
 		string start = Description;
 		if (TwoLine) start += "\n ";
-		start += $" {elapsed / duration:P1} ";
+		start += $" {_elapsed / _duration:P1} ";
 		string end = "";
-		if (count > 0) {
-			end += $" ({elapsed / duration * count:N0}/{count:N0})";
+		if (_count > 0) {
+			end += $" ({_elapsed / _duration * _count:N0}/{_count:N0})";
 		}
 
-		end += $" {duration:F1}s ";
+		end += $" {_duration:F1}s ";
 		int progressLength = CalculateProgressLength(start, end);
 
-		string finalLine = $"{start}{BuildBar(elapsed / duration, progressLength)}{end}{EndChar()}";
+		string finalLine = $"{start}{BuildBar(_elapsed / _duration, progressLength)}{end}{EndChar()}";
 		Stream.Print(finalLine);
 	}
 }
 
 public class ProgressManual : Progress {
 	// TODO: Not finished
-	private float progress;
-	private readonly int count;
-	private int currentCount = 0;
+	private float _progress;
+	private readonly int _count;
+	private int _currentCount = 0;
 
 	public ProgressManual(PipeStream stream, string desc, int count = 1) :
 		base(eProgressType.Manual, stream, desc) {
-		this.progress = 0f;
-		this.count = count;
+		_progress = 0f;
+		_count = count;
 	}
 
 	public void SetPercent(float value) {
-		progress = Math.Clamp(value, 0f, 1f);
-		currentCount = (int)(value * count);
+		_progress = Math.Clamp(value, 0f, 1f);
+		_currentCount = (int)(value * _count);
 	}
 
 	public void UpdatePercent(float value) {
@@ -220,8 +221,8 @@ public class ProgressManual : Progress {
 	}
 
 	public void SetCount(int c) {
-		currentCount = Mathf.Min(c, count);
-		progress = 1f * currentCount / count;
+		_currentCount = Mathf.Min(c, _count);
+		_progress = 1f * _currentCount / _count;
 	}
 
 	public void UpdateCount(int c) {
@@ -231,32 +232,32 @@ public class ProgressManual : Progress {
 	}
 
 	public override bool IsDone() {
-		return progress >= 1f;
+		return _progress >= 1f;
 	}
 
 	public sealed override void Flush() {
 		string start = Description;
 		if (TwoLine) start += "\n ";
-		start += $" {progress:P1} ";
-		string end = $" ({currentCount}/{count}) ";
+		start += $" {_progress:P1} ";
+		string end = $" ({_currentCount}/{_count}) ";
 		int progressLength = CalculateProgressLength(start, end);
-		string finalLine = $"{start}{BuildBar(progress, progressLength)}{end}{EndChar()}";
+		string finalLine = $"{start}{BuildBar(_progress, progressLength)}{end}{EndChar()}";
 		Stream.Print(finalLine);
 	}
 }
 
 public class ProgressIndeterminate : Progress {
-	private bool finished;
-	private int barPosition = 0;
-	private bool isIncreasing = true;
+	private bool _finished;
+	private int _barPosition = 0;
+	private bool _isIncreasing = true;
 
 	public ProgressIndeterminate(PipeStream stream, string desc) :
 		base(eProgressType.Indeterminate, stream, desc) {
-		finished = false;
+		_finished = false;
 	}
 
 	public void SetDone(bool done) {
-		finished = done;
+		_finished = done;
 	}
 
 	public void UpdateDone(bool done) {
@@ -266,7 +267,7 @@ public class ProgressIndeterminate : Progress {
 	}
 
 	public override bool IsDone() {
-		return finished;
+		return _finished;
 	}
 
 	public sealed override void Flush() {
@@ -281,13 +282,13 @@ public class ProgressIndeterminate : Progress {
 			bar =
 				$"[{new string(' ', (progressLength - 6) / 2)}{Styles.C_Info}DONE{Styles.C_End}{new string(' ', progressLength - 6 - (progressLength - 6) / 2)}]";
 		else
-			bar = BuildBounceBar(barPosition, progressLength);
+			bar = BuildBounceBar(_barPosition, progressLength);
 		char endChar = IsDone() ? '\n' : '\r';
 		string finalLine = $"{start}{bar}{end}{EndChar()}";
-		barPosition += isIncreasing ? 1 : -1;
-		if (barPosition <= 0 || barPosition >= progressLength - 3) {
-			isIncreasing = !isIncreasing;
-			barPosition = Mathf.Clamp(barPosition, 0, progressLength - 3);
+		_barPosition += _isIncreasing ? 1 : -1;
+		if (_barPosition <= 0 || _barPosition >= progressLength - 3) {
+			_isIncreasing = !_isIncreasing;
+			_barPosition = Mathf.Clamp(_barPosition, 0, progressLength - 3);
 		}
 
 		Stream.Print(finalLine);
@@ -298,51 +299,51 @@ public class ProgressStaged : Progress {
 	/// <summary>
 	/// <code>stages</code> is a list of tuples where each tuple contains the stage name and the weight (or duration in seconds as well if not indeterminate) for that stage.
 	/// </summary>
-	private readonly List<(string, float)> stages;
+	private readonly List<(string, float)> _stages;
 
-	private int currentStage;
-	private float currentStageWeight;
-	private float currentWeight;
-	private float totalWeight;
-	private bool isIndeterminate;
-	private int barPosition;
-	private bool isIncreasing;
+	private int _currentStage;
+	private float _currentStageWeight;
+	private float _currentWeight;
+	private float _totalWeight;
+	private bool _isIndeterminate;
+	private int _barPosition;
+	private bool _isIncreasing;
 
 	public ProgressStaged(PipeStream stream, string desc, List<(string, float)> stages, bool indeterminate = false) :
 		base(eProgressType.Staged, stream, desc) {
-		this.stages = stages;
-		this.isIndeterminate = indeterminate;
-		this.currentStage = 0;
-		this.currentStageWeight = 0f;
-		this.totalWeight = stages.Sum(s => s.Item2);
-		this.barPosition = 0;
-		this.isIncreasing = true;
-		if (totalWeight <= 0f)
+		_stages = stages;
+		_isIndeterminate = indeterminate;
+		_currentStage = 0;
+		_currentStageWeight = 0f;
+		_totalWeight = stages.Sum(s => s.Item2);
+		_barPosition = 0;
+		_isIncreasing = true;
+		if (_totalWeight <= 0f)
 			throw new BadProgressBarException("total weight of ProgressStaged stages must be greater than 0");
 	}
 
 	public void SetStage(int stageIdx) {
-		if (!isIndeterminate) return;
-		currentStage = Mathf.Clamp(stageIdx, 0, stages.Count - 1);
-		currentWeight = 0f;
+		if (!_isIndeterminate) return;
+		_currentStage = Mathf.Clamp(stageIdx, 0, _stages.Count - 1);
+		_currentWeight = 0f;
 		for (int i = 0; i < stageIdx; i++) {
-			currentWeight += stages[i].Item2;
+			_currentWeight += _stages[i].Item2;
 		}
 
 		Flush();
 	}
 
 	public void SetNextStage() {
-		SetStage(currentStage + 1);
+		SetStage(_currentStage + 1);
 	}
 
 	public void SetDelta(float deltaTime) {
-		if (isIndeterminate) return;
-		currentStageWeight += deltaTime;
-		currentWeight += deltaTime;
-		if (currentStageWeight > stages[currentStage].Item2) {
-			currentStage++;
-			currentStageWeight = 0f;
+		if (_isIndeterminate) return;
+		_currentStageWeight += deltaTime;
+		_currentWeight += deltaTime;
+		if (_currentStageWeight > _stages[_currentStage].Item2) {
+			_currentStage++;
+			_currentStageWeight = 0f;
 		}
 	}
 
@@ -353,37 +354,37 @@ public class ProgressStaged : Progress {
 	}
 
 	public override bool IsDone() {
-		return currentStage >= stages.Count;
+		return _currentStage >= _stages.Count;
 	}
 
 	public override void Flush() {
 		string overviewStart = Description;
 		if (TwoLine) overviewStart += "\n ";
-		overviewStart += $" {currentWeight / totalWeight:P1} ";
-		string overviewEnd = $" STAGE {currentStage + 1}/{stages.Count} ";
+		overviewStart += $" {_currentWeight / _totalWeight:P1} ";
+		string overviewEnd = $" STAGE {_currentStage + 1}/{_stages.Count} ";
 
-		string stageStart = $" ({currentStage + 1}) {stages[currentStage].Item1} ";
+		string stageStart = $" ({_currentStage + 1}) {_stages[_currentStage].Item1} ";
 		string stageEnd;
-		if (isIndeterminate)
+		if (_isIndeterminate)
 			stageEnd = $" ??s \n";
 		else
-			stageEnd = $" {stages[currentStage].Item2:F1}s \n";
+			stageEnd = $" {_stages[_currentStage].Item2:F1}s \n";
 		int overviewProgressLength = CalculateProgressLength(overviewStart, overviewEnd);
 		int stageProgressLength = CalculateProgressLength(stageStart, stageEnd);
 
 		string finalLine =
-			$"{overviewStart}{BuildBar(currentWeight / totalWeight, overviewProgressLength)}{overviewEnd}";
+			$"{overviewStart}{BuildBar(_currentWeight / _totalWeight, overviewProgressLength)}{overviewEnd}";
 		finalLine += stageStart;
-		if (isIndeterminate)
-			finalLine += BuildBounceBar(barPosition, stageProgressLength);
+		if (_isIndeterminate)
+			finalLine += BuildBounceBar(_barPosition, stageProgressLength);
 		else
-			finalLine += BuildBar(currentStageWeight / stages[currentStage].Item2, stageProgressLength);
+			finalLine += BuildBar(_currentStageWeight / _stages[_currentStage].Item2, stageProgressLength);
 		finalLine += stageEnd;
 		finalLine += EndChar(offset: 1);
-		barPosition += isIncreasing ? 1 : -1;
-		if (barPosition <= 0 || barPosition >= stageProgressLength - 3) {
-			isIncreasing = !isIncreasing;
-			barPosition = Mathf.Clamp(barPosition, 0, stageProgressLength - 3);
+		_barPosition += _isIncreasing ? 1 : -1;
+		if (_barPosition <= 0 || _barPosition >= stageProgressLength - 3) {
+			_isIncreasing = !_isIncreasing;
+			_barPosition = Mathf.Clamp(_barPosition, 0, stageProgressLength - 3);
 		}
 
 		Stream.Print(finalLine);

@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace BashTerm.Sys;
 
-public class BshCompletion {
+public class Completion {
 
 }
 
-public class BshCompletionResult{
+public class CompletionResult{
 	private List<string> candidates;
 	private int cIdx = 0;
 	private int columnWidth = 0;
@@ -16,7 +16,7 @@ public class BshCompletionResult{
 	private static readonly int MaxCandidateDisplayLength = 28;
 	public int Count => candidates.Count;
 
-	public BshCompletionResult(List<string> candidates) {
+	public CompletionResult(List<string> candidates) {
 		this.candidates = candidates;
 		foreach (string candidate in candidates) {
 			if (candidate.Length > maxCandidateLen) {

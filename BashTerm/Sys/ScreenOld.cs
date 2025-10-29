@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BashTerm.Sys;
 
-public class Screen {
+public class ScreenOld {
 	public enum ScreenType {
 		Shell,
 		Discrete,
@@ -24,13 +24,14 @@ public class Screen {
 	private PipeStream _stream;
 
 	private string Buffer_;
+
 	public string Buffer {
 		get { return Buffer_; }
 	}
 
 	private int Position;
 
-	internal Screen(int screenID, ScreenType type, PipeStream stream) {
+	internal ScreenOld(int screenID, ScreenType type, PipeStream stream) {
 		ScreenID = screenID;
 		Type = type;
 		_stream = stream;
@@ -101,6 +102,7 @@ public class Screen {
 					CursorPosition += delta;
 				break;
 		}
+
 		ValidateStates();
 		return true;
 	}
@@ -149,7 +151,7 @@ public class Screen {
 	/// Clear everything in the shell history, internal use only
 	/// </summary>
 	internal void ClearAll() {
-		// Not implemented
+		throw new NotImplementedException();
 	}
 
 	public void ClearInput() {

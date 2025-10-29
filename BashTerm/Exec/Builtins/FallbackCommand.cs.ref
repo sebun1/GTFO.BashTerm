@@ -2,7 +2,7 @@
 using BashTerm.Sys;
 using LevelGeneration;
 
-namespace BashTerm.Exec.Procs;
+namespace BashTerm.Exec.Programs;
 
 public class FallbackCommand : Program {
 	public string CommandName => "FALLBACK";
@@ -20,7 +20,7 @@ public class FallbackCommand : Program {
 		if (terminal == null) throw new NullTerminalInstanceException(CommandName);
 
 		terminal.m_command.EvaluateInput(String.Join(' ', new[]{ cmd }.Concat(args)).ToUpper());
-		return new EmptyObject();
+		return new NullObject();
 	}
 
 	public bool TryGetVarValue(LG_ComputerTerminal term, string varName, out string value) {

@@ -16,12 +16,12 @@ public class PipeStream {
 	private readonly char[] _whitespaceChars = new[] { ' ', '\t', '\n', '\r' };
 	private readonly char[] _newlineChars = new[] { '\n', '\r' };
 	public bool IsClosedForWriting { get; private set; }
+
 	public bool IsScreen {
-		get {
-			return ReadingScreen != null;
-		}
+		get { return ReadingScreen != null; }
 	}
-	public Screen? ReadingScreen { get; private set; }
+
+	public ScreenOld? ReadingScreen { get; private set; }
 
 	public PipeStream(int streamId) {
 		StreamId = streamId;
@@ -30,14 +30,12 @@ public class PipeStream {
 		ReadingScreen = null;
 	}
 
-	public void SetReadingScreen(Screen? sc) {
+	public void SetReadingScreen(ScreenOld? sc) {
 		ReadingScreen = sc;
 	}
 
 	public bool HasReferences {
-		get {
-			return _referenceCount > 0;
-		}
+		get { return _referenceCount > 0; }
 	}
 
 	internal void AddReference() {
@@ -54,40 +52,45 @@ public class PipeStream {
 
 	public bool Write(string data) {
 		if (IsClosedForWriting) {
-			Logr.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (str segment): {data}");
+			BepLogger.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (str segment): {data}");
 			return false;
 		}
+
 		if (_writeCache.Length > 0) {
 			_writeCache.Append(data);
 			data = _writeCache.ToString();
 			_writeCache.Clear();
 		}
+
 		_stringBuffer.Enqueue(data);
 		return true;
 	}
 
 	public void Write(PipeObject obj) {
 		if (IsClosedForWriting) {
-			Logr.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (object): {obj}");
+			BepLogger.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (object): {obj}");
 			return;
 		}
+
 		_objectBuffer.Enqueue(obj);
 	}
 
 	public bool Print(string data) {
 		if (IsClosedForWriting) {
-			Logr.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (print): {data}");
+			BepLogger.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (print): {data}");
 			return false;
 		}
+
 		_writeCache.Append(data);
 		return true;
 	}
 
 	public bool Println(string data) {
 		if (IsClosedForWriting) {
-			Logr.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (println): {data}");
+			BepLogger.Warn($"PipeStream[{StreamId}] is closed for writing, cannot write data (println): {data}");
 			return false;
 		}
+
 		_writeCache.Append(data + '\n');
 		return true;
 	}
@@ -133,6 +136,7 @@ public class PipeStream {
 				_readCache += _stringBuffer.Dequeue();
 			}
 		}
+
 		c = _readCache[_readHead];
 		_readHead++;
 		return true;

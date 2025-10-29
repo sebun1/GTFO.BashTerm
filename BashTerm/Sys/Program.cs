@@ -1,26 +1,51 @@
-using BashTerm.Exec;
 using BashTerm.Parsers;
-using LevelGeneration;
 
 namespace BashTerm.Sys;
 
+public enum eProgramState {
+	Active,
+	Inactive,
+	Exited
+}
+
 /// <summary>
 ///
-/// <c>Proc</c> - Defines a base process for all Bsh processes.
+/// <c>Program</c> - Defines a base program structure for all Bsh processes.
 /// <para>
 /// All Proc children should implement a
-///	<code>public static ProcManifest GetManifest()</code>
+///	<code>public static ProgramManifest GetManifest()</code>
 /// function to be registered with BshSystem at startup. If
 /// unspecified, the process will not be registered and not callable
 /// </para>
 /// </summary>
 public abstract class Program {
-	public event EventHandler? OnExit;
 
-	protected void RaiseOnExit() {
+	private bool _initialized = false;
+	protected ProgramContext? Ctx;
+	public event EventHandler? OnExit;
+	public eProgramState State { get; private set; } = eProgramState.Inactive;
+
+	internal void SetActive() {
+		State = eProgramState.Active;
+	}
+
+	internal void SetInactive() {
+		State = eProgramState.Inactive;
+	}
+
+	internal void Init(ProgramContext ctx) {
+		if (_initialized)
+			throw new BshSystemException("Program already initialized");
+		Ctx = ctx;
+		OnExit += (_, _) => { State = eProgramState.Exited; };
+		_initialized = true;
+	}
+
+	protected void Exit() {
 		OnExit?.Invoke(this, EventArgs.Empty);
 	}
-	public abstract void Start(ProgramContext context);
+
+	public abstract void Start();
 	public abstract void Update();
 
 	public virtual void OnSigInt() {
@@ -36,16 +61,16 @@ public abstract class Program {
 
 public class ProgramManifest {
 	public string ProgramName;
-	public string Desc;
+	public string Description;
 	public string Manual;
 	public bool WantDiscreteOutputBuffer;
 	public FlagSchema FSchema;
 
-	public ProgramManifest(string name, string desc, string manual, bool wantScreen, FlagSchema fSchema) {
+	public ProgramManifest(string name, string description, string manual, bool discreteBuffer, FlagSchema fSchema) {
 		ProgramName = name;
-		Desc = desc;
+		Description = description;
 		Manual = manual;
-		WantDiscreteOutputBuffer = wantScreen;
+		WantDiscreteOutputBuffer = discreteBuffer;
 		FSchema = fSchema;
 	}
 }

@@ -8,22 +8,25 @@ using UnityEngine;
 
 namespace BashTerm;
 
-[BepInPlugin(BashTerm.Plugin.GUID, BashTerm.Plugin.NAME, BashTerm.Plugin.VERSION)]
+[BepInPlugin(GUID, NAME, VERSION)]
 public class Plugin : BasePlugin {
 	public const string NAME = "Bsh";
 	public const string GUID = "io.takina.gtfo." + NAME;
-	public const string VERSION = "0.99.1";
-	public const string BSH_VERSION = "99.1a";
+	public const string VERSION = "0.10.1";
+	public const string BSH_VERSION = "1.0b";
 
 	public override void Load() {
-		Logr.SetupFromInit(Log);
-		Logr.Info(NAME + " " + GUID + " " + VERSION);
-		Logr.Info("Patching...");
-		var h = new Harmony(GUID);
+		// Global Initializers
+		BepLogger.Setup();
+		BshTime.Init();
+
+		BshLogger.Info($"{NAME} {BSH_VERSION} [{GUID} @ {VERSION}]");
+		BepLogger.Info("Patching...");
+		Harmony h = new Harmony(GUID);
 		AddComponent<BshSystem>();
-		ConfigMgr.Init();
+		BashTerm.Config.Init();
 		h.PatchAll(typeof(Patches.MainPatch));
 		h.PatchAll(typeof(Patches.ScreenPatch));
-		Logr.Info("Finished Patching");
+		BepLogger.Info("Finished Patching");
 	}
 }

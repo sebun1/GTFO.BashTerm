@@ -1,3 +1,4 @@
+using BashTerm.Sys;
 using UnityEngine;
 using Regex = System.Text.RegularExpressions.Regex;
 
@@ -36,21 +37,24 @@ internal static class Util {
 	}
 
 	public static void printMaps() {
-		Logr.Info("CmdExpExact:");
-		foreach (var pair in ConfigMgr.CmdExpExact) {
-			Logr.Info("\t" + pair.Key + " -> " + pair.Value);
+		BepLogger.Info("CmdExpExact:");
+		foreach (var pair in Config.CmdExpExact) {
+			BepLogger.Info("\t" + pair.Key + " -> " + pair.Value);
 		}
-		Logr.Info("CmdExpPrefix:");
-		foreach (var tup in ConfigMgr.CmdExpPrefix) {
-			Logr.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
+
+		BepLogger.Info("CmdExpPrefix:");
+		foreach (var tup in Config.CmdExpPrefix) {
+			BepLogger.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
 		}
-		Logr.Info("ObjExpExact:");
-		foreach (var pair in ConfigMgr.ObjExpExact) {
-			Logr.Info("\t" + pair.Key + " -> " + pair.Value);
+
+		BepLogger.Info("ObjExpExact:");
+		foreach (var pair in Config.ObjExpExact) {
+			BepLogger.Info("\t" + pair.Key + " -> " + pair.Value);
 		}
-		Logr.Info("ObjExpPrefix:");
-		foreach (var tup in ConfigMgr.ObjExpPrefix) {
-			Logr.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
+
+		BepLogger.Info("ObjExpPrefix:");
+		foreach (var tup in Config.ObjExpPrefix) {
+			BepLogger.Info("\t" + tup.Prefix + "+ -> " + tup.Expansion);
 		}
 	}
 

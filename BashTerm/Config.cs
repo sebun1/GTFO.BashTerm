@@ -5,13 +5,14 @@ using System.Runtime.CompilerServices;
 using BepInEx;
 using BepInEx.Configuration;
 using BashTerm.Parsers;
+using BashTerm.Sys;
 using BashTerm.Utils;
 using Dissonance;
 using Il2CppSystem.Linq;
 
 namespace BashTerm;
 
-internal static class ConfigMgr {
+internal static class Config {
 	public static ConfigFile conf;
 
 	//public static ConfigEntry<int> CONFIG_NOTICE;
@@ -29,7 +30,7 @@ internal static class ConfigMgr {
 	public static Dictionary<string, string> CmdExpExact = new Dictionary<string, string> {
 		{ "ls", "list" },
 		{ "l", "list" },
-		{ "lsu", "list u"},
+		{ "lsu", "list u" },
 		{ "lu", "list u" },
 		{ "uc", "uplink_connect" },
 		{ "uv", "uplink_verify" },
@@ -39,14 +40,15 @@ internal static class ConfigMgr {
 		{ "shut", "reactor_shutdown" },
 		{ "shutdown", "reactor_shutdown" },
 		{ "rv", "reactor_verify" },
-		{ "cat", "read"},
+		{ "cat", "read" },
 		{ "p", "ping" },
 		{ "q", "query" },
 		{ "clear", "cls" },
 		{ "r", "raw" },
 	};
 
-	public static List<(string Prefix, string Expansion)> CmdExpPrefix = new List<(string Prefix, string Expansion)> { };
+	public static List<(string Prefix, string Expansion)>
+		CmdExpPrefix = new List<(string Prefix, string Expansion)> { };
 
 	public static Dictionary<string, string> ObjExpExact = new Dictionary<string, string> {
 		{ "nhsu", "neonate_hsu" },
@@ -54,25 +56,25 @@ internal static class ConfigMgr {
 	};
 
 	public static List<(string Prefix, string Expansion)> ObjExpPrefix = new List<(string Prefix, string Expansion)> {
-		( "med", "medipack" ),
-		( "to", "tool_refill" ),
-		( "am", "ammopack" ),
-		( "dis", "disinfect_pack" ),
-		( "turb", "fog_turbine" ),
-		( "bk", "bulkhead_key" ),
-		( "bulk", "bulkhead_key" ),
-		( "bd", "bulkhead_dc" ),
-		( "his", "hisec_cargo" ),
-		( "dc", "data_cube" ),
-		( "data", "data_cube" ),
-		( "lock", "locker" ),
-		( "sec", "sec_door" ),
-		( "sd", "sec_door" ),
-		( "nfr", "nframe" ),
-		( "gen", "generator" ),
+		("med", "medipack"),
+		("to", "tool_refill"),
+		("am", "ammopack"),
+		("dis", "disinfect_pack"),
+		("turb", "fog_turbine"),
+		("bk", "bulkhead_key"),
+		("bulk", "bulkhead_key"),
+		("bd", "bulkhead_dc"),
+		("his", "hisec_cargo"),
+		("dc", "data_cube"),
+		("data", "data_cube"),
+		("lock", "locker"),
+		("sec", "sec_door"),
+		("sd", "sec_door"),
+		("nfr", "nframe"),
+		("gen", "generator"),
 	};
 
-	static ConfigMgr() {
+	static Config() {
 		string cfgPath = Path.Combine(Paths.ConfigPath, $"{Plugin.NAME}.cfg");
 		conf = new ConfigFile(cfgPath, true);
 
@@ -116,10 +118,10 @@ internal static class ConfigMgr {
 			"Custom Command Aliases",
 			"",
 			"Add custom command aliases here.\n" +
-				"Must match Format: \"<command expression>,<alias1>,<alias2>:<command>,<alias1>\"\n" +
-				"Prefix Match: \"Pre+\", Exact Match: \"Exact\"" +
-				"e.g. \"list u, lsu, lu: uplink_verify, uv+\"\n" +
-				"Note: Terms are case-insensitive. Newer definitions override older ones, including defaults. Check README on GitHub/GitLab for details."
+			"Must match Format: \"<command expression>,<alias1>,<alias2>:<command>,<alias1>\"\n" +
+			"Prefix Match: \"Pre+\", Exact Match: \"Exact\"" +
+			"e.g. \"list u, lsu, lu: uplink_verify, uv+\"\n" +
+			"Note: Terms are case-insensitive. Newer definitions override older ones, including defaults. Check README on GitHub/GitLab for details."
 		);
 
 		CustomObjExpansions = conf.Bind(
@@ -127,10 +129,10 @@ internal static class ConfigMgr {
 			"Custom Object Name Expansions",
 			"",
 			"Add custom object name expansions here.\n" +
-				"Must match Format: \"<expansion1>,<identifier1>,<identifier2>:<expansion2>,<identifier1>\"\n" +
-				"Prefix Match: \"Pre+\", Exact Match: \"Exact\"" +
-				"e.g. \"get the fk out, gtfo, gtfi: my_custom_object, mco+\"\n" +
-				"Note: Terms are case-insensitive. Newer definitions override older ones, including defaults. Check README on GitHub/GitLab for details."
+			"Must match Format: \"<expansion1>,<identifier1>,<identifier2>:<expansion2>,<identifier1>\"\n" +
+			"Prefix Match: \"Pre+\", Exact Match: \"Exact\"" +
+			"e.g. \"get the fk out, gtfo, gtfi: my_custom_object, mco+\"\n" +
+			"Note: Terms are case-insensitive. Newer definitions override older ones, including defaults. Check README on GitHub/GitLab for details."
 		);
 
 		sect = $"(Z) Dev";
@@ -144,18 +146,20 @@ internal static class ConfigMgr {
 		override_count += LoadExpansionPairs(CustomCmdAliases.Value, ref CmdExpExact, ref CmdExpPrefix);
 		override_count += LoadExpansionPairs(CustomObjExpansions.Value, ref ObjExpExact, ref ObjExpPrefix);
 		int total_count = GetExpansionCount();
-		Logr.Info($"Aliases/Expansions Loaded: {default_count} Default ({override_count} Prefix Overrides) + {total_count - default_count} User = {total_count} Total");
-		Logr.Info("Config is Loaded");
+		BepLogger.Info(
+			$"Aliases/Expansions Loaded: {default_count} Default ({override_count} Prefix Overrides) + {total_count - default_count} User = {total_count} Total");
+		BepLogger.Info("Config is Loaded");
 	}
 
 	public static int GetExpansionCount() {
 		return CmdExpExact.Count
-			+ CmdExpPrefix.Count
-			+ ObjExpExact.Count
-			+ ObjExpPrefix.Count;
+		       + CmdExpPrefix.Count
+		       + ObjExpExact.Count
+		       + ObjExpPrefix.Count;
 	}
 
-	public static int LoadExpansionPairs(string source, ref Dictionary<string, string> targetExact, ref List<(string Prefix, string Expansion)> targetPrefix) {
+	public static int LoadExpansionPairs(string source, ref Dictionary<string, string> targetExact,
+		ref List<(string Prefix, string Expansion)> targetPrefix) {
 		var groups = ParseUtil.GetAliasGroups(source);
 		int replaced = 0;
 
@@ -178,7 +182,7 @@ internal static class ConfigMgr {
 					if (existentIndex != -1) {
 						targetPrefix[existentIndex] = (term, expansion);
 						replaced++;
-						Logr.Debug("Overwriting Prefix Expansion: (" + term + " -> " + expansion + ")");
+						BepLogger.Debug("Overwriting Prefix Expansion: (" + term + " -> " + expansion + ")");
 					} else {
 						targetPrefix.Add((term, expansion));
 					}

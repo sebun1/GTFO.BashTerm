@@ -45,18 +45,18 @@ internal class MainPatch {
 				}
 			} else {
 				VarCommand cmd = MainParser.Parse(input);
-				Dispatch.Exec(cmd, __instance.m_terminal);
+				// Dispatch.Exec(cmd, __instance.m_terminal); // TODO: Disabled to compile
 				//if (ConfigMgr.DEBUG) __instance.m_terminal.m_command.AddOutput($"{Styles.Info}{cmd.FmtToString()}{Styles.CEnd}");
-				if (ConfigMgr.DEBUG) __instance.m_terminal.m_command.AddOutput($"{cmd.FmtToString()}");
+				if (Config.DEBUG) __instance.m_terminal.m_command.AddOutput($"{cmd.FmtToString()}");
 			}
 		}
 		catch (BshException e) {
 			__instance.m_terminal.m_command.AddOutput($"{Styles.C_Error}{e}{Styles.C_End}");
-			Logr.Error(e);
+			BepLogger.Error(e);
 		}
 		catch (Exception e) {
 			__instance.m_terminal.m_command.AddOutput($"{Styles.C_Error}{e}{Styles.C_End}");
-			Logr.Error(e);
+			BepLogger.Error(e);
 		}
 
 		__instance.m_terminal.m_currentLine = "";
@@ -108,7 +108,7 @@ internal class MainPatch {
 	[HarmonyPostfix]
 	public static void ReceiveCmd(ref LG_ComputerTerminalCommandInterpreter __instance, TERM_Command cmd,
 		string inputLine) {
-		Logr.Debug($"[ReceiveCommand]: cmd={cmd}, inputLine=\"{inputLine}\"");
+		BepLogger.Debug($"[ReceiveCommand]: cmd={cmd}, inputLine=\"{inputLine}\"");
 	}
 
 	[HarmonyPatch(
@@ -164,22 +164,22 @@ internal class MainPatch {
 
 		if (Input.GetKeyDown(KeyCode.UpArrow)) {
 			// history prev
-			Logr.Debug("KEYDOWN: UpArrow");
+			BepLogger.Debug("KEYDOWN: UpArrow");
 		} else if (Input.GetKeyDown(KeyCode.DownArrow)) {
 			// history next
-			Logr.Debug("KEYDOWN: DownArrow");
+			BepLogger.Debug("KEYDOWN: DownArrow");
 		}
 
 		if (Input.GetKeyDown(KeyCode.LeftArrow)) {
 			// cursor left
-			Logr.Debug("KEYDOWN: LeftArrow");
+			BepLogger.Debug("KEYDOWN: LeftArrow");
 		} else if (Input.GetKeyDown(KeyCode.RightArrow)) {
 			// cursor right
-			Logr.Debug("KEYDOWN: RightArrow");
+			BepLogger.Debug("KEYDOWN: RightArrow");
 		}
 
 		if (!string.IsNullOrEmpty(Input.inputString))
-			Logr.Debug($"Input.inputString={Input.inputString}");
+			BepLogger.Debug($"Input.inputString={Input.inputString}");
 
 		return true;
 		return false;
@@ -202,7 +202,7 @@ internal class MainPatch {
 
 		//return false;
 		TMP_Text txt = __instance.m_terminal.m_text;
-		Logr.Debug($"text enableWW={txt.enableWordWrapping}, overflowMode={txt.overflowMode}, ");
+		BepLogger.Debug($"text enableWW={txt.enableWordWrapping}, overflowMode={txt.overflowMode}, ");
 		return true;
 
 		// TODO: A few things need to be done:
@@ -215,7 +215,7 @@ internal class MainPatch {
 	)]
 	[HarmonyPostfix]
 	public static void EnterTerminal(ref LG_TERM_PlayerInteracting __instance) {
-		Logr.Debug(
+		BepLogger.Debug(
 			$"Entered Terminal syncID={__instance.m_terminal.SyncID}, serialNumber={__instance.m_terminal.m_serialNumber}");
 	}
 
@@ -225,7 +225,7 @@ internal class MainPatch {
 	)]
 	[HarmonyPostfix]
 	public static void ExitTerminal(ref LG_TERM_PlayerInteracting __instance) {
-		Logr.Debug(
+		BepLogger.Debug(
 			$"Exit Terminal syncID={__instance.m_terminal.SyncID}, serialNumber={__instance.m_terminal.m_serialNumber}");
 	}
 }

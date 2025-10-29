@@ -26,7 +26,7 @@
             <ZipFile>$(SolutionDir)$(SolutionName).zip</ZipFile>
         </PropertyGroup>
         <MakeDir Directories="$(PkgFolder)"/>
-        <Exec Command="python &quot;$(SolutionDir)/mkmanifest.py&quot;"/>
+        <Exec WorkingDirectory="$(SolutionDir)" Command="python &quot;$(SolutionDir)/mkmanifest.py&quot;"/>
         <Copy SourceFiles="$(OutputPath)/$(AssemblyName).dll" DestinationFolder="$(PkgFolder)"/>
         <Copy SourceFiles="$(SolutionDir)/.assets/icon.png" DestinationFolder="$(PkgFolder)"/>
         <Copy SourceFiles="$(SolutionDir)/README.md" DestinationFolder="$(PkgFolder)"/>

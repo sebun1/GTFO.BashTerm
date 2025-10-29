@@ -1,4 +1,5 @@
 using System.Text;
+using BashTerm.Sys;
 using BashTerm.Utils;
 using Dissonance;
 
@@ -8,53 +9,53 @@ internal static class ParseUtil {
 	// NOTE: Used to convert references to commands in config to our internal enum
 	private static readonly Dictionary<string, TermCmd> _Txt2Cmd = new Dictionary<string, TermCmd> {
 		// Vanilla Operations
-		{ "" , TermCmd.None },
-		{ "help" , TermCmd.Help },
-		{ "commands" , TermCmd.Commands },
-		{ "cls" , TermCmd.Cls },
-		{ "exit" , TermCmd.Exit },
-		{ "override_lockdown" , TermCmd.Override },
-		{ "deactivate_alarms" , TermCmd.DisableAlarm },
-		{ "activate_beacon" , TermCmd.ActivateBeacon },
-		{ "list" , TermCmd.ShowList },
-		{ "query" , TermCmd.Query },
-		{ "ping" , TermCmd.Ping },
-		{ "reactor_startup" , TermCmd.ReactorStartup },
-		{ "reactor_verify" , TermCmd.ReactorVerify },
-		{ "reactor_shutdown" , TermCmd.ReactorShutdown },
-		{ "uplink_connect" , TermCmd.TerminalUplinkConnect },
-		{ "uplink_verify" , TermCmd.TerminalUplinkVerify },
-		{ "uplink_confirm" , TermCmd.TerminalUplinkConfirm },
-		{ "logs" , TermCmd.ListLogs },
-		{ "read" , TermCmd.ReadLog },
-		{ "info" , TermCmd.Info },
+		{ "", TermCmd.None },
+		{ "help", TermCmd.Help },
+		{ "commands", TermCmd.Commands },
+		{ "cls", TermCmd.Cls },
+		{ "exit", TermCmd.Exit },
+		{ "override_lockdown", TermCmd.Override },
+		{ "deactivate_alarms", TermCmd.DisableAlarm },
+		{ "activate_beacon", TermCmd.ActivateBeacon },
+		{ "list", TermCmd.ShowList },
+		{ "query", TermCmd.Query },
+		{ "ping", TermCmd.Ping },
+		{ "reactor_startup", TermCmd.ReactorStartup },
+		{ "reactor_verify", TermCmd.ReactorVerify },
+		{ "reactor_shutdown", TermCmd.ReactorShutdown },
+		{ "uplink_connect", TermCmd.TerminalUplinkConnect },
+		{ "uplink_verify", TermCmd.TerminalUplinkVerify },
+		{ "uplink_confirm", TermCmd.TerminalUplinkConfirm },
+		{ "logs", TermCmd.ListLogs },
+		{ "read", TermCmd.ReadLog },
+		{ "info", TermCmd.Info },
 
 		// Custom Operations
-		{ "raw" , TermCmd.Raw },
+		{ "raw", TermCmd.Raw },
 	};
 
 	public static bool TryExpandAlias(string input, out string expansion) {
-		Logr.Debug($"ExpandCmd: Got '{input}'");
+		BshLogger.Debug($"ExpandCmd: Got '{input}'");
 		expansion = "";
 		if (string.IsNullOrWhiteSpace(input)) {
 			return false;
 		}
 
-		if (ConfigMgr.CmdExpExact.TryGetValue(input, out string? eps)) {
-			Logr.Debug($"ExpandCmd: Returning (Alias) '{eps}'");
+		if (Config.CmdExpExact.TryGetValue(input, out string? eps)) {
+			BshLogger.Debug($"ExpandCmd: Returning (Alias) '{eps}'");
 			expansion = eps;
 			return true;
 		}
 
-		foreach (var tup in ConfigMgr.CmdExpPrefix) {
+		foreach (var tup in Config.CmdExpPrefix) {
 			if (input.StartsWith(tup.Prefix)) {
-				Logr.Debug($"ExpandCmd: Returning (Alias) '{tup.Expansion}'");
+				BshLogger.Debug($"ExpandCmd: Returning (Alias) '{tup.Expansion}'");
 				expansion = tup.Expansion;
 				return true;
 			}
 		}
 
-		Logr.Debug($"ExpandCmd: No change '{input}'");
+		BshLogger.Debug($"ExpandCmd: No change '{input}'");
 		expansion = input;
 		return false;
 	}
@@ -65,12 +66,12 @@ internal static class ParseUtil {
 			return false;
 		}
 
-		if (ConfigMgr.ObjExpExact.TryGetValue(objName, out string? eps)) {
+		if (Config.ObjExpExact.TryGetValue(objName, out string? eps)) {
 			expansion = eps;
 			return true;
 		}
 
-		foreach (var tup in ConfigMgr.ObjExpPrefix) {
+		foreach (var tup in Config.ObjExpPrefix) {
 			if (objName.StartsWith(tup.Prefix)) {
 				expansion = tup.Expansion;
 				return true;
@@ -113,6 +114,7 @@ internal static class ParseUtil {
 				sb.Append(c);
 			}
 		}
+
 		group.Add(sb.ToString().Trim());
 		groups.Add(group);
 

@@ -6,7 +6,6 @@ using UnityEngine;
 namespace BashTerm.Sys;
 
 internal class BshSystem : MonoBehaviour {
-
 	private static bool _userRawMode;
 
 	private float updateTimer = 0f;
@@ -15,7 +14,7 @@ internal class BshSystem : MonoBehaviour {
 	internal static readonly Dictionary<string, ProgramEntry> ProgramEntries = new();
 	internal static readonly Dictionary<string, Type> SvcTypes = new();
 
-	internal static Dictionary<int, BshPM> PM = new();
+	internal static Dictionary<int, ProcessManager> PM = new();
 
 	private const int IdMaxLimit = 32768;
 	private static int nextPID = 1;
@@ -27,15 +26,22 @@ internal class BshSystem : MonoBehaviour {
 
 	// TODO: Probably add structured listeners for major events e.g. enter/exit, on exit/enter level, etc.
 
-	public static bool UserRawMode { get { return _userRawMode; } }
-	public static void ToggleRawMode() { _userRawMode = !_userRawMode; }
+	public static bool UserRawMode {
+		get { return _userRawMode; }
+	}
+
+	public static void ToggleRawMode() {
+		_userRawMode = !_userRawMode;
+	}
 
 	public void Start() {
 		int invalidCount = RegisterTypes(out var procCount, out var serviceCount);
 		if (invalidCount > 0) {
-			Logr.Warn($"BshSystem: {invalidCount} types were not registered due to missing attributes or not implementing the required interfaces.");
+			BepLogger.Warn(
+				$"BshSystem: {invalidCount} types were not registered due to missing attributes or not implementing the required interfaces.");
 		}
-		Logr.Info($"BshSystem: Registered {procCount} processes and {serviceCount} services.");
+
+		BepLogger.Info($"BshSystem: Registered {procCount} processes and {serviceCount} services.");
 	}
 
 	private static int RegisterTypes(out int procCount, out int serviceCount) {
@@ -52,7 +58,7 @@ internal class BshSystem : MonoBehaviour {
 				allTypes.AddRange(assembly.GetTypes());
 			}
 			catch (ReflectionTypeLoadException) {
-				Logr.Warn($"BshSystem: Could not load types from assembly: {assembly.FullName}");
+				BepLogger.Warn($"BshSystem: Could not load types from assembly: {assembly.FullName}");
 			}
 		}
 
@@ -84,7 +90,8 @@ internal class BshSystem : MonoBehaviour {
 		foreach ((string procName, Type t) in procTypes) {
 			if (ProgramEntries.ContainsKey(procName)) {
 				Type existent = ProgramEntries[procName].Type;
-				Bsh.LogError("Sys", $"Process name <u>{procName}</u> is already registered to <u>{existent.FullName}</u>. Skipping registration for <u>{t.FullName}</u>.");
+				Bsh.LogError("Sys",
+					$"Process name <u>{procName}</u> is already registered to <u>{existent.FullName}</u>. Skipping registration for <u>{t.FullName}</u>.");
 				errCount++;
 				continue;
 			}
@@ -93,14 +100,16 @@ internal class BshSystem : MonoBehaviour {
 				"GetManifest",
 				BindingFlags.Static | BindingFlags.Public,
 				null,
-				new Type[] {},
+				new Type[] { },
 				null
 			);
 			if (getManifestMethod == null || getManifestMethod.ReturnType != typeof(ProgramManifest)) {
-				Bsh.LogError("Sys", $"Class <u>{t.FullName}</u> of name <u>{procName}</u> is trying to define a process but does not have a compliant <u>static ProcManifest GetManifest()</u> method.");
+				Bsh.LogError("Sys",
+					$"Class <u>{t.FullName}</u> of name <u>{procName}</u> is trying to define a process but does not have a compliant <u>static ProcManifest GetManifest()</u> method.");
 				errCount++;
 				continue;
 			}
+
 			ProgramManifest manifest = (ProgramManifest)getManifestMethod.Invoke(null, null)!;
 			ProgramEntry pe = new ProgramEntry(t, manifest, comps.GetValueOrDefault(procName));
 			ProgramEntries[procName] = pe;
@@ -112,6 +121,7 @@ internal class BshSystem : MonoBehaviour {
 	}
 
 	internal static int RequestPID() {
+		// TODO: We are not considering the case when all IDs are taken, which is very unlikely but possible
 		if (nextPID > IdMaxLimit || ActivePIDs.Contains(nextPID)) {
 			nextPID = 1;
 			while (ActivePIDs.Contains(nextPID)) {
