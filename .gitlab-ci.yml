@@ -20,7 +20,7 @@ build:
         - dotnet
     image: mcr.microsoft.com/dotnet/sdk:6.0
     before_script:
-        - apt-get update && apt-get install -y tree zip unzip
+        - apt-get update && apt-get install -y tree zip unzip python3 python3-pip python-is-python3
     script:
         - echo "Downloading GTFO dependencies..."
         - wget -O GTFOBepInDep.zip "$GTFO_DEP_URL"
