@@ -13,14 +13,14 @@
         <BepInEx Condition="'$(CI)' == 'true'">$(SolutionDir)/GTFOBepInDep</BepInEx>
         <BepInEx Condition="'$(CI)' != 'true' AND '$(IsMacOS)' != 'true'">$(AppData)\com.kesomannen.gale\gtfo\profiles\$(Profile)\BepInEx</BepInEx>
         <BepInEx Condition="'$(CI)' != 'true' AND '$(IsMacOS)' == 'true'">/opt/GTFOBepInDep</BepInEx>
-        <BuildDirectory>$(BepInEx)\plugins\$(SolutionName)\</BuildDirectory>
+        <PlugOutput>$(BepInEx)\plugins\$(SolutionName)\</PlugOutput>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     </PropertyGroup>
     <Target Name="PostBuild" BeforeTargets="PostBuildEvent">
         <Delete Files="$(OutputPath)/$(AssemblyName).deps.json"/>
     </Target>
     <Target Name="PostBuildCopy" AfterTargets="Build">
-        <Copy SourceFiles="$(OutputPath)/$(AssemblyName).dll" DestinationFolder="$(OutputPath)"/>
+        <Copy Condition="'$(CI)' != 'true' AND '$(IsMacOS)' != 'true'" SourceFiles="$(OutputPath)/$(AssemblyName).dll" DestinationFolder="$(PlugOutput)"/>
     </Target>
     <Target Name="Package" AfterTargets="Build">
         <PropertyGroup>
