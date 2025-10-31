@@ -1,4 +1,4 @@
-﻿namespace BashTerm;
+﻿namespace Bsh;
 
 public class WTFException : Exception {
 	public WTFException(string message) {

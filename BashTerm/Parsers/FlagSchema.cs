@@ -1,4 +1,4 @@
-﻿namespace BashTerm.Parsers;
+﻿namespace Bsh.Parsers;
 
 public enum FlagType {
 	Boolean,

@@ -1,8 +1,8 @@
-﻿using BashTerm.Parsers;
-using BashTerm.Sys;
+﻿using Bsh.Parsers;
+using Bsh.Sys;
 using LevelGeneration;
 
-namespace BashTerm.Exec.Programs;
+namespace Bsh.Exec.Programs;
 
 [BshProgram("raw")]
 public class Raw : Program {

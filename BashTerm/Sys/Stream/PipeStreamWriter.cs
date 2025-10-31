@@ -1,4 +1,4 @@
-﻿namespace BashTerm.Sys.Stream;
+﻿namespace Bsh.Sys.Stream;
 
 public sealed class PipeStreamWriter<T> {
 	private PipeStream<T> _owner;

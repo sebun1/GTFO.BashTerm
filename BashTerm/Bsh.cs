@@ -1,9 +1,9 @@
-using BashTerm.Sys;
-using BashTerm.Utils;
+using Bsh.Sys;
+using Bsh.Utils;
 using Il2CppSystem.Text.RegularExpressions;
 using LevelGeneration;
 
-namespace BashTerm;
+namespace Bsh;
 
 public class Bsh {
 	public static bool HasTerminal = false;

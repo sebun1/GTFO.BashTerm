@@ -1,8 +1,8 @@
-using BashTerm.Sys;
+using Bsh.Sys;
 using UnityEngine;
 using Regex = System.Text.RegularExpressions.Regex;
 
-namespace BashTerm.Utils;
+namespace Bsh.Utils;
 
 internal static class Util {
 	public static string Concat(params string[] args) {

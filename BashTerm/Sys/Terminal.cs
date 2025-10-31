@@ -1,15 +1,14 @@
-﻿using BashTerm.Types;
+﻿using Bsh.Types;
 using LevelGeneration;
 
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 public class Terminal : IUpdatable {
 	public readonly int TerminalID;
 	public LG_ComputerTerminal GTerminal { get; }
 	public ProcessManager PM { get; }
-	public ScreenOld ScreenOld { get; }
 
-	// TODO: We are missing how to monitor user input (maybe in Screen?)
+	// TODO: We are missing a lot of attributes (maybe in Screen?)
 
 	public Terminal(LG_ComputerTerminal gTerm) {
 		if (gTerm == null)

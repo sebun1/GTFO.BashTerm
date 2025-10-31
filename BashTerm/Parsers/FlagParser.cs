@@ -1,6 +1,6 @@
-﻿using BashTerm.Sys;
+﻿using Bsh.Sys;
 
-namespace BashTerm.Parsers;
+namespace Bsh.Parsers;
 
 public class FlagParser {
 	public Dictionary<FlagSpec, string> Flags { get; } = new();

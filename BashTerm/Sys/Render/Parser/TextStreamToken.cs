@@ -1,6 +1,6 @@
 ﻿using Localization;
 
-namespace BashTerm.Sys.Render.Parser;
+namespace Bsh.Sys.Render.Parser;
 
 public abstract record TextStreamToken;
 

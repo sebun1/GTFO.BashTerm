@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 #nullable disable
 

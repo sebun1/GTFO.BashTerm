@@ -1,15 +1,15 @@
-.vs/
-tests/
-BashTerm.zip
-manifest.json
-
 # --- Rider / IntelliJ IDEA ---
 .idea/
 *.sln.iml
 
 # --- VS / Rider user-specific files ---
+.vs/
 *.user
 *.suo
+
+# --- DotNet build ---
+bin/
+obj/
 
 # --- System ---
 Thumbs.db
@@ -22,11 +22,16 @@ Desktop.ini
 *.stacktrace
 sysinfo.txt
 
-# -- DotNet --
+# --- DotNet ---
 *.csproj.DotSettings
 *.csproj.DotSettings.user
 
-# --- Optional: NuGet packages (if using) ---
+# --- NuGet packages ---
 *.nupkg
 *.snupkg
 packages/
+
+# --- Plugin Packaging ---
+pkg/
+BashTerm.zip
+manifest.json

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Diagnostics;
 
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 public class BshTime {
 	private static Int64 _startTick;

@@ -1,4 +1,4 @@
-namespace BashTerm;
+namespace Bsh;
 
 public enum TermCmd : byte {
 	None,

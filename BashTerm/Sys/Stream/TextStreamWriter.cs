@@ -1,4 +1,4 @@
-﻿namespace BashTerm.Sys.Stream;
+﻿namespace Bsh.Sys.Stream;
 
 public class TextStreamWriter {
 	private readonly PipeStreamWriter<byte> _writer;

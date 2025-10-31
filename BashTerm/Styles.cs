@@ -1,4 +1,4 @@
-﻿namespace BashTerm;
+﻿namespace Bsh;
 
 internal static class Styles {
 	public static string C_Bsh => $"<#{_cBshHex}>";

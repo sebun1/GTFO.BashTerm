@@ -1,23 +1,29 @@
-﻿namespace BashTerm.Sys;
+﻿namespace Bsh.Sys;
 
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)] // Don't currently want multiple, kind of complicates things
+[AttributeUsage(AttributeTargets.Class,
+	AllowMultiple = false)] // Don't currently want multiple, kind of complicates things
 public class BshProgramAttribute : Attribute {
 	public string Name { get; }
 
-	public BshProgramAttribute(string name) { Name = name; }
+	public BshProgramAttribute(string name) {
+		Name = name;
+	}
 }
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-public class BshSvcAttribute: Attribute {
+public class BshSvcAttribute : Attribute {
 	public string Name { get; }
 
-	public BshSvcAttribute(string name) { Name = name; }
+	public BshSvcAttribute(string name) {
+		Name = name;
+	}
 }
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public class BshCompletionAttribute : Attribute {
 	public string Name { get; }
 
-	public BshCompletionAttribute(string name) { Name = name; }
+	public BshCompletionAttribute(string name) {
+		Name = name;
+	}
 }
-

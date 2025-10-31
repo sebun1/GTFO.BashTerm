@@ -1,4 +1,4 @@
-﻿namespace BashTerm.Sys;
+﻿namespace Bsh.Sys;
 
 /// <summary>
 /// Represents and manages the shell process in each terminal instance.

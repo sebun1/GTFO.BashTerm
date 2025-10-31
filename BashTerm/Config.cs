@@ -4,13 +4,13 @@ using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using BepInEx;
 using BepInEx.Configuration;
-using BashTerm.Parsers;
-using BashTerm.Sys;
-using BashTerm.Utils;
+using Bsh.Sys;
+using Bsh.Utils;
+using Bsh.Parsers;
 using Dissonance;
 using Il2CppSystem.Linq;
 
-namespace BashTerm;
+namespace Bsh;
 
 internal static class Config {
 	public static ConfigFile conf;

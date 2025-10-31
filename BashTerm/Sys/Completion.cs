@@ -1,13 +1,12 @@
 using System.Text;
 using UnityEngine;
 
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 public class Completion {
-
 }
 
-public class CompletionResult{
+public class CompletionResult {
 	private List<string> candidates;
 	private int cIdx = 0;
 	private int columnWidth = 0;
@@ -23,6 +22,7 @@ public class CompletionResult{
 				maxCandidateLen = candidate.Length;
 			}
 		}
+
 		columnWidth = maxCandidateLen + candidateSpacing;
 	}
 
@@ -39,6 +39,7 @@ public class CompletionResult{
 				sb.Append('\n');
 			}
 		}
+
 		return sb.ToString();
 	}
 
@@ -46,6 +47,7 @@ public class CompletionResult{
 		if (candidate.Length > MaxCandidateDisplayLength) {
 			candidate = candidate.Substring(0, MaxCandidateDisplayLength - 3) + "...";
 		}
+
 		int padding = columnWidth - candidate.Length;
 		if (selected)
 			candidate = $"{Styles.M_Accent}{candidate}{Styles.M_End}";
@@ -60,5 +62,4 @@ public class CompletionResult{
 	public void Prev() {
 		cIdx = (cIdx - 1 + candidates.Count) % candidates.Count;
 	}
-
 }

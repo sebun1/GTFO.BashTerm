@@ -1,17 +1,18 @@
-﻿using BashTerm.Sys;
+﻿using Bsh.Sys;
 
-namespace BashTerm.Parsers;
+namespace Bsh.Parsers;
 
 public class ParserException : BshException {
-	public ParserException(string cause) : base($"[ParseError] >> {cause}") {}
+	public ParserException(string cause) : base($"[ParseError] >> {cause}") {
+	}
 }
 
 public class UnexpectedTokenException : ParserException {
-	public UnexpectedTokenException(string cause) : base(cause) {}
+	public UnexpectedTokenException(string cause) : base(cause) {
+	}
 }
 
 public class LexerException : ParserException {
-	public LexerException(string cause) : base($"[LexerError] >> {cause}") {}
+	public LexerException(string cause) : base($"[LexerError] >> {cause}") {
+	}
 }
-
-

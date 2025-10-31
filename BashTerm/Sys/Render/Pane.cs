@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using Color = System.Drawing.Color;
 
-namespace BashTerm.Sys.Render;
+namespace Bsh.Sys.Render;
 
 internal record GridCellInfo {
 	public bool Bold;
@@ -14,6 +14,9 @@ public record GridLineInfo {
 	public bool IsContinuation; // If this continues a previous line
 }
 
+/// <summary>
+/// Represents the rendered grid of characters of a terminal pane.
+/// </summary>
 public class Pane {
 	private char[] _grid;
 	private GridCellInfo[] _gridCells;
@@ -22,12 +25,32 @@ public class Pane {
 	private uint _height;
 	private uint _cursorPos;
 
-	public Pane(uint width, uint height) {
+	private bool _hasShell;
+	private Shell? _linkedShell;
+
+	internal Pane(uint width, uint height) {
 		_width = width;
 		_height = height;
 		_grid = new char[width * height];
 		_gridCells = new GridCellInfo[width * height];
 		_gridLines = new GridLineInfo[height];
+		_hasShell = false;
+		_linkedShell = null;
+	}
+
+	internal Pane(uint width, uint height, Shell shell) {
+		_width = width;
+		_height = height;
+		_grid = new char[width * height];
+		_gridCells = new GridCellInfo[width * height];
+		_gridLines = new GridLineInfo[height];
+		_hasShell = true;
+		_linkedShell = shell;
+	}
+
+	internal void RegisterShell(Shell shell) {
+		_hasShell = true;
+		_linkedShell = shell;
 	}
 
 	/// <summary>
@@ -36,14 +59,16 @@ public class Pane {
 	/// <param name="newWidth"></param>
 	/// <param name="newHeight"></param>
 	/// <returns>true if there is overflow content</returns>
-	// public bool Resize(uint newWidth, uint newHeight, out List<???>) {
-	// }
+	public bool Resize(uint newWidth, uint newHeight) {
+		// TODO: Manipulate overflow to shell scrollback
+		throw new NotImplementedException();
+	}
 
 	/// <summary>
 	/// Returns the lines currently in view
 	/// </summary>
 	/// <returns></returns>
-	public List<string> GetLinesForRender() {
+	internal List<string> GetLinesForRender() {
 		throw new NotImplementedException();
 	}
 
@@ -52,4 +77,11 @@ public class Pane {
 		var col = (int)(_cursorPos % _width);
 		return new Vector2Int(col, row);
 	}
+
+	public Vector2Int GetPaneSize() {
+		return new Vector2Int((int)_width, (int)_height);
+	}
+
+	public uint Width => _width;
+	public uint Height => _height;
 }

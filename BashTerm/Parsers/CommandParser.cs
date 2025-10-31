@@ -1,10 +1,10 @@
 using System;
 using System.Diagnostics;
-using BashTerm.Exec;
-using BashTerm.Sys;
-using BashTerm.Utils;
+using Bsh.Utils;
+using Bsh.Exec;
+using Bsh.Sys;
 
-namespace BashTerm.Parsers;
+namespace Bsh.Parsers;
 
 internal class MainParser {
 	public static VarCommand Parse(string input) {

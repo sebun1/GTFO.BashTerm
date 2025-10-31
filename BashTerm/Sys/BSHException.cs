@@ -1,9 +1,11 @@
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 public class BshException : Exception {
-	public BshException(string message) : base(message) {}
+	public BshException(string message) : base(message) {
+	}
 }
 
 public class BshSystemException : BshException {
-	public BshSystemException(string message) : base($"[SystemError] >> {message}") {}
+	public BshSystemException(string message) : base($"[SystemError] >> {message}") {
+	}
 }

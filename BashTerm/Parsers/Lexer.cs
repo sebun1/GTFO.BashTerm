@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using BashTerm.Utils;
+using Bsh.Utils;
 
-namespace BashTerm.Parsers;
+namespace Bsh.Parsers;
 
 public class Lexer {
 	private int pos;

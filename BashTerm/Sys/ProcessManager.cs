@@ -1,10 +1,10 @@
-﻿using BashTerm.Exec;
-using BashTerm.Parsers;
-using BashTerm.Types;
+﻿using Bsh.Exec;
+using Bsh.Parsers;
+using Bsh.Types;
 using LevelGeneration;
 using UnityEngine;
 
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 public class ProcessManager : IUpdatable {
 	internal int fgPID = -1; // foreground process ID

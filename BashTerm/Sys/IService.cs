@@ -1,5 +1,4 @@
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 public class IService {
-	
 }

@@ -1,8 +1,10 @@
 using System.Text;
-using BashTerm.Sys;
+using Bsh.Sys.Render;
+using Bsh.Sys;
+using Bsh.Sys.Stream;
 using UnityEngine;
 
-namespace BashTerm.Utils;
+namespace Bsh.Utils;
 
 public abstract class Progress {
 	private const int NON_SCREEN_PROGRESS_LENGTH = 40;
@@ -14,7 +16,9 @@ public abstract class Progress {
 		Indeterminate
 	}
 
-	protected readonly PipeStream Stream;
+	protected readonly TextStreamWriter Writer;
+	protected readonly int DisplayWidth;
+
 	protected readonly string Description;
 	public readonly eProgressType Type;
 
@@ -23,10 +27,11 @@ public abstract class Progress {
 	protected bool TwoLine = false;
 	protected bool ShowTime = true;
 
-	protected Progress(eProgressType type, PipeStream stream, string desc) {
+	protected Progress(eProgressType type, string desc, ProgramContext ctx) {
 		Type = type;
-		Stream = stream;
+		Writer = new TextStreamWriter(ctx.StdOut);
 		Description = desc;
+		DisplayWidth = ctx.HasPane ? (int)ctx.Pane!.Width : NON_SCREEN_PROGRESS_LENGTH;
 	}
 
 	public void SetStyle(ProgStyle style) {
@@ -111,8 +116,7 @@ public abstract class Progress {
 		int lastNewlineIndex = start.LastIndexOf('\n');
 		int effectiveStartLength = lastNewlineIndex >= 0 ? start.Length - lastNewlineIndex - 1 : start.Length;
 		int usedLength = effectiveStartLength + end.Length;
-		if (!Stream.IsScreen) return NON_SCREEN_PROGRESS_LENGTH - usedLength;
-		return Stream.ReadingScreen!.Cols - usedLength;
+		return DisplayWidth - usedLength;
 	}
 
 	public abstract void Flush();
@@ -130,6 +134,7 @@ public class ProgStyle {
 	public static ProgStyle ShowTime => new ProgStyle(eStyles.ShowTime);
 	public static ProgStyle NoTime => new ProgStyle(eStyles.NoTime);
 
+	[Flags]
 	public enum eStyles {
 		DoubleStrike, // Use '=' as progress character
 		SingleStrike, // Use '-' as progress character
@@ -159,8 +164,8 @@ public class ProgressTimed : Progress {
 	private float _elapsed;
 	private readonly int _count;
 
-	public ProgressTimed(PipeStream stream, string desc, float duration, int count = -1) :
-		base(eProgressType.Timed, stream, desc) {
+	public ProgressTimed(ProgramContext ctx, string desc, float duration, int count = -1) :
+		base(eProgressType.Timed, desc, ctx) {
 		_duration = duration;
 		_elapsed = 0f;
 		_count = count;
@@ -193,7 +198,7 @@ public class ProgressTimed : Progress {
 		int progressLength = CalculateProgressLength(start, end);
 
 		string finalLine = $"{start}{BuildBar(_elapsed / _duration, progressLength)}{end}{EndChar()}";
-		Stream.Print(finalLine);
+		Writer.TryWrite(finalLine);
 	}
 }
 
@@ -203,8 +208,8 @@ public class ProgressManual : Progress {
 	private readonly int _count;
 	private int _currentCount = 0;
 
-	public ProgressManual(PipeStream stream, string desc, int count = 1) :
-		base(eProgressType.Manual, stream, desc) {
+	public ProgressManual(ProgramContext ctx, string desc, int count = 1) :
+		base(eProgressType.Manual, desc, ctx) {
 		_progress = 0f;
 		_count = count;
 	}
@@ -242,7 +247,7 @@ public class ProgressManual : Progress {
 		string end = $" ({_currentCount}/{_count}) ";
 		int progressLength = CalculateProgressLength(start, end);
 		string finalLine = $"{start}{BuildBar(_progress, progressLength)}{end}{EndChar()}";
-		Stream.Print(finalLine);
+		Writer.TryWrite(finalLine);
 	}
 }
 
@@ -251,8 +256,8 @@ public class ProgressIndeterminate : Progress {
 	private int _barPosition = 0;
 	private bool _isIncreasing = true;
 
-	public ProgressIndeterminate(PipeStream stream, string desc) :
-		base(eProgressType.Indeterminate, stream, desc) {
+	public ProgressIndeterminate(ProgramContext ctx, string desc) :
+		base(eProgressType.Indeterminate, desc, ctx) {
 		_finished = false;
 	}
 
@@ -291,7 +296,7 @@ public class ProgressIndeterminate : Progress {
 			_barPosition = Mathf.Clamp(_barPosition, 0, progressLength - 3);
 		}
 
-		Stream.Print(finalLine);
+		Writer.TryWrite(finalLine);
 	}
 }
 
@@ -309,8 +314,8 @@ public class ProgressStaged : Progress {
 	private int _barPosition;
 	private bool _isIncreasing;
 
-	public ProgressStaged(PipeStream stream, string desc, List<(string, float)> stages, bool indeterminate = false) :
-		base(eProgressType.Staged, stream, desc) {
+	public ProgressStaged(ProgramContext ctx, string desc, List<(string, float)> stages, bool indeterminate = false) :
+		base(eProgressType.Staged, desc, ctx) {
 		_stages = stages;
 		_isIndeterminate = indeterminate;
 		_currentStage = 0;
@@ -387,6 +392,6 @@ public class ProgressStaged : Progress {
 			_barPosition = Mathf.Clamp(_barPosition, 0, stageProgressLength - 3);
 		}
 
-		Stream.Print(finalLine);
+		Writer.TryWrite(finalLine);
 	}
 }

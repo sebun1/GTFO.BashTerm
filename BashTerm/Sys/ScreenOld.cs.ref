@@ -2,7 +2,7 @@ using LevelGeneration;
 using TMPro;
 using UnityEngine;
 
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 public class ScreenOld {
 	public enum ScreenType {
@@ -21,7 +21,7 @@ public class ScreenOld {
 
 	public readonly ScreenType Type;
 
-	private PipeStream _stream;
+	private PipeStreamOld _streamOld;
 
 	private string Buffer_;
 
@@ -31,14 +31,14 @@ public class ScreenOld {
 
 	private int Position;
 
-	internal ScreenOld(int screenID, ScreenType type, PipeStream stream) {
+	internal ScreenOld(int screenID, ScreenType type, PipeStreamOld streamOld) {
 		ScreenID = screenID;
 		Type = type;
-		_stream = stream;
+		_streamOld = streamOld;
 		History = new();
 		Buffer_ = "";
 		Position = 0;
-		_stream.SetReadingScreen(this);
+		_streamOld.SetReadingScreen(this);
 	}
 
 	public bool SetBuffer(string text) {

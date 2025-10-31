@@ -1,4 +1,4 @@
-﻿namespace BashTerm.Sys.Stream;
+﻿namespace Bsh.Sys.Stream;
 
 public class TextStreamReader {
 	private static readonly byte[] NewlineBytes = { (byte)'\n', (byte)'\r' };

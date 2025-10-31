@@ -1,7 +1,7 @@
-using BashTerm.Parsers;
-using BashTerm.Exec;
-using BashTerm.Sys;
-using BashTerm.Utils;
+using Bsh.Utils;
+using Bsh.Exec;
+using Bsh.Parsers;
+using Bsh.Sys;
 using GameData;
 using HarmonyLib;
 using LevelGeneration;
@@ -10,7 +10,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace BashTerm.Patches;
+namespace Bsh.Patches;
 
 [HarmonyPatch]
 internal class MainPatch {

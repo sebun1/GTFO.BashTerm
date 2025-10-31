@@ -1,4 +1,4 @@
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 public class Env {
 	public Dictionary<string, string> mappings = new();
@@ -8,11 +8,7 @@ public class Env {
 	}
 
 	public string this[string key] {
-		get {
-			return mappings.GetValueOrDefault(key, "");
-		}
-		set {
-			mappings[key] = value;
-		}
+		get { return mappings.GetValueOrDefault(key, ""); }
+		set { mappings[key] = value; }
 	}
 }

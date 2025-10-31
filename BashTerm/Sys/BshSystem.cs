@@ -1,9 +1,9 @@
 using System.Reflection;
-using BashTerm.Exec;
-using BashTerm.Utils;
+using Bsh.Exec;
+using Bsh.Utils;
 using UnityEngine;
 
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 internal class BshSystem : MonoBehaviour {
 	private static bool _userRawMode;

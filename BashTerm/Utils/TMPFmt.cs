@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace BashTerm.Utils;
+namespace Bsh.Utils;
 
 public class TMPLineParser {
 	private int cols;
@@ -22,8 +22,8 @@ public class TMPLineParser {
 
 internal class TMPFmt {
 	private List<TMPTag> state;
-	public TMPFmt() {
 
+	public TMPFmt() {
 	}
 
 	public bool Set(TMPTag tag) {
@@ -38,6 +38,7 @@ internal class TMPFmt {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -46,6 +47,7 @@ internal class TMPFmt {
 		foreach (TMPTag tag in state) {
 			sb.Append(tag);
 		}
+
 		return sb.ToString();
 	}
 
@@ -54,11 +56,11 @@ internal class TMPFmt {
 		foreach (TMPTag tag in state) {
 			sb.Append(tag.ToStringClosing());
 		}
+
 		return sb.ToString();
 	}
 
-	private static readonly Dictionary<string, TMPTagType> _tagNameToType = new(StringComparer.OrdinalIgnoreCase)
-	{
+	private static readonly Dictionary<string, TMPTagType> _tagNameToType = new(StringComparer.OrdinalIgnoreCase) {
 		["align"] = TMPTagType.Align,
 		["allcaps"] = TMPTagType.AllCaps,
 		["alpha"] = TMPTagType.Alpha,
@@ -94,8 +96,7 @@ internal class TMPFmt {
 		["width"] = TMPTagType.Width,
 	};
 
-	public static TMPTagType Txt2TagType(string tagName)
-	{
+	public static TMPTagType Txt2TagType(string tagName) {
 		if (string.IsNullOrEmpty(tagName))
 			throw new ArgumentException("tagName cannot be null or empty", nameof(tagName));
 
@@ -105,8 +106,7 @@ internal class TMPFmt {
 		throw new KeyNotFoundException($"Unknown TMP tag name: {tagName}");
 	}
 
-	public static string TagType2Txt(TMPTagType type) => type switch
-	{
+	public static string TagType2Txt(TMPTagType type) => type switch {
 		TMPTagType.Align => "align",
 		TMPTagType.AllCaps => "allcaps",
 		TMPTagType.Alpha => "alpha",
@@ -141,11 +141,12 @@ internal class TMPFmt {
 		TMPTagType.VOffset => "voffset",
 		TMPTagType.Width => "width",
 	};
-
 }
 
 internal class TMPRegex {
-	private const string pTagEndName = @"align|allcaps|b|color|cspace|font|font\-weight|gradient|i|indent|lineheight|lineindent|link|lowercase|margin|mark|mspace|nobr|noparse|page|pos|rotate|s|size|smallcaps|space|sprite|style|sub|sup|u|uppercase|voffset|width";
+	private const string pTagEndName =
+		@"align|allcaps|b|color|cspace|font|font\-weight|gradient|i|indent|lineheight|lineindent|link|lowercase|margin|mark|mspace|nobr|noparse|page|pos|rotate|s|size|smallcaps|space|sprite|style|sub|sup|u|uppercase|voffset|width";
+
 	private const string pTagName = pTagEndName + @"|alpha";
 	private const string pTag = @"<(" + pTagName + @")(?:=([^>]+))?>";
 	private const string pTagEnd = @"<\/(" + pTagEndName + ")>";
@@ -155,8 +156,10 @@ internal class TMPRegex {
 	private const string pColorCode = @"^#([0-9A-Fa-f]{3,4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$";
 
 	public static readonly Regex rTag = new(pTag, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
 	public static readonly Regex rColorName =
 		new(pColorName, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
 	public static readonly Regex rColorCode =
 		new(pColorCode, RegexOptions.Compiled);
 }
@@ -265,6 +268,7 @@ internal record TMPTag(TMPTagType type, string value) {
 			case TMPTagType.Width:
 				return $"</width>";
 		}
+
 		return "";
 	}
 }
@@ -276,6 +280,7 @@ internal enum TMPTagType {
 	Bold,
 	Color,
 	Cspace,
+
 	// Font, // We don't support this
 	FontWeight,
 	Gradient,

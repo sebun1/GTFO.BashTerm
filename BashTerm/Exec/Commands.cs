@@ -1,7 +1,7 @@
-﻿using BashTerm.Parsers;
-using BashTerm.Utils;
+﻿using Bsh.Parsers;
+using Bsh.Utils;
 
-namespace BashTerm.Exec;
+namespace Bsh.Exec;
 
 public abstract record Command;
 
@@ -33,7 +33,8 @@ public record VarExecve(TokenWord name, List<TokenWord> args) : VarCommand {
 	}
 
 	public override string FmtToString() {
-		return $"<#FD971F>[EXEC]<<#F92672>{name.FmtToString()}</color>></color> <#A6E22E>{{\n  <#E6DB74>{Fmt.Indent(string.Join("\n", args.Select(p => p.FmtToString())), 2)}</color>\n}}</color>";
+		return
+			$"<#FD971F>[EXEC]<<#F92672>{name.FmtToString()}</color>></color> <#A6E22E>{{\n  <#E6DB74>{Fmt.Indent(string.Join("\n", args.Select(p => p.FmtToString())), 2)}</color>\n}}</color>";
 	}
 };
 

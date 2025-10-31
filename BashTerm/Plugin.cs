@@ -1,12 +1,9 @@
-﻿using BashTerm.Exec;
-using BashTerm.Sys;
-using BashTerm.Utils;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Unity.IL2CPP;
+using Bsh.Sys;
 using HarmonyLib;
-using UnityEngine;
 
-namespace BashTerm;
+namespace Bsh;
 
 [BepInPlugin(GUID, NAME, VERSION)]
 public class Plugin : BasePlugin {
@@ -20,11 +17,11 @@ public class Plugin : BasePlugin {
 		BepLogger.Setup();
 		BshTime.Init();
 
-		BshLogger.Info($"{NAME} {BSH_VERSION} [{GUID} @ {VERSION}]");
+		BshLogger.Info($"{NAME} v{BSH_VERSION} [{GUID} @ {VERSION}]");
 		BepLogger.Info("Patching...");
 		Harmony h = new Harmony(GUID);
 		AddComponent<BshSystem>();
-		BashTerm.Config.Init();
+		global::Bsh.Config.Init();
 		h.PatchAll(typeof(Patches.MainPatch));
 		h.PatchAll(typeof(Patches.ScreenPatch));
 		BepLogger.Info("Finished Patching");

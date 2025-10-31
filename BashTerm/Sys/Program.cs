@@ -1,6 +1,6 @@
-using BashTerm.Parsers;
+using Bsh.Parsers;
 
-namespace BashTerm.Sys;
+namespace Bsh.Sys;
 
 public enum eProgramState {
 	Active,
@@ -19,7 +19,6 @@ public enum eProgramState {
 /// </para>
 /// </summary>
 public abstract class Program {
-
 	private bool _initialized = false;
 	protected ProgramContext? Ctx;
 	public event EventHandler? OnExit;
@@ -56,7 +55,8 @@ public abstract class Program {
 		OnExit?.Invoke(this, null);
 	}
 
-	public virtual void OnSigStp() {}
+	public virtual void OnSigStp() {
+	}
 }
 
 public class ProgramManifest {

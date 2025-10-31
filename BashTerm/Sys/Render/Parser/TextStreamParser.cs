@@ -1,8 +1,8 @@
 ﻿using System.Buffers.Binary;
-using BashTerm.Sys.Stream;
+using Bsh.Sys.Stream;
 using Il2CppSystem.Linq.Expressions.Interpreter;
 
-namespace BashTerm.Sys.Render.Parser;
+namespace Bsh.Sys.Render.Parser;
 
 public class TextStreamParser {
 	public const uint DefaultParseLimit = 256;

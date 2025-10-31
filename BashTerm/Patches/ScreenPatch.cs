@@ -1,9 +1,9 @@
-﻿using BashTerm.Sys;
-using BashTerm.Utils;
+﻿using Bsh.Utils;
+using Bsh.Sys;
 using HarmonyLib;
 using LevelGeneration;
 
-namespace BashTerm.Patches;
+namespace Bsh.Patches;
 
 [HarmonyPatch]
 public class ScreenPatch {

@@ -1,8 +1,8 @@
-﻿using BashTerm.Parsers;
-using BashTerm.Sys;
-using BashTerm.Sys.Stream;
+﻿using Bsh.Parsers;
+using Bsh.Sys;
+using Bsh.Sys.Stream;
 
-namespace BashTerm.Exec.Builtins;
+namespace Bsh.Exec.Builtins;
 
 [BshProgram("hello")]
 public class Hello : Program {

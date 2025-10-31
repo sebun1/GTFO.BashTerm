@@ -1,9 +1,9 @@
 using System.Text;
-using BashTerm.Sys;
-using BashTerm.Utils;
+using Bsh.Utils;
+using Bsh.Sys;
 using Dissonance;
 
-namespace BashTerm.Parsers;
+namespace Bsh.Parsers;
 
 internal static class ParseUtil {
 	// NOTE: Used to convert references to commands in config to our internal enum

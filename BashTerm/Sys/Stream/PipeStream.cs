@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 
-namespace BashTerm.Sys.Stream;
+namespace Bsh.Sys.Stream;
 
 public enum OverflowMode {
 	DropOldest,

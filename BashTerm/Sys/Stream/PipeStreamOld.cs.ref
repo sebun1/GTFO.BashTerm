@@ -1,11 +1,11 @@
 using System.Text;
-using BashTerm.Exec;
-using BashTerm.Utils;
+using Bsh.Utils;
+using Bsh.Exec;
 using UnityEngine;
 
-namespace BashTerm.Sys;
+namespace Bsh.Sys.Stream;
 
-public class PipeStream {
+public class PipeStreamOld {
 	public readonly int StreamId;
 	private readonly StringBuilder _writeCache = new();
 	private string _readCache;
@@ -23,7 +23,7 @@ public class PipeStream {
 
 	public ScreenOld? ReadingScreen { get; private set; }
 
-	public PipeStream(int streamId) {
+	public PipeStreamOld(int streamId) {
 		StreamId = streamId;
 		_readCache = string.Empty;
 		IsClosedForWriting = false;

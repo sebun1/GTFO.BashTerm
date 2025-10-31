@@ -1,16 +1,17 @@
-﻿using BashTerm.Sys;
+﻿using Bsh.Sys;
 
-namespace BashTerm.Exec;
+namespace Bsh.Exec;
 
 public class ExecException : BshException {
-
-	public ExecException(string cause) : base(cause) {}
+	public ExecException(string cause) : base(cause) {
+	}
 
 	public override string ToString() => $"[ExecError] >> {Message}";
 }
 
 public class CmdRunException : ExecException {
-	public CmdRunException(string cause) : base($"[CmdRunException] >> {cause}") {}
+	public CmdRunException(string cause) : base($"[CmdRunException] >> {cause}") {
+	}
 }
 
 public class CommandException : ExecException {
@@ -23,7 +24,8 @@ public class CommandException : ExecException {
 
 public class UnknownParserCommandTypeException : ExecException {
 	public UnknownParserCommandTypeException(Type t)
-		: base($"type {t.FullName} is not a valid parser command type") {}
+		: base($"type {t.FullName} is not a valid parser command type") {
+	}
 }
 
 public class TooManyArgumentsException : CommandException {

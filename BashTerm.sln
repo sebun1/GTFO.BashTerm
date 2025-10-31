@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35707.178 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BashTerm", "BashTerm\BashTerm.csproj", "{CF7D5C13-3E8C-4B74-B383-A0E9DDE76F1B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BashTerm.Tests", "BashTerm.Tests\BashTerm.Tests.csproj", "{B698302F-028D-44AB-BEB9-73CF42E6DC1F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{CF7D5C13-3E8C-4B74-B383-A0E9DDE76F1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF7D5C13-3E8C-4B74-B383-A0E9DDE76F1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF7D5C13-3E8C-4B74-B383-A0E9DDE76F1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B698302F-028D-44AB-BEB9-73CF42E6DC1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B698302F-028D-44AB-BEB9-73CF42E6DC1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B698302F-028D-44AB-BEB9-73CF42E6DC1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B698302F-028D-44AB-BEB9-73CF42E6DC1F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

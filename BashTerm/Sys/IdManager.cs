@@ -1,4 +1,4 @@
-﻿namespace BashTerm.Sys;
+﻿namespace Bsh.Sys;
 
 public class IdManager {
 	public const int IDMaxLimitDefault = 32768;
@@ -25,6 +25,7 @@ public class IdManager {
 				pid = -1;
 				return false;
 			}
+
 			_nextPid++;
 		}
 

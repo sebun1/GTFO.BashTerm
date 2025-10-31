@@ -1,6 +1,6 @@
 ﻿using LevelGeneration;
 
-namespace BashTerm.Exec;
+namespace Bsh.Exec;
 
 public abstract record PipeObject;
 
@@ -14,9 +14,8 @@ public record ItemQueryResult(
 	string Zone,
 	bool Pingable,
 	int Capacity
-	) : PipeObject {
+) : PipeObject {
 	public bool HasCapacity => Capacity > 0;
 }
 
 public record ItemQueryResults(List<ItemQueryResult> Results) : PipeObject;
-

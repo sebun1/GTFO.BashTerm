@@ -1,12 +1,13 @@
 using LevelGeneration;
 
-namespace BashTerm.Parsers;
+namespace Bsh.Parsers;
 
 /// <summary>
 /// The default variable provider when parsing
 /// </summary>
 public class VarProvider {
 	private LG_ComputerTerminal _term;
+
 	public VarProvider(LG_ComputerTerminal term) {
 		_term = term;
 	}
@@ -20,7 +21,7 @@ public class VarProvider {
 				return true;
 			case "ZONE":
 			case "zone":
-				value =  $"ZONE_{_term.SpawnNode.m_zone.ID}";
+				value = $"ZONE_{_term.SpawnNode.m_zone.ID}";
 				return true;
 			case "ZONE_ID":
 			case "zone_id":

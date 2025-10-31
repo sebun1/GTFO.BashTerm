@@ -1,6 +1,6 @@
 ﻿using System.Buffers.Binary;
 
-namespace BashTerm.Sys.Stream;
+namespace Bsh.Sys.Stream;
 
 /// <summary>
 /// Provides a set of methods to manipulate terminal display using ANSI-like escape sequences.

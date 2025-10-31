@@ -1,4 +1,4 @@
-﻿namespace BashTerm.Sys.Stream;
+﻿namespace Bsh.Sys.Stream;
 
 public sealed class PipeStreamReader<T> {
 	private PipeStream<T> _owner;
@@ -35,7 +35,8 @@ public sealed class PipeStreamReader<T> {
 		Span<T> buff = arr.AsSpan();
 		if (!_owner.DequeueAll(buff, out var read))
 			throw new WTFException(
-				"PipeStreamReader.ReadAll tried to read with buffer size of owner queue count but is somehow insufficient to read all items.");
+				"PipeStreamReader.ReadAll tried to read with buffer size of owner queue" +
+				"count but is somehow insufficient to read all items.");
 		int r = read.Value;
 		List<T> list = new List<T>(r);
 		for (int i = 0; i < r; i++)

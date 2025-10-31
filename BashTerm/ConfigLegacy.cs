@@ -1,5 +1,4 @@
-﻿namespace BashTerm;
+﻿namespace Bsh;
 
 public class ConfigLegacy {
-	
 }
