@@ -5,8 +5,8 @@ stages:
 variables:
     DOTNET_VERSION: "6.0"
     BUILD_OUTPUT: "$CI_PROJECT_DIR/build"
-    PACKAGE_OUTPUT: "$CI_PROJECT_DIR/BashTerm/pkg"
-    SOLUTION_NAME: "BashTerm"
+    PACKAGE_OUTPUT: "$CI_PROJECT_DIR/pkg"
+    SOLUTION_NAME: "Bsh"
     GTFO_DEP_URL: "https://git.takina.io/api/v4/projects/6/packages/generic/gtfobepindep/2025.10.18/GTFOBepInDep.zip"
     GTFO_DEP_DIR: "$CI_PROJECT_DIR/GTFOBepInDep"
 
@@ -26,16 +26,15 @@ build:
         - echo "Downloading GTFO dependencies..."
         - wget -O GTFOBepInDep.zip "$GTFO_DEP_URL"
         - unzip -o GTFOBepInDep.zip -d "$CI_PROJECT_DIR"
-        - ls -R "$GTFO_DEP_DIR"
-        - echo "Restoring .NET dependencies..."
+        - #ls -R "$GTFO_DEP_DIR"
         - dotnet restore
         - echo "Building project..."
         - dotnet build --configuration Release --output $BUILD_OUTPUT
         - cd $PACKAGE_OUTPUT
-        - zip -r $CI_PROJECT_DIR/BashTerm.zip ./*
+        - zip -r $CI_PROJECT_DIR/$SOLUTION_NAME.zip ./*
     artifacts:
         paths:
-            - BashTerm.zip
+            - $SOLUTION_NAME.zip
 
 test:
     stage: test
