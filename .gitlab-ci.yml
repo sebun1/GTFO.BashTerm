@@ -1,5 +1,6 @@
 stages:
     - build
+    - test
 
 variables:
     DOTNET_VERSION: "6.0"
@@ -35,3 +36,18 @@ build:
     artifacts:
         paths:
             - BashTerm.zip
+
+test:
+    stage: test
+    tags:
+        - dotnet
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    before_script:
+        - apt-get update && apt-get install -y unzip
+    script:
+        - echo "Running tests..."
+        - dotnet restore
+        - dotnet test --configuration Release
+#    artifacts:
+#        paths:
+#            - TestResults/
