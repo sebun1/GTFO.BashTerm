@@ -44,8 +44,11 @@ test:
   before_script:
     - apt-get update && apt-get install -y unzip
   script:
-    - echo "Running tests..."
+    - echo "Downloading GTFO dependencies..."
+    - wget -O GTFOBepInDep.zip "$GTFO_DEP_URL"
+    - unzip -o GTFOBepInDep.zip -d "$CI_PROJECT_DIR"
     - dotnet restore
+    - echo "Running tests..."
     - dotnet test --configuration Release
 #    artifacts:
 #        paths:
