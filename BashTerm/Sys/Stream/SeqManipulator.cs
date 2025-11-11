@@ -1,4 +1,5 @@
 ﻿using System.Buffers.Binary;
+using UnityEngine;
 
 namespace Bsh.Sys.Stream;
 
@@ -191,6 +192,25 @@ public class SeqManipulator {
 	public bool SetColor(byte r, byte g, byte b) => SetFgColor(r, g, b);
 
 	/// <summary>
+	/// Sets the text color to the specified Unity Color,
+	/// truncating to 8-bit RGB.
+	/// </summary>
+	/// <param name="color">Unity Color to be set to</param>
+	/// <returns>true if write was successful</returns>
+	public bool SetColor(Color color) =>
+		SetFgColor((byte)Mathf.RoundToInt(color.r * 255f),
+			(byte)Mathf.RoundToInt(color.g * 255f),
+			(byte)Mathf.RoundToInt(color.b * 255f));
+
+	/// <summary>
+	/// Sets the text color to the specified System.Drawing.Color.
+	/// </summary>
+	/// <param name="color">8-bit Color object to be set to</param>
+	/// <returns>true if write was successful</returns>
+	public bool SetColor(System.Drawing.Color color) =>
+		SetFgColor(color.R, color.G, color.B);
+
+	/// <summary>
 	/// Unsets the text color to default.
 	/// Same as UnsetFgColor.
 	/// </summary>
@@ -216,6 +236,25 @@ public class SeqManipulator {
 	public bool UnsetFgColor() {
 		return DoOp8('m', 39);
 	}
+
+	/// <summary>
+	/// Sets the background color to the specified Unity Color,
+	/// truncating to 8-bit RGB.
+	/// </summary>
+	/// <param name="color">Unity Color to be set to</param>
+	/// <returns>true if write was successful</returns>
+	public bool SetBgColor(Color color) =>
+		SetBgColor((byte)Mathf.RoundToInt(color.r * 255f),
+			(byte)Mathf.RoundToInt(color.g * 255f),
+			(byte)Mathf.RoundToInt(color.b * 255f));
+
+	/// <summary>
+	/// Sets the background color to the specified System.Drawing.Color.
+	/// </summary>
+	/// <param name="color">8-bit Color object to be set to</param>
+	/// <returns>true if write was successful</returns>
+	public bool SetBgColor(System.Drawing.Color color) =>
+		SetBgColor(color.R, color.G, color.B);
 
 	/// <summary>
 	/// Sets the background (highlight) color to the specified 8-bit RGB value.
