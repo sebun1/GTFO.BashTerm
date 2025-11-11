@@ -6,34 +6,6 @@ using Dissonance;
 namespace Bsh.Parsers;
 
 internal static class ParseUtil {
-	// NOTE: Used to convert references to commands in config to our internal enum
-	private static readonly Dictionary<string, TermCmd> _Txt2Cmd = new Dictionary<string, TermCmd> {
-		// Vanilla Operations
-		{ "", TermCmd.None },
-		{ "help", TermCmd.Help },
-		{ "commands", TermCmd.Commands },
-		{ "cls", TermCmd.Cls },
-		{ "exit", TermCmd.Exit },
-		{ "override_lockdown", TermCmd.Override },
-		{ "deactivate_alarms", TermCmd.DisableAlarm },
-		{ "activate_beacon", TermCmd.ActivateBeacon },
-		{ "list", TermCmd.ShowList },
-		{ "query", TermCmd.Query },
-		{ "ping", TermCmd.Ping },
-		{ "reactor_startup", TermCmd.ReactorStartup },
-		{ "reactor_verify", TermCmd.ReactorVerify },
-		{ "reactor_shutdown", TermCmd.ReactorShutdown },
-		{ "uplink_connect", TermCmd.TerminalUplinkConnect },
-		{ "uplink_verify", TermCmd.TerminalUplinkVerify },
-		{ "uplink_confirm", TermCmd.TerminalUplinkConfirm },
-		{ "logs", TermCmd.ListLogs },
-		{ "read", TermCmd.ReadLog },
-		{ "info", TermCmd.Info },
-
-		// Custom Operations
-		{ "raw", TermCmd.Raw },
-	};
-
 	public static bool TryExpandAlias(string input, out string expansion) {
 		BshLogger.Debug($"ExpandCmd: Got '{input}'");
 		expansion = "";
@@ -119,13 +91,5 @@ internal static class ParseUtil {
 		groups.Add(group);
 
 		return groups;
-	}
-
-	public static string[] CleanSplit(string input) {
-		return input.Split(' ').Select(s => s.Trim()).ToArray();
-	}
-
-	public static string[] CleanSplit(char delimiter, string input) {
-		return input.Split(delimiter).Select(s => s.Trim()).ToArray();
 	}
 }

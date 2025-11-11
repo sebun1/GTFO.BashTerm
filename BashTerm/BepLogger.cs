@@ -8,7 +8,7 @@ internal static class BepLogger {
 	public static bool Ready => _mLogSource != null;
 
 	public static void Setup() {
-		_mLogSource = Logger.CreateLogSource("io.takina.gtfo.Bsh");
+		_mLogSource = Logger.CreateLogSource(Plugin.GUID);
 	}
 
 	public static void SetupFromInit(ManualLogSource logSource) => _mLogSource = logSource;
