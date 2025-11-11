@@ -5,57 +5,65 @@ namespace Bsh.Sys.Render.Parser;
 public abstract record TextStreamToken;
 
 // Standard Escape Sequences
-public record TokenText(string Text) : TextStreamToken {
+public record TxtTokenText(string Text) : TextStreamToken {
 	public override string ToString() => Text;
 
-	public TokenText Join(TokenText next) {
-		return new TokenText(Text + next.Text);
+	public TxtTokenText Join(TxtTokenText next) {
+		return new TxtTokenText(Text + next.Text);
 	}
 };
 
-public record TokenLF : TextStreamToken;
+public record TxtTokenLF : TextStreamToken;
 
-public record TokenCR : TextStreamToken;
+public record TxtTokenCR : TextStreamToken;
 
-public record TokenTab : TextStreamToken;
+public record TxtTokenTab : TextStreamToken;
 
 // Cursor Movement
-public record TokenMoveCursor(int X, int Y) : TextStreamToken;
+public record TxtTokenMoveCursor(int X, int Y) : TextStreamToken;
 
-public record TokenMoveCursorStartOfLine(int offset) : TextStreamToken;
+public record TxtTokenMoveCursorStartOfLine(int offset) : TextStreamToken;
 
-public record TokenSetCursorColumn(int X) : TextStreamToken;
+public record TxtTokenSetCursorColumn(int X) : TextStreamToken;
 
-public record TokenSetCursor(int X, int Y) : TextStreamToken;
+public record TxtTokenSetCursor(int X, int Y) : TextStreamToken;
 
 // Erase
-public record TokenEraseToStart : TextStreamToken;
+public record TxtTokenEraseToStart : TextStreamToken;
 
-public record TokenEraseToEnd : TextStreamToken;
+public record TxtTokenEraseToEnd : TextStreamToken;
 
-public record TokenEraseScreen : TextStreamToken;
+public record TxtTokenEraseScreen : TextStreamToken;
 
-public record TokenEraseToLineStart : TextStreamToken;
+public record TxtTokenEraseToLineStart : TextStreamToken;
 
-public record TokenEraseToLineEnd : TextStreamToken;
+public record TxtTokenEraseToLineEnd : TextStreamToken;
 
-public record TokenEraseLine : TextStreamToken;
+public record TxtTokenEraseLine : TextStreamToken;
 
 // Style & Graphics
-public record TokenSetColor(byte R, byte G, byte B) : TextStreamToken;
+public record TxtTokenSetFgColor(byte R, byte G, byte B) : TextStreamToken;
 
-public record TokenUnsetColor : TextStreamToken;
+public record TxtTokenUnsetFgColor : TextStreamToken;
 
-public record TokenSetBold : TextStreamToken;
+public record TxtTokenSetBgColor(byte R, byte G, byte B) : TextStreamToken;
 
-public record TokenUnsetBold : TextStreamToken;
+public record TxtTokenUnsetBgColor : TextStreamToken;
 
-public record TokenSetUnderline : TextStreamToken;
+public record TxtTokenSetBold : TextStreamToken;
 
-public record TokenUnsetUnderline : TextStreamToken;
+public record TxtTokenUnsetBold : TextStreamToken;
 
-public record TokenSetStrikethrough : TextStreamToken;
+public record TxtTokenSetItalic : TextStreamToken;
 
-public record TokenUnsetStrikethrough : TextStreamToken;
+public record TxtTokenUnsetItalic : TextStreamToken;
 
-public record TokenResetStyles : TextStreamToken;
+public record TxtTokenSetUnderline : TextStreamToken;
+
+public record TxtTokenUnsetUnderline : TextStreamToken;
+
+public record TxtTokenSetStrikethrough : TextStreamToken;
+
+public record TxtTokenUnsetStrikethrough : TextStreamToken;
+
+public record TxtTokenResetStyles : TextStreamToken;

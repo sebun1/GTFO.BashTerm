@@ -106,8 +106,8 @@ public class SeqManipulator {
 	/// <summary>
 	/// Set the cursor position to (x,y).
 	/// </summary>
-	/// <param name="x">x position</param>
-	/// <param name="y">y position</param>
+	/// <param name="x">x (col) position</param>
+	/// <param name="y">y (row) position</param>
 	/// <returns>true if write was successful</returns>
 	public bool SetCursor(UInt16 x, UInt16 y) {
 		byte cmd = (byte)'H';
@@ -182,22 +182,59 @@ public class SeqManipulator {
 	 */
 	/// <summary>
 	/// Sets the text color to the specified 8-bit RGB value.
+	/// Same as SetFgColor.
 	/// </summary>
 	/// <param name="r">red component (0-255)</param>
 	/// <param name="g">green component (0-255)</param>
 	/// <param name="b">blue component (0-255)</param>
 	/// <returns>true if write was successful</returns>
-	public bool SetColor(byte r, byte g, byte b) {
-		byte cmd = (byte)'m';
-		return Write(Esc, Open, cmd, 3, r, g, b);
-	}
+	public bool SetColor(byte r, byte g, byte b) => SetFgColor(r, g, b);
 
 	/// <summary>
 	/// Unsets the text color to default.
+	/// Same as UnsetFgColor.
 	/// </summary>
 	/// <returns>true if write was successful</returns>
-	public bool UnsetColor() {
+	public bool UnsetColor => UnsetFgColor();
+
+	/// <summary>
+	/// Sets the foreground (text) color to the specified 8-bit RGB value.
+	/// </summary>
+	/// <param name="r">red component (0-255)</param>
+	/// <param name="g">green component (0-255)</param>
+	/// <param name="b">blue component (0-255)</param>
+	/// <returns>true if write was successful</returns>
+	public bool SetFgColor(byte r, byte g, byte b) {
+		byte cmd = (byte)'m';
+		return Write(Esc, Open, cmd, 4, 0, r, g, b);
+	}
+
+	/// <summary>
+	/// Unsets the foreground (text) color to default.
+	/// </summary>
+	/// <returns>true if write was successful</returns>
+	public bool UnsetFgColor() {
 		return DoOp8('m', 39);
+	}
+
+	/// <summary>
+	/// Sets the background (highlight) color to the specified 8-bit RGB value.
+	/// </summary>
+	/// <param name="r">red component (0-255)</param>
+	/// <param name="g">green component (0-255)</param>
+	/// <param name="b">blue component (0-255)</param>
+	/// <returns>true if write was successful</returns>
+	public bool SetBgColor(byte r, byte g, byte b) {
+		byte cmd = (byte)'m';
+		return Write(Esc, Open, cmd, 4, 1, r, g, b);
+	}
+
+	/// <summary>
+	/// Unsets the background (highlight) color to default.
+	/// </summary>
+	/// <returns>true if write was successful</returns>
+	public bool UnsetBgColor() {
+		return DoOp8('m', 40);
 	}
 
 	/// <summary>
@@ -209,11 +246,27 @@ public class SeqManipulator {
 	}
 
 	/// <summary>
-	/// Set normal (non-bold) text style.
+	/// Set non-bold text style.
 	/// </summary>
 	/// <returns>true if write was successful</returns>
 	public bool UnsetBold() {
 		return DoOp8('m', 22);
+	}
+
+	/// <summary>
+	/// Set italic text style.
+	/// </summary>
+	/// <returns>true if write was successful</returns>
+	public bool SetItalic() {
+		return DoOp8('m', 3);
+	}
+
+	/// <summary>
+	/// Set non-italic text style.
+	/// </summary>
+	/// <returns>true if write was successful</returns>
+	public bool UnsetItalic() {
+		return DoOp8('m', 23);
 	}
 
 	/// <summary>
@@ -225,7 +278,7 @@ public class SeqManipulator {
 	}
 
 	/// <summary>
-	/// Set normal (non-underlined) text style.
+	/// Set non-underlined text style.
 	/// </summary>
 	/// <returns>true if write was successful</returns>
 	public bool UnsetUnderline() {

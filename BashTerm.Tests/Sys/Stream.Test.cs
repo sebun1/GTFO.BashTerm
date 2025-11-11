@@ -65,19 +65,45 @@ public class StreamTest {
 		var parser = new TextStreamParser(pipe.CreateReader());
 
 		writer.Manip.EraseLine();
+		writer.Manip.SetColor(255, 0, 0);
+		writer.Manip.SetBgColor(255, 127, 255);
 		writer.TryWriteLine("what");
+		writer.Manip.SetCursor(1, 2);
+		writer.Manip.SetCursor(65535, 65534);
 
 		parser.Parse();
 		TextStreamToken tk;
 
 		Assert.IsTrue(parser.Get(out tk));
-		Assert.IsInstanceOfType<TokenEraseLine>(tk);
+		Assert.IsInstanceOfType<TxtTokenEraseLine>(tk);
 
 		Assert.IsTrue(parser.Get(out tk));
-		Assert.IsInstanceOfType<TokenText>(tk);
-		Assert.AreEqual("what", ((TokenText)tk).Text);
+		Assert.IsInstanceOfType<TxtTokenSetFgColor>(tk);
+		Assert.AreEqual(255, ((TxtTokenSetFgColor)tk).R);
+		Assert.AreEqual(0, ((TxtTokenSetFgColor)tk).G);
+		Assert.AreEqual(0, ((TxtTokenSetFgColor)tk).B);
 
 		Assert.IsTrue(parser.Get(out tk));
-		Assert.IsInstanceOfType<TokenLF>(tk);
+		Assert.IsInstanceOfType<TxtTokenSetBgColor>(tk);
+		Assert.AreEqual(255, ((TxtTokenSetBgColor)tk).R);
+		Assert.AreEqual(127, ((TxtTokenSetBgColor)tk).G);
+		Assert.AreEqual(255, ((TxtTokenSetBgColor)tk).B);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenText>(tk);
+		Assert.AreEqual("what", ((TxtTokenText)tk).Text);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenLF>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenSetCursor>(tk);
+		Assert.AreEqual(1, ((TxtTokenSetCursor)tk).X);
+		Assert.AreEqual(2, ((TxtTokenSetCursor)tk).Y);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenSetCursor>(tk);
+		Assert.AreEqual(65535, ((TxtTokenSetCursor)tk).X);
+		Assert.AreEqual(65534, ((TxtTokenSetCursor)tk).Y);
 	}
 }

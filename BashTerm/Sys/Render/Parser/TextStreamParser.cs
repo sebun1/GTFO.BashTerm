@@ -57,13 +57,13 @@ public class TextStreamParser {
 		switch (b) {
 			case (byte)'\n':
 				_reader.TryRead(out _);
-				return new TokenLF();
+				return new TxtTokenLF();
 			case (byte)'\r':
 				_reader.TryRead(out _);
-				return new TokenCR();
+				return new TxtTokenCR();
 			case (byte)'\t':
 				_reader.TryRead(out _);
-				return new TokenTab();
+				return new TxtTokenTab();
 			case Esc:
 				return ParseEscapeSeq();
 			default:
@@ -97,24 +97,24 @@ public class TextStreamParser {
 		switch (cmd) {
 			// Movement
 			case (byte)'A':
-				return new TokenMoveCursor(0, -GetValueFromBytes(paramBytes));
+				return new TxtTokenMoveCursor(0, -GetValueFromBytes(paramBytes));
 			case (byte)'B':
-				return new TokenMoveCursor(0, GetValueFromBytes(paramBytes));
+				return new TxtTokenMoveCursor(0, GetValueFromBytes(paramBytes));
 			case (byte)'C':
-				return new TokenMoveCursor(GetValueFromBytes(paramBytes), 0);
+				return new TxtTokenMoveCursor(GetValueFromBytes(paramBytes), 0);
 			case (byte)'D':
-				return new TokenMoveCursor(-GetValueFromBytes(paramBytes), 0);
+				return new TxtTokenMoveCursor(-GetValueFromBytes(paramBytes), 0);
 			case (byte)'E':
-				return new TokenMoveCursorStartOfLine(GetValueFromBytesOrDefault(paramBytes, 1));
+				return new TxtTokenMoveCursorStartOfLine(GetValueFromBytesOrDefault(paramBytes, 1));
 			case (byte)'F':
-				return new TokenMoveCursorStartOfLine(-GetValueFromBytesOrDefault(paramBytes, 1));
+				return new TxtTokenMoveCursorStartOfLine(-GetValueFromBytesOrDefault(paramBytes, 1));
 			case (byte)'G':
-				return new TokenSetCursorColumn(GetValueFromBytes(paramBytes));
+				return new TxtTokenSetCursorColumn(GetValueFromBytes(paramBytes));
 			case (byte)'H':
 				return paramCount switch {
-					0 => new TokenSetCursor(0, 0),
-					2 => new TokenSetCursor(paramBytes[0], paramBytes[1]),
-					4 => new TokenSetCursor(BinaryPrimitives.ReadUInt16LittleEndian(paramBytes.Slice(0, 2)),
+					0 => new TxtTokenSetCursor(0, 0),
+					2 => new TxtTokenSetCursor(paramBytes[0], paramBytes[1]),
+					4 => new TxtTokenSetCursor(BinaryPrimitives.ReadUInt16LittleEndian(paramBytes.Slice(0, 2)),
 						BinaryPrimitives.ReadUInt16LittleEndian(paramBytes.Slice(2, 2))),
 					_ => throw new InvalidEscapeSequenceException(
 						$"Invalid parameter count for command H:SetCursor, expected 0, 2, or 4, got {paramCount}")
@@ -123,39 +123,48 @@ public class TextStreamParser {
 			// Erase
 			case (byte)'J':
 				return paramBytes[0] switch {
-					0 => new TokenEraseToEnd(),
-					1 => new TokenEraseToStart(),
-					2 => new TokenEraseScreen(),
+					0 => new TxtTokenEraseToEnd(),
+					1 => new TxtTokenEraseToStart(),
+					2 => new TxtTokenEraseScreen(),
 					_ => throw new InvalidEscapeSequenceException(
 						$"Invalid parameter for command J:Erase, expected 0, 1, or 2, got {paramBytes[0]}")
 				};
 			case (byte)'K':
 				return paramBytes[0] switch {
-					0 => new TokenEraseToLineEnd(),
-					1 => new TokenEraseToLineStart(),
-					2 => new TokenEraseLine(),
+					0 => new TxtTokenEraseToLineEnd(),
+					1 => new TxtTokenEraseToLineStart(),
+					2 => new TxtTokenEraseLine(),
 					_ => throw new InvalidEscapeSequenceException(
 						$"Invalid parameter for command K:EraseInline, expected 0, 1, or 2, got {paramBytes[0]}")
 				};
 
 			// Color & Graphics
 			case (byte)'m':
-				if (paramCount == 3)
-					return new TokenSetColor(paramBytes[0], paramBytes[1], paramBytes[2]);
+				if (paramCount == 4) {
+					if (paramBytes[0] == 0x00)
+						return new TxtTokenSetFgColor(paramBytes[1], paramBytes[2], paramBytes[3]);
+					if (paramBytes[0] == 0x01)
+						return new TxtTokenSetBgColor(paramBytes[1], paramBytes[2], paramBytes[3]);
+					throw new InvalidEscapeSequenceException(
+						$"Invalid first parameter for 4-parameter command m:Graphics, expected 0 or 1, got {paramBytes[0]}");
+				}
 
 				if (paramCount != 1)
 					throw new InvalidEscapeSequenceException(
 						$"Invalid parameter count for command m:Graphics, expected 1 or 3, got {paramCount}");
 
 				return paramBytes[0] switch {
-					0 => new TokenResetStyles(),
-					39 => new TokenUnsetColor(),
-					2 => new TokenSetBold(),
-					22 => new TokenUnsetBold(),
-					4 => new TokenSetUnderline(),
-					24 => new TokenUnsetUnderline(),
-					9 => new TokenSetStrikethrough(),
-					29 => new TokenUnsetStrikethrough(),
+					0 => new TxtTokenResetStyles(),
+					39 => new TxtTokenUnsetFgColor(),
+					40 => new TxtTokenUnsetBgColor(),
+					2 => new TxtTokenSetBold(),
+					22 => new TxtTokenUnsetBold(),
+					3 => new TxtTokenSetItalic(),
+					23 => new TxtTokenUnsetItalic(),
+					4 => new TxtTokenSetUnderline(),
+					24 => new TxtTokenUnsetUnderline(),
+					9 => new TxtTokenSetStrikethrough(),
+					29 => new TxtTokenUnsetStrikethrough(),
 					_ => throw new InvalidEscapeSequenceException(
 						$"Unknown parameter for command m:graphics, got {paramBytes[0]}")
 				};
@@ -168,13 +177,13 @@ public class TextStreamParser {
 	private TextStreamToken ParseString() {
 		{
 			if (_textReader.TryReadStringToken(out string s)) {
-				return new TokenText(s);
+				return new TxtTokenText(s);
 			}
 		}
 
 		List<byte> bytes = _reader.ReadAll();
 		try {
-			return new TokenText(System.Text.Encoding.UTF8.GetString(bytes.ToArray()));
+			return new TxtTokenText(System.Text.Encoding.UTF8.GetString(bytes.ToArray()));
 		}
 		catch (ArgumentException argE) {
 			throw new TextStreamParseException("Failed to decode string token: " + argE.Message);
@@ -197,17 +206,17 @@ public class TextStreamParser {
 		if (bytes.Length == 2)
 			return BinaryPrimitives.ReadUInt16LittleEndian(bytes);
 		throw new InvalidEscapeSequenceException(
-			$"Cannot parse value from {bytes.Length} bytes, only 1 or 2 bytes supported");
+			$"Cannot parse value from {bytes.Length} bytes, expected 1 or 2 bytes");
 	}
 }
 
 public class TextStreamParseException : Exception {
-	public TextStreamParseException(string message) : base(message) {
+	public TextStreamParseException(string message) : base($"[TextStreamParse] >> {message}") {
 	}
 }
 
 public class InvalidEscapeSequenceException : TextStreamParseException {
 	public InvalidEscapeSequenceException(string sequence)
-		: base($"Invalid escape sequence: {sequence}") {
+		: base($"[BadEscSeq] >> {sequence}") {
 	}
 }
