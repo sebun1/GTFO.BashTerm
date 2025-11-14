@@ -6,18 +6,20 @@
 
 The GTFO Terminal, Reimagined.
 
-[GitLab (Source)](https://git.takina.io/gtfo/BashTerm) | [GitHub (Mirror, General Issues)](https://github.com/sebun1/GTFO.BashTerm) | [Thunderstore (Release)](https://thunderstore.io/c/gtfo/p/food/Bsh/) | [GitBook (Docs)]()
+[GitLab (Source)](https://git.takina.io/gtfo/BashTerm) | [GitHub (Mirror, General Issues)](https://github.com/sebun1/Bsh) | [Thunderstore (Release)](https://thunderstore.io/c/gtfo/p/food/Bsh/) | [GitBook (Docs)]()
 
 ---
 
 ### Issues / Suggestions
 
-**Please** open any issues (suggestions, bugs, etc.) **on the [GitHub repo](https://github.com/sebun1/GTFO.BashTerm)**, thank you!!
+**Please** open any issues (suggestions, bugs, etc.) **on the [GitHub repo](https://github.com/sebun1/Bsh)**,
+thank you!!
 </div>
 
-# About Bsh
+# About
 
-Bsh is a mod that completely overhauls the terminal experience in GTFO. If you like terminals, you will probably enjoy using Bsh. 
+Bsh is a mod that completely overhauls the terminal experience in GTFO. If you like terminals, you will probably enjoy
+using Bsh.
 
 At its base, Bsh adds a lot of features already:
 
@@ -33,7 +35,8 @@ At its base, Bsh adds a lot of features already:
 - File System
 - ...and many more advanced features!
 
-However, Bsh is also highly modular and extensible, there are many ways you can customize and extend Bsh to your liking (these rank from simple to advanced):
+However, Bsh is also highly modular and extensible, there are many ways you can customize and extend Bsh to your
+liking (these rank from simple to advanced):
 
 1. Adjust Bsh settings in-game via the `setting` command
 2. Check out some existing Bsh extensions that I made on thunderstore by searching "Bsh"
@@ -42,7 +45,27 @@ However, Bsh is also highly modular and extensible, there are many ways you can 
 
 ## To BashTerm Users
 
-If you were a user of the old BashTerm mod, welcome to Bsh! Bsh is a complete rewrite of BashTerm, so while many features are similar, some things have changed. For compatibility sake, I have added support to load the old BashTerm BepInEx config file into the current system, all you have to do is copy over respective settings from the old `BashTerm.cfg` file into the `Bsh.cfg` file. When the game starts, Bsh will automatically read the old config and translate any settings it finds into the new system, it will then clear out the old config file so it doesn't get loaded again next time. If you liked some of the features of BashTerm, you will probably like Bsh even more!
+If you were a user of the old BashTerm mod, welcome to Bsh! Bsh is a complete rewrite of BashTerm, so while many
+features are similar, some things have changed. For compatibility sake, I have added support to load the old BashTerm
+BepInEx config file into the current system, all you have to do is copy over respective settings from the old
+`BashTerm.cfg` file into the `Bsh.cfg` file. When the game starts, Bsh will automatically read the old config and
+translate any settings it finds into the new system, it will then clear out the old config file so it doesn't get loaded
+again next time. If you liked some of the features of BashTerm, you will probably like Bsh even more!
+
+# Comptaibility
+
+## Other Terminal Mods
+
+| Mod                                                                                       | Developer      | Information                                                                    |
+|-------------------------------------------------------------------------------------------|----------------|--------------------------------------------------------------------------------|
+| [BashTerm](https://thunderstore.io/c/gtfo/p/food/BashTerm/)                               | food (me)      | Deprecated; 0 reasons to be used alongside Bsh. True compatibility not tested. |
+| [TerminalCompletion](https://thunderstore.io/c/gtfo/p/OneOfTheLiving/TerminalCompletion/) | OneOfTheLiving |                                                                                |
+| [BetterTerminalInfo](https://thunderstore.io/c/gtfo/p/tru0067/BetterTerminalInfo/)        | tru0067        |                                                                                |
+| [TerminalGames](https://thunderstore.io/c/gtfo/p/ValenTeam/TerminalGames/)                | ValenTeam      |                                                                                |
+
+## Rundowns
+
+TBA
 
 # The Manual
 
