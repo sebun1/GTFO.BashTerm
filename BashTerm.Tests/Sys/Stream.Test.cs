@@ -66,13 +66,15 @@ public class StreamTest {
 
 		writer.Manip.EraseLine();
 		writer.Manip.SetColor(255, 0, 0);
-		writer.Manip.SetBgColor(255, 127, 255);
+		writer.Manip.SetColor(255, 127, 255, false);
+		writer.Manip.SetColor(new(255, 127, 255));
+		writer.Manip.SetColor("FF7FFF", false);
 		writer.TryWriteLine("what");
 		writer.Manip.SetCursor(1, 2);
 		writer.Manip.SetCursor(65535, 65534);
 
 		parser.Parse();
-		TextStreamToken tk;
+		TextStreamToken? tk;
 
 		Assert.IsTrue(parser.Get(out tk));
 		Assert.IsInstanceOfType<TxtTokenEraseLine>(tk);
@@ -82,6 +84,18 @@ public class StreamTest {
 		Assert.AreEqual(255, ((TxtTokenSetFgColor)tk).R);
 		Assert.AreEqual(0, ((TxtTokenSetFgColor)tk).G);
 		Assert.AreEqual(0, ((TxtTokenSetFgColor)tk).B);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenSetBgColor>(tk);
+		Assert.AreEqual(255, ((TxtTokenSetBgColor)tk).R);
+		Assert.AreEqual(127, ((TxtTokenSetBgColor)tk).G);
+		Assert.AreEqual(255, ((TxtTokenSetBgColor)tk).B);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenSetFgColor>(tk);
+		Assert.AreEqual(255, ((TxtTokenSetFgColor)tk).R);
+		Assert.AreEqual(127, ((TxtTokenSetFgColor)tk).G);
+		Assert.AreEqual(255, ((TxtTokenSetFgColor)tk).B);
 
 		Assert.IsTrue(parser.Get(out tk));
 		Assert.IsInstanceOfType<TxtTokenSetBgColor>(tk);
@@ -105,5 +119,140 @@ public class StreamTest {
 		Assert.IsInstanceOfType<TxtTokenSetCursor>(tk);
 		Assert.AreEqual(65535, ((TxtTokenSetCursor)tk).X);
 		Assert.AreEqual(65534, ((TxtTokenSetCursor)tk).Y);
+	}
+
+	[TestMethod]
+	public void SeqManipulatorExtended() {
+		PipeStream<byte> pipe = new(16384);
+		var writer = new TextStreamWriter(pipe.CreateWriter());
+		var parser = new TextStreamParser(pipe.CreateReader());
+
+		// Cursor Movement
+		writer.Manip.MoveCursorUp(5);
+		writer.Manip.MoveCursorDown(5);
+		writer.Manip.MoveCursorRight(5);
+		writer.Manip.MoveCursorLeft(5);
+		writer.Manip.MoveCursorStartOfNextLine(5);
+		writer.Manip.MoveCursorStartOfPrevLine(5);
+		writer.Manip.MoveCursorToColumn(10);
+		writer.Manip.SetCursorHome();
+
+		// Erase
+		writer.Manip.Erase2ScreenEnd();
+		writer.Manip.Erase2ScreenStart();
+		writer.Manip.EraseScreen();
+		writer.Manip.Erase2LineEnd();
+		writer.Manip.Erase2LineStart();
+		writer.Manip.EraseLine();
+
+		// Styles & Graphics
+		writer.Manip.UnsetFgColor();
+		writer.Manip.UnsetBgColor();
+		writer.Manip.SetBold();
+		writer.Manip.UnsetBold();
+		writer.Manip.SetItalic();
+		writer.Manip.UnsetItalic();
+		writer.Manip.SetUnderline();
+		writer.Manip.UnsetUnderline();
+		writer.Manip.SetStrikethrough();
+		writer.Manip.UnsetStrikethrough();
+		writer.Manip.ResetStyles();
+
+		parser.Parse();
+		TextStreamToken? tk;
+
+		// Cursor Movement Asserts
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenMoveCursor>(tk);
+		Assert.AreEqual(0, ((TxtTokenMoveCursor)tk).X);
+		Assert.AreEqual(-5, ((TxtTokenMoveCursor)tk).Y);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenMoveCursor>(tk);
+		Assert.AreEqual(0, ((TxtTokenMoveCursor)tk).X);
+		Assert.AreEqual(5, ((TxtTokenMoveCursor)tk).Y);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenMoveCursor>(tk);
+		Assert.AreEqual(5, ((TxtTokenMoveCursor)tk).X);
+		Assert.AreEqual(0, ((TxtTokenMoveCursor)tk).Y);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenMoveCursor>(tk);
+		Assert.AreEqual(-5, ((TxtTokenMoveCursor)tk).X);
+		Assert.AreEqual(0, ((TxtTokenMoveCursor)tk).Y);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenMoveCursorStartOfLine>(tk);
+		Assert.AreEqual(5, ((TxtTokenMoveCursorStartOfLine)tk).offset);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenMoveCursorStartOfLine>(tk);
+		Assert.AreEqual(-5, ((TxtTokenMoveCursorStartOfLine)tk).offset);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenSetCursorColumn>(tk);
+		Assert.AreEqual(10, ((TxtTokenSetCursorColumn)tk).X);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenSetCursor>(tk);
+		Assert.AreEqual(0, ((TxtTokenSetCursor)tk).X);
+		Assert.AreEqual(0, ((TxtTokenSetCursor)tk).Y);
+
+		// Erase Asserts
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenEraseToEnd>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenEraseToStart>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenEraseScreen>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenEraseToLineEnd>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenEraseToLineStart>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenEraseLine>(tk);
+
+		// Style Asserts
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenUnsetFgColor>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenUnsetBgColor>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenSetBold>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenUnsetBold>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenSetItalic>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenUnsetItalic>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenSetUnderline>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenUnsetUnderline>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenSetStrikethrough>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenUnsetStrikethrough>(tk);
+
+		Assert.IsTrue(parser.Get(out tk));
+		Assert.IsInstanceOfType<TxtTokenResetStyles>(tk);
+
+		// No more tokens expected
+		Assert.IsFalse(parser.Get(out tk));
 	}
 }

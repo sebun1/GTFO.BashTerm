@@ -35,3 +35,7 @@ packages/
 pkg/
 BashTerm.zip
 manifest.json
+
+
+# --- Tests ---
+TestResults/
