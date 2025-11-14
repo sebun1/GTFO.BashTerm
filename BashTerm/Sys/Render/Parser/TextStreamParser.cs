@@ -156,8 +156,8 @@ public class TextStreamParser {
 				return paramBytes[0] switch {
 					0 => new TxtTokenResetStyles(),
 					39 => new TxtTokenUnsetFgColor(),
-					40 => new TxtTokenUnsetBgColor(),
-					2 => new TxtTokenSetBold(),
+					49 => new TxtTokenUnsetBgColor(),
+					1 => new TxtTokenSetBold(),
 					22 => new TxtTokenUnsetBold(),
 					3 => new TxtTokenSetItalic(),
 					23 => new TxtTokenUnsetItalic(),

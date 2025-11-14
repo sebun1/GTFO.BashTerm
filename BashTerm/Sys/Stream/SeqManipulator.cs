@@ -273,7 +273,7 @@ public class SeqManipulator {
 	/// </summary>
 	/// <returns>true if write was successful</returns>
 	public bool UnsetBgColor() {
-		return DoOp8('m', 40);
+		return DoOp8('m', 49);
 	}
 
 	/// <summary>
@@ -281,7 +281,7 @@ public class SeqManipulator {
 	/// </summary>
 	/// <returns>true if write was successful</returns>
 	public bool SetBold() {
-		return DoOp8('m', 2);
+		return DoOp8('m', 1);
 	}
 
 	/// <summary>
@@ -373,7 +373,7 @@ public class SeqManipulator {
 		Span<byte> b = stackalloc byte[2];
 		BinaryPrimitives.WriteUInt16LittleEndian(b, n);
 		if ((n >> 8) != 0)
-			return Write(Esc, Open, cmd, 3, b[0], b[1]);
+			return Write(Esc, Open, cmd, 2, b[0], b[1]);
 		return Write(Esc, Open, cmd, 1, b[0]);
 	}
 
