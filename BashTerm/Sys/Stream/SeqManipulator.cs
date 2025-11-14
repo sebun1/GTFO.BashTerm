@@ -1,12 +1,12 @@
-using System.Buffers.Binary;
-using UnityEngine;
+﻿using System.Buffers.Binary;
+using Bsh.Types;
 
 namespace Bsh.Sys.Stream;
 
 /// <summary>
 /// Provides a set of methods to manipulate terminal display using ANSI-like escape sequences.
 /// </summary>
-public class SeqManipulator {
+public class SeqManipulator : ISeqManip {
 	private const byte Esc = 0x1b;
 	private const byte Open = (byte)'[';
 
@@ -182,26 +182,13 @@ public class SeqManipulator {
 	 * ==========================
 	 */
 	/// <summary>
-	/// Sets the text color to the specified Unity Color,
-	/// truncating to 8-bit RGB.
+	/// Sets the text color to the specified 8-bit RGB value.
 	/// </summary>
-	/// <param name="color">Unity Color to be set to</param>
+	/// <param name="color">Color8 to be set to</param>
 	/// <param name="fg">true to set foreground (text),
 	/// false to set background (highlight)</param>
 	/// <returns>true if write was successful</returns>
-	public bool SetColor(Color color, bool fg = true) =>
-		SetColor((byte)Mathf.RoundToInt(color.r * 255f),
-			(byte)Mathf.RoundToInt(color.g * 255f),
-			(byte)Mathf.RoundToInt(color.b * 255f), fg);
-
-	/// <summary>
-	/// Sets the text color to the specified System.Drawing.Color.
-	/// </summary>
-	/// <param name="color">8-bit Color object to be set to</param>
-	/// <param name="fg">true to set foreground (text),
-	/// false to set background (highlight)</param>
-	/// <returns>true if write was successful</returns>
-	public bool SetColor(System.Drawing.Color color, bool fg = true) =>
+	public bool SetColor(Rgb8 color, bool fg = true) =>
 		SetColor(color.R, color.G, color.B, fg);
 
 	/// <summary>
@@ -225,7 +212,9 @@ public class SeqManipulator {
 	/// Calls UnsetFgColor and UnsetBgColor.
 	/// </summary>
 	/// <returns>true if write was successful</returns>
-	public bool UnsetColor => UnsetFgColor() && UnsetBgColor();
+	public bool UnsetColor() {
+		return UnsetFgColor() && UnsetBgColor();
+	}
 
 
 	/// <summary>

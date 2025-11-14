@@ -6,7 +6,7 @@ public class TextStreamWriter {
 	/// <summary>
 	/// Manipulator for writing escape sequences to the stream.
 	/// </summary>
-	public readonly SeqManipulator Manip;
+	public readonly ISeqManip Manip;
 
 	/// <summary>
 	/// Creates a new TextStreamWriter instance for writing text to a byte stream.
