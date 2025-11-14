@@ -89,8 +89,8 @@ public class TextStreamParser {
 		if (!_reader.TryRead(out var paramCount))
 			throw new InvalidEscapeSequenceException("Sequence ended unexpectedly after ESC[<cmd>");
 
-		Span<byte> paramBytes = stackalloc byte[paramCount];
-		if (!_reader.TryReadMultiple(paramCount, paramBytes))
+		Span<byte> paramBytes = paramCount == 0 ? Span<byte>.Empty : stackalloc byte[paramCount];
+		if (paramCount > 0 && !_reader.TryReadMultiple(paramCount, paramBytes))
 			throw new InvalidEscapeSequenceException(
 				$"Sequence ended unexpectedly while reading parameters, expected {paramCount} bytes");
 
