@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using UnityEngine;
 
 namespace Bsh.Sys.Stream;
@@ -182,40 +182,27 @@ public class SeqManipulator {
 	 * ==========================
 	 */
 	/// <summary>
-	/// Sets the text color to the specified 8-bit RGB value.
-	/// Same as SetFgColor.
-	/// </summary>
-	/// <param name="r">red component (0-255)</param>
-	/// <param name="g">green component (0-255)</param>
-	/// <param name="b">blue component (0-255)</param>
-	/// <returns>true if write was successful</returns>
-	public bool SetColor(byte r, byte g, byte b) => SetFgColor(r, g, b);
-
-	/// <summary>
 	/// Sets the text color to the specified Unity Color,
 	/// truncating to 8-bit RGB.
 	/// </summary>
 	/// <param name="color">Unity Color to be set to</param>
+	/// <param name="fg">true to set foreground (text),
+	/// false to set background (highlight)</param>
 	/// <returns>true if write was successful</returns>
-	public bool SetColor(Color color) =>
-		SetFgColor((byte)Mathf.RoundToInt(color.r * 255f),
+	public bool SetColor(Color color, bool fg = true) =>
+		SetColor((byte)Mathf.RoundToInt(color.r * 255f),
 			(byte)Mathf.RoundToInt(color.g * 255f),
-			(byte)Mathf.RoundToInt(color.b * 255f));
+			(byte)Mathf.RoundToInt(color.b * 255f), fg);
 
 	/// <summary>
 	/// Sets the text color to the specified System.Drawing.Color.
 	/// </summary>
 	/// <param name="color">8-bit Color object to be set to</param>
+	/// <param name="fg">true to set foreground (text),
+	/// false to set background (highlight)</param>
 	/// <returns>true if write was successful</returns>
-	public bool SetColor(System.Drawing.Color color) =>
-		SetFgColor(color.R, color.G, color.B);
-
-	/// <summary>
-	/// Unsets the text color to default.
-	/// Same as UnsetFgColor.
-	/// </summary>
-	/// <returns>true if write was successful</returns>
-	public bool UnsetColor => UnsetFgColor();
+	public bool SetColor(System.Drawing.Color color, bool fg = true) =>
+		SetColor(color.R, color.G, color.B, fg);
 
 	/// <summary>
 	/// Sets the foreground (text) color to the specified 8-bit RGB value.
@@ -223,11 +210,23 @@ public class SeqManipulator {
 	/// <param name="r">red component (0-255)</param>
 	/// <param name="g">green component (0-255)</param>
 	/// <param name="b">blue component (0-255)</param>
+	/// <param name="fg">true to set foreground (text),
+	/// false to set background (highlight)</param>
 	/// <returns>true if write was successful</returns>
-	public bool SetFgColor(byte r, byte g, byte b) {
+	public bool SetColor(byte r, byte g, byte b, bool fg = true) {
 		byte cmd = (byte)'m';
-		return Write(Esc, Open, cmd, 4, 0, r, g, b);
+		if (fg)
+			return Write(Esc, Open, cmd, 4, 0, r, g, b);
+		return Write(Esc, Open, cmd, 4, 1, r, g, b);
 	}
+
+	/// <summary>
+	/// Unsets the text color to default.
+	/// Calls UnsetFgColor and UnsetBgColor.
+	/// </summary>
+	/// <returns>true if write was successful</returns>
+	public bool UnsetColor => UnsetFgColor() && UnsetBgColor();
+
 
 	/// <summary>
 	/// Unsets the foreground (text) color to default.
@@ -235,37 +234,6 @@ public class SeqManipulator {
 	/// <returns>true if write was successful</returns>
 	public bool UnsetFgColor() {
 		return DoOp8('m', 39);
-	}
-
-	/// <summary>
-	/// Sets the background color to the specified Unity Color,
-	/// truncating to 8-bit RGB.
-	/// </summary>
-	/// <param name="color">Unity Color to be set to</param>
-	/// <returns>true if write was successful</returns>
-	public bool SetBgColor(Color color) =>
-		SetBgColor((byte)Mathf.RoundToInt(color.r * 255f),
-			(byte)Mathf.RoundToInt(color.g * 255f),
-			(byte)Mathf.RoundToInt(color.b * 255f));
-
-	/// <summary>
-	/// Sets the background color to the specified System.Drawing.Color.
-	/// </summary>
-	/// <param name="color">8-bit Color object to be set to</param>
-	/// <returns>true if write was successful</returns>
-	public bool SetBgColor(System.Drawing.Color color) =>
-		SetBgColor(color.R, color.G, color.B);
-
-	/// <summary>
-	/// Sets the background (highlight) color to the specified 8-bit RGB value.
-	/// </summary>
-	/// <param name="r">red component (0-255)</param>
-	/// <param name="g">green component (0-255)</param>
-	/// <param name="b">blue component (0-255)</param>
-	/// <returns>true if write was successful</returns>
-	public bool SetBgColor(byte r, byte g, byte b) {
-		byte cmd = (byte)'m';
-		return Write(Esc, Open, cmd, 4, 1, r, g, b);
 	}
 
 	/// <summary>
