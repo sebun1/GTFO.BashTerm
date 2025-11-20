@@ -23,36 +23,59 @@ public class FlagParser {
 				continue;
 			}
 
+			if (arg == "-") {
+				Positionals.Add(arg);
+				continue;
+			}
+
 			bool gnuStyle = arg[1] == '-';
-			string name = arg.TrimStart('-');
+			string name = arg.Substring(2);
 			FlagSpec? spec;
+
 			if (gnuStyle) {
+				int eqIdx = name.IndexOf('=');
+				string val = "";
+				if (eqIdx != -1) {
+					val = name[(eqIdx + 1)..];
+					name = name[..eqIdx];
+				}
+
 				spec = schema.GetGnu(name);
 				if (spec == null)
-					throw new FlagException($"unknown flag: {arg}");
+					throw new FlagException($"unknown flag \"{arg}\"");
 				if (spec.Type == FlagType.Boolean) {
+					if (!string.IsNullOrEmpty(val))
+						throw new FlagException($"flag \"--{name}\" does not expect a value");
 					Flags[spec] = "true";
 				} else if (spec.Type == FlagType.Value) {
-					if (i + 1 < args.Count && !args[i + 1].StartsWith("-")) {
+					if (!string.IsNullOrEmpty(val)) {
+						Flags[spec] = val;
+					} else if (i + 1 < args.Count && !args[i + 1].StartsWith("-")) {
 						Flags[spec] = args[i + 1];
 						i++;
 					} else {
-						throw new FlagException($"missing value for flag: {arg}");
+						throw new FlagException($"expected value for flag \"{arg}\"");
 					}
 				}
 			} else {
-				foreach (char c in name) {
+				for (int idx = 0; idx < name.Length; idx++) {
+					char c = name[idx];
 					spec = schema.GetPosix($"{c}");
 					if (spec == null)
-						throw new FlagException($"unknown flag: {c} in {arg}");
+						throw new FlagException($"unknown flag \"{arg}\"");
 					if (spec.Type == FlagType.Boolean) {
 						Flags[spec] = "true";
 					} else if (spec.Type == FlagType.Value) {
+						if (idx != name.Length - 1) {
+							throw new FlagException(
+								$"flag \"-{c}\" in \"{arg}\" expects a value and must be last in the group");
+						}
+
 						if (i + 1 < args.Count && !args[i + 1].StartsWith("-")) {
 							Flags[spec] = args[i + 1];
 							i++;
 						} else {
-							throw new FlagException($"missing value for flag: {c} in {arg}");
+							throw new FlagException($"expected value for flag \"{arg}\"");
 						}
 					}
 				}
@@ -73,7 +96,7 @@ public class CmdOpts {
 	}
 
 	/// <summary>
-	/// Tries to get posix style (--option) flag value
+	/// Tries to get posix style (-o) flag value
 	/// </summary>
 	/// <param name="flag">posix style flag to be queried</param>
 	/// <param name="val">string of the flag if defined</param>
@@ -83,7 +106,7 @@ public class CmdOpts {
 	}
 
 	/// <summary>
-	/// Tries to get posix style (-o) flag value
+	/// Tries to get gnu style (--option) flag value
 	/// </summary>
 	/// <param name="flag">gnu style flag to be queried</param>
 	/// <param name="val">string of the flag if defined</param>
@@ -100,12 +123,17 @@ public class CmdOpts {
 	public string? this[string flagArg] {
 		get {
 			if (flagArg[0] != '-') throw new CmdOptException("indexing non-flag value (does not start with '-')");
+			if (flagArg == "-") throw new CmdOptException("indexing non-flag value '-'");
 			bool gnuStyle = flagArg[1] == '-';
 			string name = flagArg.TrimStart('-');
 			return (gnuStyle ? _gnu : _posix).GetValueOrDefault(name);
 		}
 	}
 
+	/// <summary>
+	/// Provides an empty CmdOpts instance
+	/// </summary>
+	/// <returns></returns>
 	public static CmdOpts EmptyOpts() {
 		return new CmdOpts(new Dictionary<FlagSpec, string>());
 	}
