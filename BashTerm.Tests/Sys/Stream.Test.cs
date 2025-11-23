@@ -59,6 +59,48 @@ public class StreamTest {
 	}
 
 	[TestMethod]
+	public void SeqManipPerformance() {
+		PipeStream<byte> pipe = new(0);
+		System.Diagnostics.Stopwatch sw = new();
+		var writer = new TextStreamWriter(pipe.CreateWriter());
+		var reader = new TextStreamParser(pipe.CreateReader());
+
+		const int samples = 5000000;
+
+		reader.SetParseLimit(samples + 200);
+
+		sw.Start();
+		for (int i = 0; i < samples; i++) {
+			writer.Manip.SetColor(255, 0, 0);
+		}
+
+		sw.Stop();
+		Console.WriteLine(
+			$"SetColor\tWrite\ttotal:{sw.ElapsedMilliseconds}\tavg:{sw.ElapsedMilliseconds * 1.0 / samples}");
+
+		sw.Restart();
+		reader.Parse();
+		sw.Stop();
+		Console.WriteLine(
+			$"SetColor\tRead\ttotal:{sw.ElapsedMilliseconds}\tavg:{sw.ElapsedMilliseconds * 1.0 / samples}");
+
+		sw.Restart();
+		for (int i = 0; i < samples; i++) {
+			writer.Manip.EraseLine();
+		}
+
+		sw.Stop();
+		Console.WriteLine(
+			$"EraseLine\tWrite\ttotal:{sw.ElapsedMilliseconds}\tavg:{sw.ElapsedMilliseconds * 1.0 / samples}");
+
+		sw.Restart();
+		reader.Parse();
+		sw.Stop();
+		Console.WriteLine(
+			$"EraseLine\tRead\ttotal:{sw.ElapsedMilliseconds}\tavg:{sw.ElapsedMilliseconds * 1.0 / samples}");
+	}
+
+	[TestMethod]
 	public void SeqManipulatorBasic() {
 		PipeStream<byte> pipe = new(16384);
 		var writer = new TextStreamWriter(pipe.CreateWriter());
@@ -123,7 +165,7 @@ public class StreamTest {
 
 	[TestMethod]
 	public void SeqManipulatorExtended() {
-		PipeStream<byte> pipe = new(16384);
+		PipeStream<byte> pipe = new(0);
 		var writer = new TextStreamWriter(pipe.CreateWriter());
 		var parser = new TextStreamParser(pipe.CreateReader());
 
