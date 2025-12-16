@@ -1,5 +1,6 @@
 ﻿using Bsh.Parsers;
 using Bsh.Sys;
+using Bsh.Sys.Process;
 using Bsh.Sys.Stream;
 
 namespace Bsh.Exec.Builtins;
@@ -9,17 +10,16 @@ public class Hello : Program {
 	private const string Name = "hello";
 	private const string Desc = "say hello to someone";
 
-	private const string Manual = @"
-<b>NAME</b>
-		hello - say hello to someone
-
-<b>USAGE</b>
-		hello <u>NAME</u> [-p/--prefix <u>name prefix</u>]
-
-<b>OPTIONS</b>
-		-p, --prefix
-
-";
+	private const string Manual = "" +
+	                              "\x1B[34m<b>NAME</b>\n" +
+	                              "		hello - say hello to someone\n" +
+	                              "\n" +
+	                              "<b>USAGE</b>\n" +
+	                              "		hello <u>NAME</u> [-p/--prefix <u>name prefix</u>]\n" +
+	                              "\n" +
+	                              "<b>OPTIONS</b>\n" +
+	                              "		-p, --prefix\n" +
+	                              "\n";
 
 	private const bool RequestAlternateBuffer = false;
 
@@ -37,7 +37,7 @@ public class Hello : Program {
 	}
 
 	public static ProgramManifest GetManifest() {
-		return new(Name, Desc, Manual, RequestAlternateBuffer, FSchema);
+		return new(Desc, Manual, FSchema, RequestAlternateBuffer, false, false);
 	}
 
 	public override void Start() {
@@ -46,18 +46,19 @@ public class Hello : Program {
 		if (Ctx.Args.Count == 0)
 			_writer.TryWriteLine("Hello... but you didn't give me a name!");
 		else
-			_writer.TryWriteLine($"Hello, {string.Join(" ", Ctx.Args)}!");
+			_writer.TryWriteLine($"Hello, {string.Join(" ", Args)}!");
 		_writer.TryWriteLine("Ctrl-C twice to exit.");
 	}
 
-	public override void OnSigInt() {
+	public override bool OnSigInt() {
 		if (_firstSigInt) {
 			_firstSigInt = false;
 			_writer.TryWriteLine("Hello program received SIGINT, press again to exit...");
+			return false;
 		}
 
 		_writer.TryWriteLine("Hello program received SIGINT, exiting...");
-		Exit();
+		return true;
 	}
 
 	public override void Update() {

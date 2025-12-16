@@ -1,51 +1,82 @@
-﻿using UnityEngine;
-using Color = System.Drawing.Color;
+﻿using Bsh.Sys.Input;
+using Bsh.Sys.Render.Parser;
+using Bsh.Sys.Stream;
+using Bsh.Sys.Sh;
+using Bsh.Types;
+using UnityEngine;
 
 namespace Bsh.Sys.Render;
 
 internal record GridCellInfo {
-	public bool Bold;
-	public bool Underline;
-	public bool Strikethrough;
-	public Color Color;
+	public bool Bold = false;
+	public bool Underline = false;
+	public bool Strikethrough = false;
+	public bool Italic = false;
+	public Rgb8 Color = Rgb8.FgDefault;
+	public Rgb8 BgColor = Rgb8.BgDefault;
 }
 
 public record GridLineInfo {
 	public bool IsContinuation; // If this continues a previous line
+	public string CachedRender = "";
 }
 
 /// <summary>
 /// Represents the rendered grid of characters of a terminal pane.
 /// </summary>
-public class Pane {
-	private char[] _grid;
-	private GridCellInfo[] _gridCells;
+public class Pane : IProcess {
+	public int Pid { get; }
+
+	private InputListener _inputListener;
+
+	private char[,] _grid;
+	private GridCellInfo[,] _gridCells;
 	private GridLineInfo[] _gridLines;
 	private uint _width;
 	private uint _height;
-	private uint _cursorPos;
+	private ColRow _cursorPos;
 
 	private bool _hasShell;
 	private Shell? _linkedShell;
 
+	private readonly PipeStream<byte> _stream = new();
+	private readonly TextStreamParser _parser;
+
+	public readonly PipeStreamWriter<byte> Writer;
+
 	internal Pane(uint width, uint height) {
 		_width = width;
 		_height = height;
-		_grid = new char[width * height];
-		_gridCells = new GridCellInfo[width * height];
+		_grid = new char[width, height];
+		_gridCells = new GridCellInfo[width, height];
 		_gridLines = new GridLineInfo[height];
+		_cursorPos = new(0, 0);
+
 		_hasShell = false;
 		_linkedShell = null;
+
+		_parser = new TextStreamParser(_stream.CreateReader());
+		Writer = _stream.CreateWriter();
+		Pid = BshSystem.Instance.GetNewPid();
+		_inputListener = BshSystem.Instance.Input.CreateListener(Pid);
+		BshSystem.Instance.Input.SetActive(Pid);
 	}
 
 	internal Pane(uint width, uint height, Shell shell) {
 		_width = width;
 		_height = height;
-		_grid = new char[width * height];
-		_gridCells = new GridCellInfo[width * height];
+		_grid = new char[width, height];
+		_gridCells = new GridCellInfo[width, height];
 		_gridLines = new GridLineInfo[height];
+		_cursorPos = new(0, 0);
+
 		_hasShell = true;
 		_linkedShell = shell;
+
+		_parser = new TextStreamParser(_stream.CreateReader());
+		Writer = _stream.CreateWriter();
+		Pid = BshSystem.Instance.GetNewPid();
+		_inputListener = BshSystem.Instance.Input.CreateListener(Pid);
 	}
 
 	internal void RegisterShell(Shell shell) {
@@ -54,7 +85,7 @@ public class Pane {
 	}
 
 	/// <summary>
-	///
+	/// Resize the pane propagating reflow effects
 	/// </summary>
 	/// <param name="newWidth"></param>
 	/// <param name="newHeight"></param>
@@ -72,10 +103,8 @@ public class Pane {
 		throw new NotImplementedException();
 	}
 
-	public Vector2Int GetCursorPosition() {
-		var row = (int)(_cursorPos / _width);
-		var col = (int)(_cursorPos % _width);
-		return new Vector2Int(col, row);
+	public ColRow GetCursorPosition() {
+		return _cursorPos;
 	}
 
 	public Vector2Int GetPaneSize() {

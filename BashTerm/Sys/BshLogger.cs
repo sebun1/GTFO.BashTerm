@@ -55,7 +55,7 @@ public class BshLogger {
 
 	public IReadOnlyList<LogEntry> GetEntries() {
 		lock (_sync) {
-			return _logs.ToArray();
+			return _logs;
 		}
 	}
 

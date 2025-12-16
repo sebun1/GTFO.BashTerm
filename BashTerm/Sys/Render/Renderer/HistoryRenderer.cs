@@ -104,7 +104,7 @@ public static class HistoryRenderer {
 					AppendOpen(ref st);
 					int spaces = 4 - (st.Col % 4);
 					for (int s = 0; s < spaces; s++) {
-						AddChar(ref st, ch);
+						AddChar(ref st, ' ');
 					}
 
 					AppendClose(ref st);

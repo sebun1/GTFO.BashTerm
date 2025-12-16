@@ -1,12 +1,17 @@
+using System.Diagnostics;
 using System.Reflection;
-using Bsh.Exec;
-using Bsh.Utils;
+using Bsh.Sys.Completion;
+using Bsh.Sys.Input;
+using Bsh.Sys.Process;
+using HarmonyLib;
 using UnityEngine;
 
 namespace Bsh.Sys;
 
 internal class BshSystem : MonoBehaviour {
-	private static bool _userRawMode;
+	public static BshSystem Instance { get; private set; }
+
+	public static bool UserRawMode { get; private set; }
 
 	private float updateTimer = 0f;
 	private const float updatePeriod = 0.025f;
@@ -14,24 +19,18 @@ internal class BshSystem : MonoBehaviour {
 	internal static readonly Dictionary<string, ProgramEntry> ProgramEntries = new();
 	internal static readonly Dictionary<string, Type> SvcTypes = new();
 
-	internal static Dictionary<int, ProcessManager> PM = new();
+	internal InputRouter Input = new();
+	internal Dictionary<int, ProcessManager> PM = new();
+	internal IdManager Pid = new(); // Process/Service IDs
 
-	private const int IdMaxLimit = 32768;
-	private static int nextPID = 1;
-	private static int nextSID = 1;
-	private static int nextScID = 1;
-	internal static HashSet<int> ActivePIDs = new(); // Process/Service IDs
-	internal static HashSet<int> ActiveSIDs = new(); // Stream IDs aka FD
-	internal static HashSet<int> ActiveScIDs = new(); // Screen IDs aka TTY
+	private void Awake() {
+		if (Instance != null && Instance != this) {
+			Destroy(gameObject);
+			return;
+		}
 
-	// TODO: Probably add structured listeners for major events e.g. enter/exit, on exit/enter level, etc.
-
-	public static bool UserRawMode {
-		get { return _userRawMode; }
-	}
-
-	public static void ToggleRawMode() {
-		_userRawMode = !_userRawMode;
+		Instance = this;
+		DontDestroyOnLoad(this);
 	}
 
 	public void Start() {
@@ -42,6 +41,25 @@ internal class BshSystem : MonoBehaviour {
 		}
 
 		BepLogger.Info($"BshSystem: Registered {procCount} processes and {serviceCount} services.");
+	}
+
+	public static void ToggleRawMode() {
+		UserRawMode = !UserRawMode;
+	}
+
+	/// <summary>
+	/// Registers all attributes in the calling assembly.
+	/// </summary>
+	public static void RegisterAll() {
+		Assembly? assembly = new StackTrace().GetFrame(1)?.GetMethod()?.ReflectedType?.Assembly;
+		if (assembly == null) throw new Exception("Bsh: Registration failed: could not get calling assembly.");
+
+		AccessTools.GetTypesFromAssembly(assembly).Do(delegate(Type t) {
+			if (t.GetCustomAttribute<BshProgramAttribute>() != null) {
+				MethodInfo[] methods = t.GetMethods();
+				// TODO
+			}
+		});
 	}
 
 	private static int RegisterTypes(out int procCount, out int serviceCount) {
@@ -72,7 +90,7 @@ internal class BshSystem : MonoBehaviour {
 					procTypes.Add((attr.Name, type));
 				}
 			} else if (typeof(IService).IsAssignableFrom(type) && !type.IsAbstract) {
-				var attr = type.GetCustomAttribute<BshSvcAttribute>();
+				var attr = type.GetCustomAttribute<BshServiceAttributes>();
 				if (attr != null) {
 					SvcTypes[attr.Name] = type;
 				}
@@ -90,7 +108,7 @@ internal class BshSystem : MonoBehaviour {
 		foreach ((string procName, Type t) in procTypes) {
 			if (ProgramEntries.ContainsKey(procName)) {
 				Type existent = ProgramEntries[procName].Type;
-				Bsh.LogError("Sys",
+				BshLogger.Error(
 					$"Process name <u>{procName}</u> is already registered to <u>{existent.FullName}</u>. Skipping registration for <u>{t.FullName}</u>.");
 				errCount++;
 				continue;
@@ -104,7 +122,7 @@ internal class BshSystem : MonoBehaviour {
 				null
 			);
 			if (getManifestMethod == null || getManifestMethod.ReturnType != typeof(ProgramManifest)) {
-				Bsh.LogError("Sys",
+				BshLogger.Error(
 					$"Class <u>{t.FullName}</u> of name <u>{procName}</u> is trying to define a process but does not have a compliant <u>static ProcManifest GetManifest()</u> method.");
 				errCount++;
 				continue;
@@ -120,56 +138,19 @@ internal class BshSystem : MonoBehaviour {
 		return errCount;
 	}
 
-	internal static int RequestPID() {
-		// TODO: We are not considering the case when all IDs are taken, which is very unlikely but possible
-		if (nextPID > IdMaxLimit || ActivePIDs.Contains(nextPID)) {
-			nextPID = 1;
-			while (ActivePIDs.Contains(nextPID)) {
-				nextPID++;
-			}
+	public int GetNewPid() {
+		if (!Pid.GetId(out int pid)) {
+			throw new BshSystemException("BshSystem: Could not allocate new PID.");
 		}
 
-		ActivePIDs.Add(nextPID);
-		return nextPID++;
+		return pid;
 	}
 
-	internal static bool ReleasePID(int pid) {
-		return ActivePIDs.Remove(pid);
+	public bool ReleasePid(int pid) {
+		return Pid.ReleaseId(pid);
 	}
 
-	internal static int RequestSID() {
-		if (nextSID > IdMaxLimit || ActiveSIDs.Contains(nextSID)) {
-			nextSID = 1;
-			while (ActiveSIDs.Contains(nextSID)) {
-				nextSID++;
-			}
-		}
-
-		ActiveSIDs.Add(nextSID);
-		return nextSID++;
-	}
-
-	internal static bool ReleaseSID(int sid) {
-		return ActiveSIDs.Remove(sid);
-	}
-
-	internal static int RequestScID() {
-		if (nextScID > IdMaxLimit || ActiveScIDs.Contains(nextScID)) {
-			nextScID = 1;
-			while (ActiveScIDs.Contains(nextScID)) {
-				nextScID++;
-			}
-		}
-
-		ActiveScIDs.Add(nextScID);
-		return nextScID++;
-	}
-
-	internal static bool ReleaseScID(int scid) {
-		return ActiveScIDs.Remove(scid);
-	}
-
-	public void Update() {
+	void Update() {
 		updateTimer += Time.deltaTime;
 		if (updateTimer > updatePeriod) {
 			updateTimer = 0f;
