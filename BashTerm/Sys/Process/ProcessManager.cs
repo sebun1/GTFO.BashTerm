@@ -1,5 +1,6 @@
 ﻿using Bsh.Exec;
 using Bsh.Parsers;
+using Bsh.Sys.Process;
 using Bsh.Types;
 using LevelGeneration;
 using UnityEngine;
@@ -27,7 +28,7 @@ public class ProcessManager : IUpdatable {
 	}
 
 	public bool Execute(string cmdstr) {
-		if (!_pid.GetPid(out int pid)) {
+		if (!_pid.GetId(out int pid)) {
 			BepLogger.Error($"ProcessManager[{TerminalID}]: Could not allocate PID for new process.");
 			return false;
 		}
@@ -40,7 +41,7 @@ public class ProcessManager : IUpdatable {
 	public void Update() {
 		foreach (var programKvp in _programs) {
 			Program p = programKvp.Value;
-			if (p.State == eProgramState.Active)
+			if (p.State == EProgramState.Active)
 				p.Update();
 		}
 	}

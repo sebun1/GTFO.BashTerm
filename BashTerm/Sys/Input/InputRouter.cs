@@ -3,12 +3,7 @@ using UnityEngine;
 
 namespace Bsh.Sys.Input;
 
-public class InputRouter {
-	/// <summary>
-	/// List of all special keys
-	/// </summary>
-	public static readonly KeySpecial[] SpecialKeys = (KeySpecial[])Enum.GetValues(typeof(KeySpecial));
-
+public class InputRouter : MonoBehaviour {
 	/// <summary>
 	/// Dictionary mapping pids to their respective input listeners.
 	/// </summary>
@@ -20,21 +15,100 @@ public class InputRouter {
 	private readonly HashSet<int> _activeListeners = new();
 
 	/// <summary>
-	/// The current key modifier state
+	/// Records which keys are currently held down.
 	/// </summary>
-	private KeyModifier _currentMods = KeyModifier.None;
-
-	/// <summary>
-	/// The current input string from Unity's input system
-	/// </summary>
-	private string _currentInput = "";
+	private readonly HashSet<KeyCode> _keyDown = new();
 
 	/// <summary>
 	/// Updates the input router, propagating keystrokes to active listeners
 	/// </summary>
-	public void Update() {
-		UpdateCurrentMods();
-		PropagateKeystrokes();
+	void OnGUI() {
+		switch (Event.current.type) {
+			case EventType.KeyDown:
+				UpdateKeyDown();
+				break;
+
+			case EventType.KeyUp:
+				UpdateKeyUp();
+				break;
+		}
+	}
+
+	/// <summary>
+	/// Performs updates on key down events
+	/// </summary>
+	private void UpdateKeyDown() {
+		bool isRepeat = _keyDown.Contains(Event.current.keyCode);
+		bool isNullChar = Event.current.character == '\0';
+		KeyModifier mods = KeyModifier.None;
+		if (Event.current.control)
+			mods |= KeyModifier.Ctrl;
+		if (Event.current.shift)
+			mods |= KeyModifier.Shift;
+		if (Event.current.alt)
+			mods |= KeyModifier.Alt;
+
+		switch (Event.current.keyCode) {
+			case KeyCode.None:
+				switch (Event.current.character) {
+					case '\0': // Null char
+						return; // Ignore
+
+					case '\b': // Backspace (possible)
+					case '\r': // Carriage Return (possible)
+					case '\t': // Tab
+					case '\n': // Line Feed
+						Propagate(new KeyStroke(Event.current.keyCode, mods, Event.current.character),
+							isSpecialChar: true);
+						break;
+
+					default: // Regular character (likely unicode)
+						Propagate(new KeyStroke(Event.current.keyCode, mods, Event.current.character));
+						break;
+				}
+
+				break;
+
+			case KeyCode.LeftControl:
+			case KeyCode.RightControl:
+			case KeyCode.LeftShift:
+			case KeyCode.RightShift:
+			case KeyCode.LeftAlt:
+			case KeyCode.RightAlt:
+			case KeyCode.LeftCommand:
+			case KeyCode.RightCommand:
+			case KeyCode.LeftWindows:
+			case KeyCode.RightWindows:
+				Propagate(new KeyStroke(Event.current.keyCode, mods, Event.current.character, isRepeat), isMod: true);
+				break;
+
+			default:
+				Propagate(new KeyStroke(Event.current.keyCode, mods, Event.current.character, isRepeat));
+				break;
+		}
+
+		_keyDown.Add(Event.current.keyCode);
+	}
+
+	/// <summary>
+	/// Performs updates on key up events
+	/// </summary>
+	private void UpdateKeyUp() {
+		_keyDown.Remove(Event.current.keyCode);
+	}
+
+	/// <summary>
+	/// Propagates the given keystroke to all active listeners
+	/// </summary>
+	/// <param name="keystroke">constructed keystroke</param>
+	/// <param name="isMod">whether this is a modifier keystroke</param>
+	/// <param name="isSpecialChar">whether this is a special character (e.g. '\n' '\r')</param>
+	private void Propagate(KeyStroke keystroke, bool isMod = false, bool isSpecialChar = false) {
+		if (isMod) return; // TODO: Option to handle modifier-only keystrokes
+
+		foreach (int pid in _activeListeners) {
+			if (_listeners[pid].HasInput) _listeners[pid].Queue(keystroke);
+		}
 	}
 
 	/// <summary>
@@ -61,7 +135,8 @@ public class InputRouter {
 		if (!_listeners.ContainsKey(pid)) {
 			_listeners[pid] = new InputListener(pid, parent);
 		} else {
-			throw new BshSystemException("Cannot create a child InputListener for pid " + pid + " already exists");
+			throw new BshSystemException("Cannot create a child InputListener for pid " + pid +
+			                             " as it already exists");
 		}
 
 		return _listeners[pid];
@@ -140,46 +215,5 @@ public class InputRouter {
 		}
 
 		return _activeListeners.Remove(pid);
-	}
-
-	/// <summary>
-	/// Pushes current keystrokes to active listeners
-	/// </summary>
-	private void PropagateKeystrokes() {
-		// regular characters
-		_currentInput = UnityEngine.Input.inputString;
-		foreach (char ch in _currentInput) {
-			Propagate(new KeyStroke(ch, _currentMods));
-		}
-
-		// special keys
-		foreach (KeySpecial key in SpecialKeys) {
-			if (UnityEngine.Input.GetKeyDown(KeyConv.Sp2KeyCode(key))) {
-				Propagate(KeyStroke.Special(key, _currentMods));
-			}
-		}
-	}
-
-	/// <summary>
-	/// Updates the current key modifier state
-	/// </summary>
-	private void UpdateCurrentMods() {
-		_currentMods = KeyModifier.None;
-		if (UnityEngine.Input.GetKey(KeyCode.LeftShift) || UnityEngine.Input.GetKey(KeyCode.RightShift))
-			_currentMods |= KeyModifier.Shift;
-		if (UnityEngine.Input.GetKey(KeyCode.LeftControl) || UnityEngine.Input.GetKey(KeyCode.RightControl))
-			_currentMods |= KeyModifier.Ctrl;
-		if (UnityEngine.Input.GetKey(KeyCode.LeftAlt) || UnityEngine.Input.GetKey(KeyCode.RightAlt))
-			_currentMods |= KeyModifier.Alt;
-	}
-
-	/// <summary>
-	/// Propagates a keystroke to all active input listeners
-	/// </summary>
-	/// <param name="keystroke"></param>
-	private void Propagate(KeyStroke keystroke) {
-		foreach (int pid in _activeListeners) {
-			if (_listeners[pid].HasInput) _listeners[pid].Queue(keystroke);
-		}
 	}
 }

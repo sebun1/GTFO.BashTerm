@@ -22,6 +22,15 @@
     <Target Name="PostBuildCopy" AfterTargets="Build">
         <Copy Condition="'$(CI)' != 'true' AND '$(IsMacOS)' != 'true'" SourceFiles="$(OutputPath)/$(AssemblyName).dll" DestinationFolder="$(PlugOutput)"/>
     </Target>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+
     <Target Name="Package" AfterTargets="Build">
         <PropertyGroup>
             <PkgFolder>$(SolutionDir)\pkg\</PkgFolder>

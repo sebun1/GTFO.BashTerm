@@ -20,7 +20,6 @@ internal class MainPatch {
 	)]
 	[HarmonyPrefix]
 	public static bool ProcessCommand(ref LG_TERM_PlayerInteracting __instance) {
-		Bsh.Renew(__instance.m_terminal);
 		// TODO: Consider not making it lower, allow case variation. Will want to change other code that returns uppercase, if any
 		var input = __instance.m_terminal.m_currentLine.ToLower();
 
@@ -60,7 +59,6 @@ internal class MainPatch {
 		}
 
 		__instance.m_terminal.m_currentLine = "";
-		Bsh.Expire();
 		return false;
 	}
 
@@ -96,8 +94,6 @@ internal class MainPatch {
 	[HarmonyPrefix]
 	public static bool ReceiveCmdPre(ref LG_ComputerTerminalCommandInterpreter __instance, TERM_Command cmd,
 		string inputLine) {
-		if (cmd == TERM_Command.EmptyLine && Bsh.DetectSyncedIO(inputLine))
-			return false;
 		return true;
 	}
 

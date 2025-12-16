@@ -1,11 +1,13 @@
 using System.Text;
 using Bsh.Sys.Render;
 using Bsh.Sys;
+using Bsh.Sys.Process;
 using Bsh.Sys.Stream;
 using UnityEngine;
 
 namespace Bsh.Utils;
 
+// TODO: This needs to be reworked to be coroutine-based.
 public abstract class Progress {
 	private const int NON_SCREEN_PROGRESS_LENGTH = 40;
 

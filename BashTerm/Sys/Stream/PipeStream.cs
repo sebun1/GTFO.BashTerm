@@ -22,7 +22,7 @@ public sealed class PipeStream<T> : IDisposable {
 	/// <summary>
 	/// Creates a new PipeStream with the specified capacity and overflow mode.
 	/// </summary>
-	/// <param name="capacity">capacity of the stream</param>
+	/// <param name="capacity">capacity of the stream, 0 for uncapped</param>
 	/// <param name="overflow">how to manage overflowing items</param>
 	public PipeStream(int capacity = 2048, OverflowMode overflow = OverflowMode.DropOldest) {
 		_uncapped = capacity <= 0;

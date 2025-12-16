@@ -1,4 +1,6 @@
-﻿namespace Bsh.Sys.Input;
+﻿using UnityEngine;
+
+namespace Bsh.Sys.Input;
 
 public class InputListener {
 	public readonly int Pid;
@@ -47,7 +49,7 @@ public class InputListener {
 		return childIl;
 	}
 
-	private void RemoveChild(int pid) {
+	public void RemoveChild(int pid) {
 		Bsh.System.Input.RemoveListener(pid);
 		_childListeners.Remove(pid);
 		if (_activeChildPid == pid) {
@@ -90,6 +92,18 @@ public class InputListener {
 		}
 
 		return false;
+	}
+
+	public bool GetKey(KeyCode key) {
+		return HasInput && UnityEngine.Input.GetKey(key);
+	}
+
+	public bool GetKeyDown(KeyCode key) {
+		return HasInput && UnityEngine.Input.GetKeyDown(key);
+	}
+
+	public bool GetKeyUp(KeyCode key) {
+		return HasInput && UnityEngine.Input.GetKeyUp(key);
 	}
 
 	public int Count => _keystrokeQueue.Count;
