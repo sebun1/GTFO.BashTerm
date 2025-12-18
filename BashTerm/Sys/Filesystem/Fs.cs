@@ -1,4 +1,4 @@
-﻿namespace Bsh.Sys.Filesystem;
+namespace Bsh.Sys.Filesystem;
 
 public class Fs {
 	public static string Home { get; private set; } = "";

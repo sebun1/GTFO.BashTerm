@@ -1,4 +1,4 @@
-﻿using Bsh.Sys.Input;
+using Bsh.Sys.Input;
 using Bsh.Sys.Render.Parser;
 using Bsh.Sys.Stream;
 using Bsh.Sys.Sh;

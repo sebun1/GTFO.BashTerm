@@ -1,4 +1,4 @@
-﻿namespace Bsh;
+namespace Bsh;
 
 public static class Constants {
 	public const int TermWidth = 140;
