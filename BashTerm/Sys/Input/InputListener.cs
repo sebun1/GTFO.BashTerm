@@ -1,4 +1,6 @@
-﻿namespace Bsh.Sys.Input;
+using UnityEngine;
+
+namespace Bsh.Sys.Input;
 
 public class InputListener {
 	public readonly int Pid;
@@ -17,7 +19,7 @@ public class InputListener {
 		get {
 			if (_isChild)
 				return _parent!.HasInput && _parent._activeChildPid == Pid;
-			return Bsh.System.Input.IsActive(Pid);
+			return BshSystem.Instance.Input.IsActive(Pid);
 		}
 	}
 
@@ -42,13 +44,13 @@ public class InputListener {
 	/// <param name="pid"></param>
 	/// <returns></returns>
 	public InputListener CreateChild(int pid) {
-		InputListener childIl = Bsh.System.Input.CreateChildListener(pid, this);
+		InputListener childIl = BshSystem.Instance.Input.CreateChildListener(pid, this);
 		_childListeners.Add(pid);
 		return childIl;
 	}
 
-	private void RemoveChild(int pid) {
-		Bsh.System.Input.RemoveListener(pid);
+	public void RemoveChild(int pid) {
+		BshSystem.Instance.Input.RemoveListener(pid);
 		_childListeners.Remove(pid);
 		if (_activeChildPid == pid) {
 			_activeChildPid = -1;
@@ -63,6 +65,10 @@ public class InputListener {
 		_activeChildPid = -1;
 	}
 
+	public void UnsetActiveChild() {
+		_activeChildPid = -1;
+	}
+
 	public void SetActiveChild(int pid) {
 		if (_childListeners.Contains(pid)) {
 			_activeChildPid = pid;
@@ -73,7 +79,7 @@ public class InputListener {
 
 	internal void Queue(KeyStroke ks) {
 		if (_activeChildPid != -1) {
-			if (Bsh.System.Input.TryGetListener(_activeChildPid, out InputListener? child)) {
+			if (BshSystem.Instance.Input.TryGetListener(_activeChildPid, out InputListener? child)) {
 				child.Queue(ks);
 				return;
 			}
@@ -90,6 +96,18 @@ public class InputListener {
 		}
 
 		return false;
+	}
+
+	public bool GetKey(KeyCode key) {
+		return HasInput && UnityEngine.Input.GetKey(key);
+	}
+
+	public bool GetKeyDown(KeyCode key) {
+		return HasInput && UnityEngine.Input.GetKeyDown(key);
+	}
+
+	public bool GetKeyUp(KeyCode key) {
+		return HasInput && UnityEngine.Input.GetKeyUp(key);
 	}
 
 	public int Count => _keystrokeQueue.Count;

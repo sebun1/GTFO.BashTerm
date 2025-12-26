@@ -20,7 +20,7 @@ public class Plugin : BasePlugin {
 		BshLogger.Info($"{NAME} v{BSH_VERSION} [{GUID} @ {VERSION}]");
 		BepLogger.Info("Patching...");
 		Harmony h = new Harmony(GUID);
-		AddComponent<BshSystem>();
+		Bsh.RegisterSystem(AddComponent<BshSystem>());
 		global::Bsh.Config.Init();
 		h.PatchAll(typeof(Patches.MainPatch));
 		h.PatchAll(typeof(Patches.ScreenPatch));

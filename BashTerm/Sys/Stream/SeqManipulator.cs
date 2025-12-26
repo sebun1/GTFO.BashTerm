@@ -10,10 +10,18 @@ public class SeqManipulator : ISeqManip {
 	private const byte Esc = 0x1b;
 	private const byte Open = (byte)'[';
 
-	private readonly PipeStreamWriter<byte> _writer;
+	private readonly bool Write2List;
+	private readonly PipeStreamWriter<byte>? _writer;
+	private readonly List<byte>? _outputList;
 
 	public SeqManipulator(PipeStreamWriter<byte> writer) {
 		_writer = writer;
+		Write2List = false;
+	}
+
+	public SeqManipulator(List<byte> outputList) {
+		_outputList = outputList;
+		Write2List = true;
 	}
 
 	/**
@@ -305,7 +313,7 @@ public class SeqManipulator : ISeqManip {
 		return DoOp8('m', 0);
 	}
 
-	/**
+	/*
 	 * ==========================
 	 * UTILITY
 	 * ==========================
@@ -342,8 +350,94 @@ public class SeqManipulator : ISeqManip {
 		return Write(Esc, Open, (byte)cmd, 1, b[0]);
 	}
 
-	private bool Write(params byte[] bytes) {
-		if (_writer.IsCompleted) return false;
-		return _writer.TryWriteMultiple(bytes);
+	private bool Write(byte b0) {
+		Span<byte> s = stackalloc byte[1];
+		s[0] = b0;
+		return Write(s);
+	}
+
+	private bool Write(byte b0, byte b1) {
+		Span<byte> s = stackalloc byte[2];
+		s[0] = b0;
+		s[1] = b1;
+		return Write(s);
+	}
+
+	private bool Write(byte b0, byte b1, byte b2) {
+		Span<byte> s = stackalloc byte[3];
+		s[0] = b0;
+		s[1] = b1;
+		s[2] = b2;
+		return Write(s);
+	}
+
+	private bool Write(byte b0, byte b1, byte b2, byte b3) {
+		Span<byte> s = stackalloc byte[4];
+		s[0] = b0;
+		s[1] = b1;
+		s[2] = b2;
+		s[3] = b3;
+		return Write(s);
+	}
+
+	private bool Write(byte b0, byte b1, byte b2, byte b3, byte b4) {
+		Span<byte> s = stackalloc byte[5];
+		s[0] = b0;
+		s[1] = b1;
+		s[2] = b2;
+		s[3] = b3;
+		s[4] = b4;
+		return Write(s);
+	}
+
+	private bool Write(byte b0, byte b1, byte b2, byte b3, byte b4, byte b5) {
+		Span<byte> s = stackalloc byte[6];
+		s[0] = b0;
+		s[1] = b1;
+		s[2] = b2;
+		s[3] = b3;
+		s[4] = b4;
+		s[5] = b5;
+		return Write(s);
+	}
+
+	private bool Write(byte b0, byte b1, byte b2, byte b3, byte b4, byte b5, byte b6) {
+		Span<byte> s = stackalloc byte[7];
+		s[0] = b0;
+		s[1] = b1;
+		s[2] = b2;
+		s[3] = b3;
+		s[4] = b4;
+		s[5] = b5;
+		s[6] = b6;
+		return Write(s);
+	}
+
+	private bool Write(byte b0, byte b1, byte b2, byte b3, byte b4, byte b5, byte b6, byte b7) {
+		Span<byte> s = stackalloc byte[8];
+		s[0] = b0;
+		s[1] = b1;
+		s[2] = b2;
+		s[3] = b3;
+		s[4] = b4;
+		s[5] = b5;
+		s[6] = b6;
+		s[7] = b7;
+		return Write(s);
+	}
+
+	private bool Write(ReadOnlySpan<byte> bytes) {
+		if (Write2List) {
+			// write directly into the output list without allocating
+			if (_outputList == null) return false;
+			for (int i = 0; i < bytes.Length; i++) _outputList.Add(bytes[i]);
+			return true;
+		}
+
+		if (_writer == null || _writer.IsCompleted) return false;
+
+		// fallback: writer currently accepts byte[]; allocate once here
+		byte[] arr = bytes.ToArray();
+		return _writer.TryWriteMultiple(arr);
 	}
 }

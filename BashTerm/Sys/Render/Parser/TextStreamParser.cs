@@ -5,7 +5,7 @@ using Il2CppSystem.Linq.Expressions.Interpreter;
 namespace Bsh.Sys.Render.Parser;
 
 public class TextStreamParser {
-	public const uint DefaultParseLimit = 256;
+	public const uint DefaultParseLimit = 1024;
 
 	private const byte Esc = 0x1B;
 	private const byte Open = (byte)'[';

@@ -40,4 +40,7 @@ public struct Rgb8 {
 		byte b = Convert.ToByte(hex.Substring(4, 2), 16);
 		return new Rgb8(r, g, b);
 	}
+
+	public static Rgb8 FgDefault = new(255, 255, 255);
+	public static Rgb8 BgDefault = new(0, 0, 0);
 }

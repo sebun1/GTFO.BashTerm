@@ -1,5 +1,7 @@
 ﻿using Bsh.Exec;
 using Bsh.Parsers;
+using Bsh.Sys.Process;
+using Bsh.Sys.Sh;
 using Bsh.Types;
 using LevelGeneration;
 using UnityEngine;
@@ -9,6 +11,7 @@ namespace Bsh.Sys;
 public class ProcessManager : IUpdatable {
 	internal int fgPID = -1; // foreground process ID
 
+	private readonly Shell _shell = new();
 	private readonly Dictionary<int, Program> _programs = new(); // background processes
 	private readonly Dictionary<int, IService> _services = new();
 
@@ -17,6 +20,8 @@ public class ProcessManager : IUpdatable {
 	private readonly IdManager _pid;
 	private readonly IdManager _sid;
 	private readonly LG_ComputerTerminal _gTerminal;
+
+	// private readonly Shell _shell = new(); // shell process tied to one PM, which is tied to one terminal
 
 	internal ProcessManager(Terminal owner, LG_ComputerTerminal term) {
 		TerminalID = term.m_serialNumber;
@@ -27,7 +32,7 @@ public class ProcessManager : IUpdatable {
 	}
 
 	public bool Execute(string cmdstr) {
-		if (!_pid.GetPid(out int pid)) {
+		if (!_pid.GetId(out int pid)) {
 			BepLogger.Error($"ProcessManager[{TerminalID}]: Could not allocate PID for new process.");
 			return false;
 		}
@@ -40,7 +45,7 @@ public class ProcessManager : IUpdatable {
 	public void Update() {
 		foreach (var programKvp in _programs) {
 			Program p = programKvp.Value;
-			if (p.State == eProgramState.Active)
+			if (p.State == EProgramState.Active)
 				p.Update();
 		}
 	}

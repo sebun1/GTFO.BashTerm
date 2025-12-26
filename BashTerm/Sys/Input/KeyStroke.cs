@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Diagnostics.CodeAnalysis;
+using UnityEngine;
 
 namespace Bsh.Sys.Input;
 
@@ -10,80 +11,65 @@ public enum KeyModifier : byte {
 	Shift = 1 << 2
 }
 
-public enum KeyKind : byte {
-	Char,
-	Special
-}
-
-public enum KeySpecial {
-	None,
-	Backspace,
-	Enter,
-	Tab,
-	Escape,
-	UpArrow,
-	DownArrow,
-	LeftArrow,
-	RightArrow,
-	Home,
-	End,
-	PageUp,
-	PageDown,
-	Delete,
-	Insert
-}
-
-public static class KeyConv {
-	public static KeyCode Sp2KeyCode(KeySpecial key) {
-		return key switch {
-			KeySpecial.Backspace => KeyCode.Backspace,
-			KeySpecial.Enter => KeyCode.Return,
-			KeySpecial.Tab => KeyCode.Tab,
-			KeySpecial.Escape => KeyCode.Escape,
-			KeySpecial.UpArrow => KeyCode.UpArrow,
-			KeySpecial.DownArrow => KeyCode.DownArrow,
-			KeySpecial.LeftArrow => KeyCode.LeftArrow,
-			KeySpecial.RightArrow => KeyCode.RightArrow,
-			KeySpecial.Home => KeyCode.Home,
-			KeySpecial.End => KeyCode.End,
-			KeySpecial.PageUp => KeyCode.PageUp,
-			KeySpecial.PageDown => KeyCode.PageDown,
-			KeySpecial.Delete => KeyCode.Delete,
-			KeySpecial.Insert => KeyCode.Insert,
-			_ => KeyCode.None
-		};
-	}
-}
-
 public readonly struct KeyStroke {
-	public readonly KeyKind Kind;
 	public readonly KeyModifier Mods;
-	public readonly char Key;
-	public readonly KeySpecial SpecialKey;
+	public readonly KeyCode Key;
+	public readonly char Char;
+	public readonly bool Repeat;
 
-	public KeyStroke(char key, KeyModifier mods) {
-		Kind = KeyKind.Char;
+	public bool Ctrl => (Mods & KeyModifier.Ctrl) != 0;
+	public bool Shift => (Mods & KeyModifier.Shift) != 0;
+	public bool Alt => (Mods & KeyModifier.Alt) != 0;
+
+	public KeyStroke(KeyCode key, KeyModifier mods, bool repeat = false) {
+		Key = key;
 		Mods = mods;
-		Key = char.ToLower(key);
-		SpecialKey = KeySpecial.None;
+		Char = '\0';
+		Repeat = repeat;
 	}
 
-	private KeyStroke(KeySpecial specialKey, KeyModifier mods) {
-		Kind = KeyKind.Special;
-		SpecialKey = specialKey;
+	public KeyStroke(KeyCode key, KeyModifier mods, char c, bool repeat = false) {
+		Key = key;
 		Mods = mods;
-		Key = '\0';
+		Char = c;
+		Repeat = repeat;
 	}
 
-	public static KeyStroke Special(KeySpecial key, KeyModifier mods) {
-		return new KeyStroke(key, mods);
+	public bool IsChar() {
+		return Char != '\0';
 	}
 
-	public bool Is(char c) {
-		return Kind == KeyKind.Char && c == Key;
+	public override bool Equals([NotNullWhen(true)] object? obj) {
+		if (obj is KeyStroke ks) {
+			return this == ks;
+		}
+
+		return false;
 	}
 
-	public bool Is(KeySpecial sp) {
-		return Kind == KeyKind.Special && SpecialKey == sp;
+	public override int GetHashCode() {
+		return HashCode.Combine(Key, Mods, Char);
+	}
+
+	public static bool operator ==(KeyStroke a, KeyStroke b) {
+		return a.Key == b.Key && a.Mods == b.Mods && a.Char == b.Char;
+	}
+
+	public static bool operator !=(KeyStroke a, KeyStroke b) {
+		return !(a == b);
+	}
+
+	public override string ToString() {
+		char modCtrl = (Mods & KeyModifier.Ctrl) != 0 ? 'C' : '-';
+		char modAlt = (Mods & KeyModifier.Alt) != 0 ? 'A' : '-';
+		char modShift = (Mods & KeyModifier.Shift) != 0 ? 'S' : '-';
+		string repeatStr = Repeat ? " (repeat)" : "";
+
+		if (IsChar()) {
+			return
+				$"KeyStroke: Key={Key.ToString()}, Char='{Char}'({(int)Char}), Mods=[{modCtrl}{modAlt}{modShift}]{repeatStr}";
+		} else {
+			return $"KeyStroke: Key={Key.ToString()}, Mods=[{modCtrl}{modAlt}{modShift}]{repeatStr}";
+		}
 	}
 }
